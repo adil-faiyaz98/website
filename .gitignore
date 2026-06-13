@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# MTA build artifacts
+mta_archives/
+*.mtar
+*.mta
+
+# SAP CAP build output
+gen/
+.cds-dkrc
+
+# HANA deployment
+db/src/.hdiconfig
+db/src/.hdbsyncignore
+*.hdbtabledata
+
+# Environment & credentials
+.env
+default-env.json
+default-services.json
+.cdsrc-private.json
+
+# CF / BTP
+cf-env.json
+.cf/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,116 @@
+{
+    "rfcName": "BAPI_VENDOR_GETDETAIL",
+    "import": [
+        {
+            "name": "VENDORNO",
+            "nwrfcType": "RFCTYPE_CHAR",
+            "abapType": "c",
+            "format": "",
+            "length": 10,
+            "decimals": 0,
+            "defaultValue": "",
+            "parameterText": "Vendor Account Number",
+            "optional": false
+        },
+        {
+            "name": "COMPANYCODE",
+            "nwrfcType": "RFCTYPE_CHAR",
+            "abapType": "c",
+            "format": "",
+            "length": 4,
+            "decimals": 0,
+            "defaultValue": "",
+            "parameterText": "Company Code",
+            "optional": false
+        }
+    ],
+    "export": [
+        {
+            "name": "GENERALDETAIL",
+            "nwrfcType": "RFCTYPE_STRUCTURE",
+            "abapType": "u",
+            "format": "",
+            "length": 378,
+            "decimals": 0,
+            "associatedType": "BAPIVENDOR_04",
+            "fields": [
+                { "name": "VENDOR",     "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 10, "decimals": 0, "offset": 0 },
+                { "name": "NAME",       "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 35, "decimals": 0, "offset": 10 },
+                { "name": "NAME_2",     "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 35, "decimals": 0, "offset": 45 },
+                { "name": "NAME_3",     "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 35, "decimals": 0, "offset": 80 },
+                { "name": "NAME_4",     "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 35, "decimals": 0, "offset": 115 },
+                { "name": "CITY",       "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 35, "decimals": 0, "offset": 150 },
+                { "name": "DISTRICT",   "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 35, "decimals": 0, "offset": 185 },
+                { "name": "PO_BOX",     "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 10, "decimals": 0, "offset": 220 },
+                { "name": "POBX_PCD",   "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 10, "decimals": 0, "offset": 230 },
+                { "name": "POSTL_CODE", "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 10, "decimals": 0, "offset": 240 },
+                { "name": "REGION",     "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 3,  "decimals": 0, "offset": 250 },
+                { "name": "STREET",     "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 35, "decimals": 0, "offset": 253 },
+                { "name": "COUNTRY",    "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 3,  "decimals": 0, "offset": 288 },
+                { "name": "COUNTRYISO", "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 2,  "decimals": 0, "offset": 291 },
+                { "name": "POBX_CTY",   "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 35, "decimals": 0, "offset": 293 },
+                { "name": "LANGU",      "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 1,  "decimals": 0, "offset": 328 },
+                { "name": "LANGU_ISO",  "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 2,  "decimals": 0, "offset": 329 },
+                { "name": "TELEPHONE",  "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 16, "decimals": 0, "offset": 331 },
+                { "name": "FORMOFADDR", "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 15, "decimals": 0, "offset": 347 },
+                { "name": "TELEPHONE2", "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 16, "decimals": 0, "offset": 362 }
+            ],
+            "defaultValue": "",
+            "parameterText": "General Vendor Master Data",
+            "optional": false
+        },
+        {
+            "name": "COMPANYDETAIL",
+            "nwrfcType": "RFCTYPE_STRUCTURE",
+            "abapType": "u",
+            "format": "",
+            "length": 269,
+            "decimals": 0,
+            "associatedType": "BAPIVENDOR_05",
+            "fields": [
+                { "name": "VENDOR",          "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 10,  "decimals": 0, "offset": 0 },
+                { "name": "COMP_CODE",        "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 4,   "decimals": 0, "offset": 10 },
+                { "name": "CLERK",            "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 2,   "decimals": 0, "offset": 14 },
+                { "name": "HD_OFFICE",        "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 10,  "decimals": 0, "offset": 16 },
+                { "name": "ALT_PAYEE",        "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 10,  "decimals": 0, "offset": 26 },
+                { "name": "CUVD_CLEAR",       "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 1,   "decimals": 0, "offset": 36 },
+                { "name": "PMNTTRMS",         "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 4,   "decimals": 0, "offset": 37 },
+                { "name": "ACT_AT_VEN",       "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 12,  "decimals": 0, "offset": 41 },
+                { "name": "VEND_USER",        "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 15,  "decimals": 0, "offset": 53 },
+                { "name": "INTERNET",         "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 130, "decimals": 0, "offset": 68 },
+                { "name": "FAX",              "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 31,  "decimals": 0, "offset": 198 },
+                { "name": "PAYMENT_METHODS",  "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 10,  "decimals": 0, "offset": 229 },
+                { "name": "TEL",              "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "", "length": 30,  "decimals": 0, "offset": 239 }
+            ],
+            "defaultValue": "",
+            "parameterText": "Company Code Vendor Data",
+            "optional": false
+        },
+        {
+            "name": "RETURN",
+            "nwrfcType": "RFCTYPE_STRUCTURE",
+            "abapType": "u",
+            "format": "",
+            "length": 470,
+            "decimals": 0,
+            "associatedType": "BAPIRET1",
+            "fields": [
+                { "name": "TYPE",       "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "",         "length": 1,   "decimals": 0, "offset": 0 },
+                { "name": "ID",         "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "",         "length": 20,  "decimals": 0, "offset": 1 },
+                { "name": "NUMBER",     "nwrfcType": "RFCTYPE_NUM",  "abapType": "n", "format": "",         "length": 3,   "decimals": 0, "offset": 21 },
+                { "name": "MESSAGE",    "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "",         "length": 220, "decimals": 0, "offset": 24 },
+                { "name": "LOG_NO",     "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "",         "length": 20,  "decimals": 0, "offset": 244 },
+                { "name": "LOG_MSG_NO", "nwrfcType": "RFCTYPE_NUM",  "abapType": "n", "format": "",         "length": 6,   "decimals": 0, "offset": 264 },
+                { "name": "MESSAGE_V1", "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "",         "length": 50,  "decimals": 0, "offset": 270 },
+                { "name": "MESSAGE_V2", "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "",         "length": 50,  "decimals": 0, "offset": 320 },
+                { "name": "MESSAGE_V3", "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "",         "length": 50,  "decimals": 0, "offset": 370 },
+                { "name": "MESSAGE_V4", "nwrfcType": "RFCTYPE_CHAR", "abapType": "c", "format": "",         "length": 50,  "decimals": 0, "offset": 420 }
+            ],
+            "defaultValue": "",
+            "parameterText": "Return Messages",
+            "optional": false
+        }
+    ],
+    "changing": [],
+    "table": []
+}

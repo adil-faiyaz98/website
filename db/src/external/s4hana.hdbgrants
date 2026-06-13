@@ -1,0 +1,29 @@
+{
+  "s4hana-remote-source-access": {
+    "object_owner": {
+      "schema_privileges": [
+        {
+          "reference": "SAPHANADB",
+          "privileges": [
+            "SELECT",
+            "SELECT METADATA"
+          ],
+          "privileges_with_grant_option": [
+            "SELECT"
+          ]
+        }
+      ]
+    },
+    "application_user": {
+      "schema_privileges": [
+        {
+          "reference": "SAPHANADB",
+          "privileges": [
+            "SELECT",
+            "SELECT METADATA"
+          ]
+        }
+      ]
+    }
+  }
+}

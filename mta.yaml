@@ -1,0 +1,75 @@
+_schema-version: 3.3.0
+ID: vim_ecc_integration
+description: CAP application with SAP ECC/S4HANA remote table access via HANA synonyms.
+version: 1.0.0
+modules:
+- name: vim_ecc_integration-srv
+  type: nodejs
+  path: gen/srv
+  requires:
+  - name: vim_ecc_integration-auth
+  - name: vim_ecc_integration-db
+  - name: vim_ecc_integration-connectivity
+  - name: vim_ecc_integration-destination
+  provides:
+  - name: srv-api
+    properties:
+      srv-url: ${default-url}
+  parameters:
+    buildpack: nodejs_buildpack
+    disk-quota: 512M
+    instances: 1
+    memory: 256M
+  build-parameters:
+    builder: npm-ci
+- name: vim_ecc_integration-db-deployer
+  type: hdb
+  path: gen/db
+  requires:
+  - name: vim_ecc_integration-db
+    properties:
+      TARGET_CONTAINER: ~{hdi-container-name}
+  - name: s4hana-remote-source-access
+  parameters:
+    buildpack: nodejs_buildpack
+resources:
+- name: vim_ecc_integration-auth
+  type: org.cloudfoundry.managed-service
+  parameters:
+    config:
+      oauth2-configuration:
+        credential-types:
+        - binding-secret
+        - x509
+      tenant-mode: dedicated
+      xsappname: vim-ecc-integration-${space}
+    path: ./xs-security.json
+    service: xsuaa
+    service-plan: application
+- name: vim_ecc_integration-db
+  type: com.sap.xs.hdi-container
+  parameters:
+    service: hana
+    service-plan: hdi-shared
+  properties:
+    hdi-container-name: ${service-name}
+- name: s4hana-remote-source-access
+  type: org.cloudfoundry.existing-service
+- name: vim_ecc_integration-connectivity
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: connectivity
+    service-plan: lite
+- name: vim_ecc_integration-destination
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: destination
+    service-plan: lite
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm ci
+    - npx cds build --production

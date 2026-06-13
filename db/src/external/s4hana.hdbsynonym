@@ -1,0 +1,35 @@
+{
+  "S4HANA_TAXKEYS": {
+    "target": { "schema": "SAPHANADB", "object": "T007A" }
+  },
+  "S4HANA_TAXCODETEXTS": {
+    "target": { "schema": "SAPHANADB", "object": "T007S" }
+  },
+  "S4HANA_PAYMENTMETHODTEXTS": {
+    "target": { "schema": "SAPHANADB", "object": "T042T" }
+  },
+  "S4HANA_PAYMENTMETHODSUPPTEXTS": {
+    "target": { "schema": "SAPHANADB", "object": "TVZBT" }
+  },
+  "S4HANA_PAYMENTTERMS": {
+    "target": { "schema": "SAPHANADB", "object": "T042Z" }
+  },
+  "S4HANA_PAYMENTTERMSTEXTS": {
+    "target": { "schema": "SAPHANADB", "object": "T052T" }
+  },
+  "S4HANA_PAYMENTTERMSADDITIONAL": {
+    "target": { "schema": "SAPHANADB", "object": "T052U" }
+  },
+  "S4HANA_TAXJURISDICTION": {
+    "target": { "schema": "SAPHANADB", "object": "TTXJ" }
+  },
+  "S4HANA_TAXJURISDICTIONTEXTS": {
+    "target": { "schema": "SAPHANADB", "object": "TTXJT" }
+  },
+  "S4HANA_PAYMENTBLOCKTEXTS": {
+    "target": { "schema": "SAPHANADB", "object": "TVZBT" }
+  },
+  "S4HANA_PAYMENTMETHODS": {
+    "target": { "schema": "SAPHANADB", "object": "T042Z" }
+  }
+}

@@ -1,0 +1,144 @@
+@baseUrl = http://localhost:4004/s4hana-remote
+
+### Get Company Codes
+
+GET {{baseUrl}}/getCompanyCodes()
+
+###
+
+### Get Cost Centers (all optional)
+GET {{baseUrl}}/getCostCenters(COMPANYCODE='1000',COMPANYCODE_TO='',CONTROLLINGAREA='1000',CONTROLLINGAREA_TO='',COSTCENTER='',COSTCENTERGROUP='',COSTCENTER_TO='',PERSON_IN_CHARGE='',PERSON_IN_CHARGE_TO='',PERSON_IN_CHARGE_USER_FROM='',PERSON_IN_CHARGE_USER_TO='')
+
+###
+
+### Get GL Accounts (COMPANYCODE required)
+GET {{baseUrl}}/getGLAccounts(COMPANYCODE='1000')
+
+###
+
+### Get GL Accounts with language
+GET {{baseUrl}}/getGLAccounts(COMPANYCODE='1000',LANGUAGE='E',LANGUAGE_ISO='EN')
+
+###
+
+### Get Internal Orders (all optional)
+GET {{baseUrl}}/getInternalOrders()
+
+###
+
+### Get Internal Orders filtered by Controlling Area
+GET {{baseUrl}}/getInternalOrders(CONTROLLING_AREA='1000')
+
+###
+
+### Get Internal Orders filtered by Order Type
+
+GET {{baseUrl}}/getInternalOrders(CONTROLLING_AREA='1000',ORDER_TYPE='0400')
+
+###
+
+### Get Currencies
+
+GET {{baseUrl}}/getCurrencies()
+
+###
+
+### Get PO List (all optional)
+GET {{baseUrl}}/getPOList()
+
+###
+
+### Get PO List - items for release only
+GET {{baseUrl}}/getPOList(ITEMS_FOR_RELEASE='X')
+
+###
+
+### Get PO Line Items (purchaseOrder required)
+GET {{baseUrl}}/getPOLineItems(purchaseOrder='4500000001')
+
+###
+
+### Get Tax Codes for US (language defaults to E)
+
+GET {{baseUrl}}/getTaxCodes(country='CA')
+
+###
+
+### Get Tax Codes for CA with language
+GET {{baseUrl}}/getTaxCodes(country='CA',language='E')
+
+###
+
+### Get Tax Codes for GB
+GET {{baseUrl}}/getTaxCodes(country='GB')
+
+###
+
+### --- Entities (direct table access) ---
+
+### Tax Keys
+GET {{baseUrl}}/TaxKeys
+
+###
+
+### Tax Keys filtered by KALSM
+GET {{baseUrl}}/TaxKeys?$filter=KALSM eq 'TAXUS'
+
+###
+
+### Tax Code Texts
+GET {{baseUrl}}/TaxCodeTexts?$filter=KALSM eq 'TAXUS' and SPRAS eq 'E'
+
+###
+
+### Payment Terms
+GET {{baseUrl}}/PaymentTerms
+
+###
+
+### Payment Terms Texts
+GET {{baseUrl}}/PaymentTermsTexts
+
+###
+
+### Payment Terms Additional
+GET {{baseUrl}}/PaymentTermsAdditional?$filter=SPRAS eq 'E'
+
+###
+
+### Payment Method Texts
+GET {{baseUrl}}/PaymentMethodTexts
+
+###
+
+### Payment Method Supp Texts
+GET {{baseUrl}}/PaymentMethodSuppTexts
+
+###
+
+### Tax Jurisdiction
+GET {{baseUrl}}/TaxJurisdiction
+
+###
+
+### Tax Jurisdiction Texts
+GET {{baseUrl}}/TaxJurisdictionTexts?$filter=KALSM eq 'TAXUS' and SPRAS eq 'E'
+
+###
+
+### --- Tax Jurisdiction Functions ---
+
+### Get Tax Jurisdictions for US (language defaults to E)
+
+GET {{baseUrl}}/getTaxJurisdictions(country='CA')
+
+###
+
+### Get Tax Jurisdictions for CA with language
+
+GET {{baseUrl}}/getTaxJurisdictions(country='US',language='E')
+
+###
+
+### Get Tax Jurisdictions for GB
+GET {{baseUrl}}/getTaxJurisdictions(country='GB')

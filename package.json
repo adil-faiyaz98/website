@@ -1,0 +1,42 @@
+{
+  "name": "vim_ecc_integration",
+  "version": "1.0.0",
+  "dependencies": {
+    "@cap-js/hana": "^2",
+    "@sap-rfc/node-rfc-library": "^1.1.2",
+    "@sap/cds": "^9",
+    "@sap/cds-rfc": "^1.4.2",
+    "@sap/xssec": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2.4",
+    "@sap/cds-dk": "^9"
+  },
+  "scripts": {
+    "start": "cds-serve"
+  },
+  "private": true,
+  "cds": {
+    "requires": {
+      "[production]": {
+        "auth": "xsuaa"
+      },
+      "[hybrid]": {
+        "db": {
+          "kind": "hana"
+        }
+      },
+      "connectivity": true,
+      "destinations": true,
+      "S4RFC": {
+        "kind": "rfc",
+        "model": "srv/external/S4RFC",
+        "[production]": {
+          "credentials": {
+            "destination": "S4RFC"
+          }
+        }
+      }
+    }
+  }
+}
