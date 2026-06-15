@@ -39,8 +39,8 @@ service S4HANARemoteService {
   @readonly entity TaxKeys               as projection on s4hana.TaxKeys;
   @readonly entity TaxCodeTexts          as projection on s4hana.TaxCodeTexts;
   @readonly entity PaymentMethodTexts    as projection on s4hana.PaymentMethodTexts;
-  @readonly entity PaymentMethodSuppTexts as projection on s4hana.PaymentMethodSuppTexts;
-  @readonly entity PaymentTerms          as projection on s4hana.PaymentTerms;
+  //@readonly entity PaymentMethodSuppTexts as projection on s4hana.PaymentMethodSuppTexts;
+  //@readonly entity PaymentTerms          as projection on s4hana.PaymentTerms;
   @readonly entity PaymentTermsTexts     as projection on s4hana.PaymentTermsTexts;
   @readonly entity PaymentTermsAdditional as projection on s4hana.PaymentTermsAdditional;
   @readonly entity TaxJurisdiction       as projection on s4hana.TaxJurisdiction;

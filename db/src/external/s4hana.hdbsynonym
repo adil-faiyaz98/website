@@ -8,12 +8,6 @@
   "S4HANA_PAYMENTMETHODTEXTS": {
     "target": { "schema": "SAPHANADB", "object": "T042T" }
   },
-  "S4HANA_PAYMENTMETHODSUPPTEXTS": {
-    "target": { "schema": "SAPHANADB", "object": "TVZBT" }
-  },
-  "S4HANA_PAYMENTTERMS": {
-    "target": { "schema": "SAPHANADB", "object": "T042Z" }
-  },
   "S4HANA_PAYMENTTERMSTEXTS": {
     "target": { "schema": "SAPHANADB", "object": "T052T" }
   },

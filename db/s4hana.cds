@@ -37,15 +37,15 @@ entity PaymentMethodTexts {
 }
 
 // TVZBT - Payment Block Reason Texts (also backing PaymentBlockTexts)
-@cds.persistence.exists
+/*@cds.persistence.exists
 entity PaymentMethodSuppTexts {
   key SPRAS  : String(1);
   key ZTERM  : String(4);
       VTEXT  : String(30);
-}
+}*/
 
-// T042Z - Payment Methods for Countries
-@cds.persistence.exists
+// T042Z - Payment Methods for Countries (duplicate of PaymentMethods, synonym removed)
+/*@cds.persistence.exists
 entity PaymentTerms {
   key LAND1      : String(3);
   key ZLSCH      : String(1);
@@ -72,7 +72,7 @@ entity PaymentTerms {
       XSWEC      : String(1);
       TXTSL      : String(2);
       ZLSTN      : String(6);
-}
+}*/
 
 // T052T - Payment Terms URL Texts
 @cds.persistence.exists
