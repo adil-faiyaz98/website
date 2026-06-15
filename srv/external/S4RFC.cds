@@ -1,4 +1,4 @@
-/* checksum : dac0d3457c464a69ce136b43f7af9305 */
+/* checksum : 9b051c743180d136b58c754f85387849 */
 @cds.external : true
 @protocol : 'rfc'
 service S4RFC {
@@ -237,21 +237,125 @@ service S4RFC {
   };
 
   action BBP_VENDOR_GETLIST(
-    /** Company Code */
     @RFCParameterType : 'Import'
     COMP_CODE : String(4) not null,
-    /** List of Vendors */
     @RFCParameterType : 'Table'
     VENDOR : many DDIC.BBP_CREDIT
   ) returns BBP_VENDOR_GETLIST.ResultType;
 
   type BBP_VENDOR_GETLIST.ResultType {
-    /** Return Parameter */
     @RFCParameterType : 'Export'
     RETURN : DDIC.BAPIRETURN;
-    /** List of Vendors */
     @RFCParameterType : 'Table'
     VENDOR : many DDIC.BBP_CREDIT;
+  };
+
+  action BAPI_ACC_DOCUMENT_POST(
+    /** Additional Contract Accounts Recievable and Payable Header Line */
+    @RFCParameterType : 'Import'
+    CONTRACTHEADER : DDIC.BAPIACCAHD,
+    /** One-time customer */
+    @RFCParameterType : 'Import'
+    CUSTOMERCPD : DDIC.BAPIACPA09,
+    /** Header */
+    @RFCParameterType : 'Import'
+    DOCUMENTHEADER : DDIC.BAPIACHE09 not null,
+    /** G/L account item */
+    @RFCParameterType : 'Table'
+    ACCOUNTGL : many DDIC.BAPIACGL09,
+    /** Vendor Item */
+    @RFCParameterType : 'Table'
+    ACCOUNTPAYABLE : many DDIC.BAPIACAP09,
+    /** Customer Item */
+    @RFCParameterType : 'Table'
+    ACCOUNTRECEIVABLE : many DDIC.BAPIACAR09,
+    /** Tax item */
+    @RFCParameterType : 'Table'
+    ACCOUNTTAX : many DDIC.BAPIACTX09,
+    /** Withholding tax information for FI Interface */
+    @RFCParameterType : 'Table'
+    ACCOUNTWT : many DDIC.BAPIACWT09,
+    /** Additional Contract Accounts Recieviable and Payable Document Line Item */
+    @RFCParameterType : 'Table'
+    CONTRACTITEM : many DDIC.BAPIACCAIT,
+    /** CO-PA Account Assignment Characteristics */
+    @RFCParameterType : 'Table'
+    CRITERIA : many DDIC.BAPIACKEC9,
+    /** Currency Items */
+    @RFCParameterType : 'Table'
+    CURRENCYAMOUNT : many DDIC.BAPIACCR09,
+    /** Container for 'Customer Exit' Parameter */
+    @RFCParameterType : 'Table'
+    EXTENSION1 : many DDIC.BAPIACEXTC,
+    /** Reference Structure for BAPI Parameters EXTENSIONIN/EXTENSIONOUT */
+    @RFCParameterType : 'Table'
+    EXTENSION2 : many DDIC.BAPIPAREX,
+    /** Payment Card Information */
+    @RFCParameterType : 'Table'
+    PAYMENTCARD : many DDIC.BAPIACPC09,
+    /** Real Estate Account Assignment Data */
+    @RFCParameterType : 'Table'
+    REALESTATE : many DDIC.BAPIACRE09,
+    /** Return parameter */
+    @RFCParameterType : 'Table'
+    RETURN : many DDIC.BAPIRET2,
+    /** CO-PA Account Assignment Value Fields */
+    @RFCParameterType : 'Table'
+    VALUEFIELD : many DDIC.BAPIACKEV9
+  ) returns BAPI_ACC_DOCUMENT_POST.ResultType;
+
+  type BAPI_ACC_DOCUMENT_POST.ResultType {
+    /** Reference key */
+    @RFCParameterType : 'Export'
+    OBJ_KEY : String(20);
+    /** Logical system of source document */
+    @RFCParameterType : 'Export'
+    OBJ_SYS : String(10);
+    /** Reference procedure */
+    @RFCParameterType : 'Export'
+    OBJ_TYPE : String(5);
+    /** G/L account item */
+    @RFCParameterType : 'Table'
+    ACCOUNTGL : many DDIC.BAPIACGL09;
+    /** Vendor Item */
+    @RFCParameterType : 'Table'
+    ACCOUNTPAYABLE : many DDIC.BAPIACAP09;
+    /** Customer Item */
+    @RFCParameterType : 'Table'
+    ACCOUNTRECEIVABLE : many DDIC.BAPIACAR09;
+    /** Tax item */
+    @RFCParameterType : 'Table'
+    ACCOUNTTAX : many DDIC.BAPIACTX09;
+    /** Withholding tax information for FI Interface */
+    @RFCParameterType : 'Table'
+    ACCOUNTWT : many DDIC.BAPIACWT09;
+    /** Additional Contract Accounts Recieviable and Payable Document Line Item */
+    @RFCParameterType : 'Table'
+    CONTRACTITEM : many DDIC.BAPIACCAIT;
+    /** CO-PA Account Assignment Characteristics */
+    @RFCParameterType : 'Table'
+    CRITERIA : many DDIC.BAPIACKEC9;
+    /** Currency Items */
+    @RFCParameterType : 'Table'
+    CURRENCYAMOUNT : many DDIC.BAPIACCR09;
+    /** Container for 'Customer Exit' Parameter */
+    @RFCParameterType : 'Table'
+    EXTENSION1 : many DDIC.BAPIACEXTC;
+    /** Reference Structure for BAPI Parameters EXTENSIONIN/EXTENSIONOUT */
+    @RFCParameterType : 'Table'
+    EXTENSION2 : many DDIC.BAPIPAREX;
+    /** Payment Card Information */
+    @RFCParameterType : 'Table'
+    PAYMENTCARD : many DDIC.BAPIACPC09;
+    /** Real Estate Account Assignment Data */
+    @RFCParameterType : 'Table'
+    REALESTATE : many DDIC.BAPIACRE09;
+    /** Return parameter */
+    @RFCParameterType : 'Table'
+    RETURN : many DDIC.BAPIRET2;
+    /** CO-PA Account Assignment Value Fields */
+    @RFCParameterType : 'Table'
+    VALUEFIELD : many DDIC.BAPIACKEV9;
   };
 
   type DDIC.BAPIRETURN {
@@ -929,6 +1033,612 @@ service S4RFC {
   type DDIC.BBP_CREDIT {
     VENDOR_NO : String(10);
     NAME : String(30);
+  };
+
+  type DDIC.BAPIACCAHD {
+    DOC_NO : String(12);
+    DOC_TYPE_CA : String(2);
+    RES_KEY : String(30);
+    FIKEY : String(12);
+    PAYMENT_FORM_REF : String(30);
+  };
+
+  type DDIC.BAPIACPA09 {
+    NAME : String(35);
+    NAME_2 : String(35);
+    NAME_3 : String(35);
+    NAME_4 : String(35);
+    POSTL_CODE : String(10);
+    CITY : String(35);
+    COUNTRY : String(3);
+    COUNTRY_ISO : String(2);
+    STREET : String(35);
+    PO_BOX : String(10);
+    POBX_PCD : String(10);
+    POBK_CURAC : String(16);
+    BANK_ACCT : String(18);
+    BANK_NO : String(15);
+    BANK_CTRY : String(3);
+    BANK_CTRY_ISO : String(2);
+    TAX_NO_1 : String(16);
+    TAX_NO_2 : String(11);
+    TAX : String(1);
+    EQUAL_TAX : String(1);
+    REGION : String(3);
+    CTRL_KEY : String(2);
+    INSTR_KEY : String(2);
+    DME_IND : String(1);
+    LANGU_ISO : String(2);
+    IBAN : String(34);
+    SWIFT_CODE : String(11);
+    TAX_NO_3 : String(18);
+    TAX_NO_4 : String(18);
+    TITLE : String(15);
+    TAX_NO_5 : String(60);
+    GLO_RE1_OT : String(140);
+    SOLE_PROP : String(1);
+    TAX_NO_TY : String(2);
+  };
+
+  type DDIC.BAPIACHE09 {
+    OBJ_TYPE : String(5);
+    OBJ_KEY : String(20);
+    OBJ_SYS : String(10);
+    BUS_ACT : String(4);
+    USERNAME : String(12);
+    HEADER_TXT : String(25);
+    COMP_CODE : String(4);
+    DOC_DATE : Date;
+    PSTNG_DATE : Date;
+    TRANS_DATE : Date;
+    @RFCAbapType : 'N'
+    FISC_YEAR : String(4);
+    @RFCAbapType : 'N'
+    FIS_PERIOD : String(2);
+    DOC_TYPE : String(2);
+    REF_DOC_NO : String(16);
+    AC_DOC_NO : String(10);
+    OBJ_KEY_R : String(20);
+    REASON_REV : String(2);
+    COMPO_ACC : String(4);
+    REF_DOC_NO_LONG : String(35);
+    ACC_PRINCIPLE : String(4);
+    NEG_POSTNG : String(1);
+    OBJ_KEY_INV : String(20);
+    BILL_CATEGORY : String(1);
+    VATDATE : Date;
+    INVOICE_REC_DATE : Date;
+    ECS_ENV : String(10);
+    PARTIAL_REV : String(1);
+    DOC_STATUS : String(1);
+    TAX_CALC_DATE : Date;
+    GLO_REF1_HD : String(80);
+    GLO_DAT1_HD : Date;
+    GLO_REF2_HD : String(25);
+    GLO_DAT2_HD : Date;
+    GLO_REF3_HD : String(25);
+    GLO_DAT3_HD : Date;
+    GLO_REF4_HD : String(50);
+    GLO_DAT4_HD : Date;
+    GLO_REF5_HD : String(50);
+    GLO_DAT5_HD : Date;
+    GLO_BP1_HD : String(10);
+    GLO_BP2_HD : String(10);
+    EV_POSTNG_CTRL : String(1);
+    LEDGER_GROUP : String(4);
+    PLANNED_REV_DATE : Date;
+    BUS_TRANSACTION_TYPE : String(4);
+    @RFCAbapType : 'N'
+    CLOSINGSTEP : String(3);
+    FULFILLDATE : Date;
+  };
+
+  type DDIC.BAPIACGL09 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    GL_ACCOUNT : String(10);
+    ITEM_TEXT : String(50);
+    STAT_CON : String(1);
+    LOG_PROC : String(6);
+    AC_DOC_NO : String(10);
+    REF_KEY_1 : String(12);
+    REF_KEY_2 : String(12);
+    REF_KEY_3 : String(20);
+    ACCT_KEY : String(3);
+    ACCT_TYPE : String(1);
+    DOC_TYPE : String(2);
+    COMP_CODE : String(4);
+    BUS_AREA : String(4);
+    FUNC_AREA : String(4);
+    PLANT : String(4);
+    @RFCAbapType : 'N'
+    FIS_PERIOD : String(2);
+    @RFCAbapType : 'N'
+    FISC_YEAR : String(4);
+    PSTNG_DATE : Date;
+    VALUE_DATE : Date;
+    FM_AREA : String(4);
+    CUSTOMER : String(10);
+    CSHDIS_IND : String(1);
+    VENDOR_NO : String(10);
+    ALLOC_NMBR : String(18);
+    TAX_CODE : String(2);
+    TAXJURCODE : String(15);
+    EXT_OBJECT_ID : String(34);
+    BUS_SCENARIO : String(16);
+    COSTOBJECT : String(12);
+    COSTCENTER : String(10);
+    ACTTYPE : String(6);
+    PROFIT_CTR : String(10);
+    PART_PRCTR : String(10);
+    NETWORK : String(12);
+    WBS_ELEMENT : String(24);
+    ORDERID : String(12);
+    @RFCAbapType : 'N'
+    ORDER_ITNO : String(4);
+    @RFCAbapType : 'N'
+    ROUTING_NO : String(10);
+    ACTIVITY : String(4);
+    COND_TYPE : String(4);
+    @RFCAbapType : 'N'
+    COND_COUNT : String(2);
+    @RFCAbapType : 'N'
+    COND_ST_NO : String(3);
+    FUND : String(10);
+    FUNDS_CTR : String(16);
+    CMMT_ITEM : String(14);
+    CO_BUSPROC : String(12);
+    ASSET_NO : String(12);
+    SUB_NUMBER : String(4);
+    BILL_TYPE : String(4);
+    SALES_ORD : String(10);
+    @RFCAbapType : 'N'
+    S_ORD_ITEM : String(6);
+    DISTR_CHAN : String(2);
+    DIVISION : String(2);
+    SALESORG : String(4);
+    SALES_GRP : String(3);
+    SALES_OFF : String(4);
+    SOLD_TO : String(10);
+    DE_CRE_IND : String(1);
+    P_EL_PRCTR : String(10);
+    XMFRW : String(1);
+    QUANTITY : Decimal;
+    BASE_UOM : String(3);
+    BASE_UOM_ISO : String(3);
+    INV_QTY : Decimal;
+    INV_QTY_SU : Decimal;
+    SALES_UNIT : String(3);
+    SALES_UNIT_ISO : String(3);
+    PO_PR_QNT : Decimal;
+    PO_PR_UOM : String(3);
+    PO_PR_UOM_ISO : String(3);
+    ENTRY_QNT : Decimal;
+    ENTRY_UOM : String(3);
+    ENTRY_UOM_ISO : String(3);
+    VOLUME : Decimal;
+    VOLUMEUNIT : String(3);
+    VOLUMEUNIT_ISO : String(3);
+    GROSS_WT : Decimal;
+    NET_WEIGHT : Decimal;
+    UNIT_OF_WT : String(3);
+    UNIT_OF_WT_ISO : String(3);
+    ITEM_CAT : String(1);
+    MATERIAL : String(18);
+    MATL_TYPE : String(4);
+    MVT_IND : String(1);
+    REVAL_IND : String(1);
+    ORIG_GROUP : String(4);
+    ORIG_MAT : String(1);
+    @RFCAbapType : 'N'
+    SERIAL_NO : String(2);
+    PART_ACCT : String(10);
+    TR_PART_BA : String(4);
+    TRADE_ID : String(6);
+    VAL_AREA : String(4);
+    VAL_TYPE : String(10);
+    ASVAL_DATE : Date;
+    PO_NUMBER : String(10);
+    @RFCAbapType : 'N'
+    PO_ITEM : String(5);
+    @RFCAbapType : 'N'
+    ITM_NUMBER : String(6);
+    COND_CATEGORY : String(1);
+    FUNC_AREA_LONG : String(16);
+    CMMT_ITEM_LONG : String(24);
+    GRANT_NBR : String(20);
+    CS_TRANS_T : String(3);
+    MEASURE : String(24);
+    SEGMENT : String(10);
+    PARTNER_SEGMENT : String(10);
+    RES_DOC : String(10);
+    @RFCAbapType : 'N'
+    RES_ITEM : String(3);
+    BILLING_PERIOD_START_DATE : Date;
+    BILLING_PERIOD_END_DATE : Date;
+    PPA_EX_IND : String(1);
+    FASTPAY : String(1);
+    PARTNER_GRANT_NBR : String(20);
+    BUDGET_PERIOD : String(10);
+    PARTNER_BUDGET_PERIOD : String(10);
+    PARTNER_FUND : String(10);
+    @RFCAbapType : 'N'
+    ITEMNO_TAX : String(6);
+    PAYMENT_TYPE : String(4);
+    EXPENSE_TYPE : String(4);
+    PROGRAM_PROFILE : String(10);
+    MATERIAL_LONG : String(40);
+    HOUSEBANKID : String(5);
+    HOUSEBANKACCTID : String(5);
+    @RFCAbapType : 'N'
+    PERSON_NO : String(8);
+    ACROBJ_TYPE : String(4);
+    ACROBJ_ID : String(32);
+    ACRSUBOBJ_ID : String(32);
+    ACRITEM_TYPE : String(11);
+    VALOBJTYPE : String(4);
+    VALOBJ_ID : String(32);
+    VALSUBOBJ_ID : String(32);
+    TAX_CALC_DATE : Date;
+    TAX_CALC_DT_FROM : Date;
+    SERVICE_DOC_TYPE : String(4);
+    SERVICE_DOC_ID : String(10);
+    @RFCAbapType : 'N'
+    SERVICE_DOC_ITEM_ID : String(6);
+    BDGT_ACCOUNT : String(10);
+    TAX_COUNTRY : String(3);
+    GLO_REF1 : String(50);
+    ACRLOGSYS : String(10);
+    ACRVALDAT : Date;
+    WORK_ITEM_ID : String(10);
+    BUSINESSPLACE : String(4);
+    JOINT_VENTURE : String(6);
+    RECOVERY_IND : String(2);
+    EQUITY_GROUP : String(3);
+  };
+
+  type DDIC.BAPIACAP09 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    VENDOR_NO : String(10);
+    GL_ACCOUNT : String(10);
+    REF_KEY_1 : String(12);
+    REF_KEY_2 : String(12);
+    REF_KEY_3 : String(20);
+    COMP_CODE : String(4);
+    BUS_AREA : String(4);
+    PMNTTRMS : String(4);
+    BLINE_DATE : Date;
+    DSCT_DAYS1 : Decimal;
+    DSCT_DAYS2 : Decimal;
+    NETTERMS : Decimal;
+    DSCT_PCT1 : Decimal;
+    DSCT_PCT2 : Decimal;
+    PYMT_METH : String(1);
+    PMTMTHSUPL : String(2);
+    PMNT_BLOCK : String(1);
+    SCBANK_IND : String(3);
+    SUPCOUNTRY : String(3);
+    SUPCOUNTRY_ISO : String(2);
+    BLLSRV_IND : String(1);
+    ALLOC_NMBR : String(18);
+    ITEM_TEXT : String(50);
+    PO_SUB_NO : String(11);
+    PO_CHECKDG : String(2);
+    PO_REF_NO : String(27);
+    W_TAX_CODE : String(2);
+    BUSINESSPLACE : String(4);
+    SECTIONCODE : String(4);
+    @RFCAbapType : 'N'
+    INSTR1 : String(2);
+    @RFCAbapType : 'N'
+    INSTR2 : String(2);
+    @RFCAbapType : 'N'
+    INSTR3 : String(2);
+    @RFCAbapType : 'N'
+    INSTR4 : String(2);
+    BRANCH : String(10);
+    PYMT_CUR : String(5);
+    PYMT_AMT : Decimal;
+    PYMT_CUR_ISO : String(3);
+    SP_GL_IND : String(1);
+    TAX_CODE : String(2);
+    TAX_DATE : Date;
+    TAXJURCODE : String(15);
+    ALT_PAYEE : String(10);
+    ALT_PAYEE_BANK : String(4);
+    PARTNER_BK : String(4);
+    BANK_ID : String(5);
+    PARTNER_GUID : String(32);
+    PROFIT_CTR : String(10);
+    FUND : String(10);
+    GRANT_NBR : String(20);
+    MEASURE : String(24);
+    HOUSEBANKACCTID : String(5);
+    BUDGET_PERIOD : String(10);
+    PPA_EX_IND : String(1);
+    PART_BUSINESSPLACE : String(5);
+    PAYMT_REF : String(30);
+    PYMT_AMT_LONG : Decimal;
+    BDGT_ACCOUNT : String(10);
+    GLO_REF1 : String(50);
+    TAX_COUNTRY : String(3);
+    VAT_REG_NO : String(20);
+    PAYT_RSN : String(4);
+    JOINT_VENTURE : String(6);
+    RECOVERY_IND : String(2);
+    EQUITY_GROUP : String(3);
+  };
+
+  type DDIC.BAPIACAR09 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    CUSTOMER : String(10);
+    GL_ACCOUNT : String(10);
+    REF_KEY_1 : String(12);
+    REF_KEY_2 : String(12);
+    REF_KEY_3 : String(20);
+    COMP_CODE : String(4);
+    BUS_AREA : String(4);
+    PMNTTRMS : String(4);
+    BLINE_DATE : Date;
+    DSCT_DAYS1 : Decimal;
+    DSCT_DAYS2 : Decimal;
+    NETTERMS : Decimal;
+    DSCT_PCT1 : Decimal;
+    DSCT_PCT2 : Decimal;
+    PYMT_METH : String(1);
+    PMTMTHSUPL : String(2);
+    PAYMT_REF : String(30);
+    DUNN_KEY : String(1);
+    DUNN_BLOCK : String(1);
+    PMNT_BLOCK : String(1);
+    VAT_REG_NO : String(20);
+    ALLOC_NMBR : String(18);
+    ITEM_TEXT : String(50);
+    PARTNER_BK : String(4);
+    SCBANK_IND : String(3);
+    BUSINESSPLACE : String(4);
+    SECTIONCODE : String(4);
+    BRANCH : String(10);
+    PYMT_CUR : String(5);
+    PYMT_CUR_ISO : String(3);
+    PYMT_AMT : Decimal;
+    C_CTR_AREA : String(4);
+    BANK_ID : String(5);
+    SUPCOUNTRY : String(3);
+    SUPCOUNTRY_ISO : String(2);
+    TAX_CODE : String(2);
+    TAXJURCODE : String(15);
+    TAX_DATE : Date;
+    SP_GL_IND : String(1);
+    PARTNER_GUID : String(32);
+    ALT_PAYEE : String(10);
+    ALT_PAYEE_BANK : String(4);
+    DUNN_AREA : String(2);
+    CASE_GUID : String(32);
+    PROFIT_CTR : String(10);
+    FUND : String(10);
+    GRANT_NBR : String(20);
+    MEASURE : String(24);
+    HOUSEBANKACCTID : String(5);
+    RES_DOC : String(10);
+    @RFCAbapType : 'N'
+    RES_ITEM : String(3);
+    FUND_LONG : String(20);
+    DISPUTE_IF_TYPE : String(1);
+    BUDGET_PERIOD : String(10);
+    PAYS_PROV : String(4);
+    PAYS_TRAN : String(35);
+    SEPA_MANDATE_ID : String(35);
+    PART_BUSINESSPLACE : String(5);
+    REP_COUNTRY_EU : String(3);
+    PYMT_AMT_LONG : Decimal;
+    SALES_ORD : String(10);
+    @RFCAbapType : 'N'
+    S_ORD_ITEM : String(6);
+    BDGT_ACCOUNT : String(10);
+    GLO_REF1 : String(50);
+    TAX_COUNTRY : String(3);
+    BILLING_IND : String(2);
+    PAYT_RSN : String(4);
+    EU_TRIANG_DEAL : String(1);
+    JOINT_VENTURE : String(6);
+    RECOVERY_IND : String(2);
+    EQUITY_GROUP : String(3);
+  };
+
+  type DDIC.BAPIACTX09 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    GL_ACCOUNT : String(10);
+    COND_KEY : String(4);
+    ACCT_KEY : String(3);
+    TAX_CODE : String(2);
+    TAX_RATE : Decimal;
+    TAX_DATE : Date;
+    TAXJURCODE : String(15);
+    TAXJURCODE_DEEP : String(15);
+    TAXJURCODE_LEVEL : String(1);
+    @RFCAbapType : 'N'
+    ITEMNO_TAX : String(6);
+    DIRECT_TAX : String(1);
+    TAX_CALC_DT_FROM : Date;
+    TAX_COUNTRY : String(3);
+  };
+
+  type DDIC.BAPIACWT09 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    WT_TYPE : String(2);
+    WT_CODE : String(2);
+    BAS_AMT_LC : Decimal;
+    BAS_AMT_TC : Decimal;
+    BAS_AMT_L2 : Decimal;
+    BAS_AMT_L3 : Decimal;
+    MAN_AMT_LC : Decimal;
+    MAN_AMT_TC : Decimal;
+    MAN_AMT_L2 : Decimal;
+    MAN_AMT_L3 : Decimal;
+    AWH_AMT_LC : Decimal;
+    AWH_AMT_TC : Decimal;
+    AWH_AMT_L2 : Decimal;
+    AWH_AMT_L3 : Decimal;
+    BAS_AMT_IND : String(1);
+    MAN_AMT_IND : String(1);
+    BAS_AMT_LC_LONG : Decimal;
+    BAS_AMT_TC_LONG : Decimal;
+    BAS_AMT_L2_LONG : Decimal;
+    BAS_AMT_L3_LONG : Decimal;
+    MAN_AMT_LC_LONG : Decimal;
+    MAN_AMT_TC_LONG : Decimal;
+    MAN_AMT_L2_LONG : Decimal;
+    MAN_AMT_L3_LONG : Decimal;
+    AWH_AMT_LC_LONG : Decimal;
+    AWH_AMT_TC_LONG : Decimal;
+    AWH_AMT_L2_LONG : Decimal;
+    AWH_AMT_L3_LONG : Decimal;
+  };
+
+  type DDIC.BAPIACCAIT {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    CONT_ACCT : String(12);
+    MAIN_TRANS : String(4);
+    SUB_TRANS : String(4);
+    FUNC_AREA : String(4);
+    FM_AREA : String(4);
+    CMMT_ITEM : String(14);
+    FUNDS_CTR : String(16);
+    FUND : String(10);
+    AGREEMENT_GUID : Binary(16);
+    FUNC_AREA_LONG : String(16);
+    CMMT_ITEM_LONG : String(24);
+    GRANT_NBR : String(20);
+    VTREF : String(20);
+    VTREF_GUID : Binary(16);
+    EXT_OBJECT_ID : String(34);
+    BUS_SCENARIO : String(16);
+    REFERENCE_NO : String(16);
+    BUDGET_PERIOD : String(10);
+  };
+
+  type DDIC.BAPIACKEC9 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    FIELDNAME : String(30);
+    CHARACTER : String(18);
+    PROD_NO_LONG : String(40);
+    CUST_CHAR_VALUE_LONG : String(40);
+  };
+
+  type DDIC.BAPIACCR09 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    CURR_TYPE : String(2);
+    CURRENCY : String(5);
+    CURRENCY_ISO : String(3);
+    AMT_DOCCUR : Decimal;
+    EXCH_RATE : Decimal;
+    EXCH_RATE_V : Decimal;
+    AMT_BASE : Decimal;
+    DISC_BASE : Decimal;
+    DISC_AMT : Decimal;
+    TAX_AMT : Decimal;
+    AMT_DOCCUR_LONG : Decimal;
+    AMT_BASE_LONG : Decimal;
+    DISC_BASE_LONG : Decimal;
+    DISC_AMT_LONG : Decimal;
+    TAX_AMT_LONG : Decimal;
+  };
+
+  type DDIC.BAPIACEXTC {
+    FIELD1 : String(250);
+    FIELD2 : String(250);
+    FIELD3 : String(250);
+    FIELD4 : String(250);
+  };
+
+  type DDIC.BAPIPAREX {
+    STRUCTURE : String(30);
+    VALUEPART1 : String(240);
+    VALUEPART2 : String(240);
+    VALUEPART3 : String(240);
+    VALUEPART4 : String(240);
+  };
+
+  type DDIC.BAPIACPC09 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    CC_GLACCOUNT : String(10);
+    CC_TYPE : String(4);
+    CC_NUMBER : String(25);
+    CC_SEQ_NO : String(10);
+    CC_VALID_F : Date;
+    CC_VALID_T : Date;
+    CC_NAME : String(40);
+    DATAORIGIN : String(1);
+    AUTHAMOUNT : Decimal;
+    CURRENCY : String(5);
+    CURRENCY_ISO : String(3);
+    CC_AUTTH_NO : String(10);
+    AUTH_REFNO : String(15);
+    AUTH_DATE : Date;
+    AUTH_TIME : Time;
+    MERCHIDCL : String(15);
+    POINT_OF_RECEIPT : String(10);
+    TERMINAL : String(10);
+    CCTYP : String(2);
+    AUTHAMOUNT_LONG : Decimal;
+  };
+
+  type DDIC.BAPIACRE09 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    BUSINESS_ENTITY : String(8);
+    BUILDING : String(8);
+    PROPERTY : String(8);
+    RENTAL_OBJECT : String(8);
+    SERV_CHARGE_KEY : String(4);
+    SETTLEMENT_UNIT : String(5);
+    CONTRACT_NO : String(13);
+    FLOW_TYPE : String(4);
+    CORR_ITEM : String(10);
+    REF_DATE : Date;
+    OPTION_RATE : Decimal;
+  };
+
+  type DDIC.BAPIRET2 {
+    TYPE : String(1);
+    ID : String(20);
+    @RFCAbapType : 'N'
+    NUMBER : String(3);
+    MESSAGE : String(220);
+    LOG_NO : String(20);
+    @RFCAbapType : 'N'
+    LOG_MSG_NO : String(6);
+    MESSAGE_V1 : String(50);
+    MESSAGE_V2 : String(50);
+    MESSAGE_V3 : String(50);
+    MESSAGE_V4 : String(50);
+    PARAMETER : String(32);
+    ROW : Integer;
+    FIELD : String(30);
+    SYSTEM : String(10);
+  };
+
+  type DDIC.BAPIACKEV9 {
+    @RFCAbapType : 'N'
+    ITEMNO_ACC : String(10);
+    FIELDNAME : String(30);
+    CURR_TYPE : String(2);
+    CURRENCY : String(5);
+    CURRENCY_ISO : String(3);
+    AMT_VALCOM : Decimal;
+    BASE_UOM : String(3);
+    BASE_UOM_ISO : String(3);
+    QUA_VALCOM : Decimal;
+    AMT_VALCOM_LONG : Decimal;
   };
 };
 
