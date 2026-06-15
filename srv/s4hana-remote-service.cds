@@ -9,6 +9,8 @@ using {S4RFC.BAPI_GL_ACC_GETLIST.ResultType as ResultTypeGLAccounts} from './ext
 using {S4RFC.BAPI_INTERNALORDER_GETLIST.ResultType as ResultTypeInternalOrders} from './external/S4RFC';
 using {S4RFC.BAPI_CURRENCY_GETLIST.ResultType as ResultTypeCurrencies} from './external/S4RFC';
 using {S4RFC.BAPI_PO_GET_LIST.ResultType as ResultTypePOList} from './external/S4RFC';
+using {S4RFC.BAPI_ACC_DOCUMENT_POST.ResultType as ResultTypeAccDocumentPost} from './external/S4RFC';
+using {S4RFC.BINARY_RELATION_CREATE_COMMIT.ResultType as ResultTypeBinaryRelation} from './external/S4RFC';
 
 @path: '/s4hana-remote'
 service S4HANARemoteService {
@@ -142,4 +144,30 @@ service S4HANARemoteService {
     ORDER_TYPE            : String(4),
     RESP_COST_CENTER      : String(10)
   ) returns ResultTypeInternalOrders;
+
+  action postAccDocument(
+    DOCUMENTHEADER    : S4RFC.DDIC.BAPIACHE09 not null,
+    CONTRACTHEADER    : S4RFC.DDIC.BAPIACCAHD,
+    CUSTOMERCPD       : S4RFC.DDIC.BAPIACPA09,
+    ACCOUNTGL         : array of S4RFC.DDIC.BAPIACGL09,
+    ACCOUNTPAYABLE    : array of S4RFC.DDIC.BAPIACAP09,
+    ACCOUNTRECEIVABLE : array of S4RFC.DDIC.BAPIACAR09,
+    ACCOUNTTAX        : array of S4RFC.DDIC.BAPIACTX09,
+    ACCOUNTWT         : array of S4RFC.DDIC.BAPIACWT09,
+    CONTRACTITEM      : array of S4RFC.DDIC.BAPIACCAIT,
+    CRITERIA          : array of S4RFC.DDIC.BAPIACKEC9,
+    CURRENCYAMOUNT    : array of S4RFC.DDIC.BAPIACCR09,
+    EXTENSION1        : array of S4RFC.DDIC.BAPIACEXTC,
+    EXTENSION2        : array of S4RFC.DDIC.BAPIPAREX,
+    PAYMENTCARD       : array of S4RFC.DDIC.BAPIACPC09,
+    REALESTATE        : array of S4RFC.DDIC.BAPIACRE09,
+    VALUEFIELD        : array of S4RFC.DDIC.BAPIACKEV9
+  ) returns ResultTypeAccDocumentPost;
+
+  action createBinaryRelation(
+    OBJ_ROLEA     : S4RFC.DDIC.BORIDENT not null,
+    OBJ_ROLEB     : S4RFC.DDIC.BORIDENT not null,
+    RELATIONTYPE  : String(4) not null,
+    BINREL_ATTRIB : array of S4RFC.DDIC.BRELATTR
+  ) returns ResultTypeBinaryRelation;
 }

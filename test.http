@@ -142,3 +142,76 @@ GET {{baseUrl}}/getTaxJurisdictions(country='US',language='E')
 
 ### Get Tax Jurisdictions for GB
 GET {{baseUrl}}/getTaxJurisdictions(country='GB')
+
+###
+
+### --- Posting Actions ---
+
+### Post Accounting Document (BAPI_ACC_DOCUMENT_POST)
+POST {{baseUrl}}/postAccDocument
+Content-Type: application/json
+
+{
+  "DOCUMENTHEADER": {
+    "OBJ_TYPE": "BKPFF",
+    "BUS_ACT": "RFBU",
+    "USERNAME": "TESTUSER",
+    "COMP_CODE": "1000",
+    "DOC_DATE": "2026-06-15",
+    "PSTNG_DATE": "2026-06-15",
+    "DOC_TYPE": "KR",
+    "REF_DOC_NO": "INV-001",
+    "HEADER_TXT": "Test FI Document"
+  },
+  "ACCOUNTGL": [
+    {
+      "ITEMNO_ACC": "0000000001",
+      "GL_ACCOUNT": "0000400000",
+      "COMP_CODE": "1000",
+      "ITEM_TEXT": "GL line item"
+    }
+  ],
+  "ACCOUNTPAYABLE": [
+    {
+      "ITEMNO_ACC": "0000000002",
+      "VENDOR_NO": "0000100000",
+      "COMP_CODE": "1000",
+      "ITEM_TEXT": "Vendor line item"
+    }
+  ],
+  "CURRENCYAMOUNT": [
+    {
+      "ITEMNO_ACC": "0000000001",
+      "CURR_TYPE": "00",
+      "CURRENCY": "USD",
+      "AMT_DOCCUR": 100.00
+    },
+    {
+      "ITEMNO_ACC": "0000000002",
+      "CURR_TYPE": "00",
+      "CURRENCY": "USD",
+      "AMT_DOCCUR": -100.00
+    }
+  ]
+}
+
+###
+
+### Create Binary Relation (BINARY_RELATION_CREATE_COMMIT)
+POST {{baseUrl}}/createBinaryRelation
+Content-Type: application/json
+
+{
+  "OBJ_ROLEA": {
+    "OBJKEY": "0000000001",
+    "OBJTYPE": "BUS2081",
+    "LOGSYS": ""
+  },
+  "OBJ_ROLEB": {
+    "OBJKEY": "DOC_001",
+    "OBJTYPE": "MESSAGE",
+    "LOGSYS": ""
+  },
+  "RELATIONTYPE": "ATTA",
+  "BINREL_ATTRIB": []
+}

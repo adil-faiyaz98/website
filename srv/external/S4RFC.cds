@@ -1,4 +1,4 @@
-/* checksum : 9b051c743180d136b58c754f85387849 */
+/* checksum : 24c63fb6be8c6f3024c79212abb50128 */
 @cds.external : true
 @protocol : 'rfc'
 service S4RFC {
@@ -251,111 +251,101 @@ service S4RFC {
   };
 
   action BAPI_ACC_DOCUMENT_POST(
-    /** Additional Contract Accounts Recievable and Payable Header Line */
     @RFCParameterType : 'Import'
     CONTRACTHEADER : DDIC.BAPIACCAHD,
-    /** One-time customer */
     @RFCParameterType : 'Import'
     CUSTOMERCPD : DDIC.BAPIACPA09,
-    /** Header */
     @RFCParameterType : 'Import'
     DOCUMENTHEADER : DDIC.BAPIACHE09 not null,
-    /** G/L account item */
     @RFCParameterType : 'Table'
     ACCOUNTGL : many DDIC.BAPIACGL09,
-    /** Vendor Item */
     @RFCParameterType : 'Table'
     ACCOUNTPAYABLE : many DDIC.BAPIACAP09,
-    /** Customer Item */
     @RFCParameterType : 'Table'
     ACCOUNTRECEIVABLE : many DDIC.BAPIACAR09,
-    /** Tax item */
     @RFCParameterType : 'Table'
     ACCOUNTTAX : many DDIC.BAPIACTX09,
-    /** Withholding tax information for FI Interface */
     @RFCParameterType : 'Table'
     ACCOUNTWT : many DDIC.BAPIACWT09,
-    /** Additional Contract Accounts Recieviable and Payable Document Line Item */
     @RFCParameterType : 'Table'
     CONTRACTITEM : many DDIC.BAPIACCAIT,
-    /** CO-PA Account Assignment Characteristics */
     @RFCParameterType : 'Table'
     CRITERIA : many DDIC.BAPIACKEC9,
-    /** Currency Items */
     @RFCParameterType : 'Table'
     CURRENCYAMOUNT : many DDIC.BAPIACCR09,
-    /** Container for 'Customer Exit' Parameter */
     @RFCParameterType : 'Table'
     EXTENSION1 : many DDIC.BAPIACEXTC,
-    /** Reference Structure for BAPI Parameters EXTENSIONIN/EXTENSIONOUT */
     @RFCParameterType : 'Table'
     EXTENSION2 : many DDIC.BAPIPAREX,
-    /** Payment Card Information */
     @RFCParameterType : 'Table'
     PAYMENTCARD : many DDIC.BAPIACPC09,
-    /** Real Estate Account Assignment Data */
     @RFCParameterType : 'Table'
     REALESTATE : many DDIC.BAPIACRE09,
-    /** Return parameter */
     @RFCParameterType : 'Table'
     RETURN : many DDIC.BAPIRET2,
-    /** CO-PA Account Assignment Value Fields */
     @RFCParameterType : 'Table'
     VALUEFIELD : many DDIC.BAPIACKEV9
   ) returns BAPI_ACC_DOCUMENT_POST.ResultType;
 
   type BAPI_ACC_DOCUMENT_POST.ResultType {
-    /** Reference key */
     @RFCParameterType : 'Export'
     OBJ_KEY : String(20);
-    /** Logical system of source document */
     @RFCParameterType : 'Export'
     OBJ_SYS : String(10);
-    /** Reference procedure */
     @RFCParameterType : 'Export'
     OBJ_TYPE : String(5);
-    /** G/L account item */
     @RFCParameterType : 'Table'
     ACCOUNTGL : many DDIC.BAPIACGL09;
-    /** Vendor Item */
     @RFCParameterType : 'Table'
     ACCOUNTPAYABLE : many DDIC.BAPIACAP09;
-    /** Customer Item */
     @RFCParameterType : 'Table'
     ACCOUNTRECEIVABLE : many DDIC.BAPIACAR09;
-    /** Tax item */
     @RFCParameterType : 'Table'
     ACCOUNTTAX : many DDIC.BAPIACTX09;
-    /** Withholding tax information for FI Interface */
     @RFCParameterType : 'Table'
     ACCOUNTWT : many DDIC.BAPIACWT09;
-    /** Additional Contract Accounts Recieviable and Payable Document Line Item */
     @RFCParameterType : 'Table'
     CONTRACTITEM : many DDIC.BAPIACCAIT;
-    /** CO-PA Account Assignment Characteristics */
     @RFCParameterType : 'Table'
     CRITERIA : many DDIC.BAPIACKEC9;
-    /** Currency Items */
     @RFCParameterType : 'Table'
     CURRENCYAMOUNT : many DDIC.BAPIACCR09;
-    /** Container for 'Customer Exit' Parameter */
     @RFCParameterType : 'Table'
     EXTENSION1 : many DDIC.BAPIACEXTC;
-    /** Reference Structure for BAPI Parameters EXTENSIONIN/EXTENSIONOUT */
     @RFCParameterType : 'Table'
     EXTENSION2 : many DDIC.BAPIPAREX;
-    /** Payment Card Information */
     @RFCParameterType : 'Table'
     PAYMENTCARD : many DDIC.BAPIACPC09;
-    /** Real Estate Account Assignment Data */
     @RFCParameterType : 'Table'
     REALESTATE : many DDIC.BAPIACRE09;
-    /** Return parameter */
     @RFCParameterType : 'Table'
     RETURN : many DDIC.BAPIRET2;
-    /** CO-PA Account Assignment Value Fields */
     @RFCParameterType : 'Table'
     VALUEFIELD : many DDIC.BAPIACKEV9;
+  };
+
+  action BINARY_RELATION_CREATE_COMMIT(
+    /** Role Object A */
+    @RFCParameterType : 'Import'
+    OBJ_ROLEA : DDIC.BORIDENT not null,
+    /** Role Object B */
+    @RFCParameterType : 'Import'
+    OBJ_ROLEB : DDIC.BORIDENT not null,
+    /** Relationship type */
+    @RFCParameterType : 'Import'
+    RELATIONTYPE : String(4) not null,
+    /** Attributes */
+    @RFCParameterType : 'Table'
+    BINREL_ATTRIB : many DDIC.BRELATTR
+  ) returns BINARY_RELATION_CREATE_COMMIT.ResultType;
+
+  type BINARY_RELATION_CREATE_COMMIT.ResultType {
+    /** Relationship and Roles */
+    @RFCParameterType : 'Export'
+    BINREL : DDIC.GBINREL;
+    /** Attributes */
+    @RFCParameterType : 'Table'
+    BINREL_ATTRIB : many DDIC.BRELATTR;
   };
 
   type DDIC.BAPIRETURN {
@@ -1639,6 +1629,27 @@ service S4RFC {
     BASE_UOM_ISO : String(3);
     QUA_VALCOM : Decimal;
     AMT_VALCOM_LONG : Decimal;
+  };
+
+  type DDIC.BORIDENT {
+    OBJKEY : String(70);
+    OBJTYPE : String(10);
+    LOGSYS : String(10);
+  };
+
+  type DDIC.GBINREL {
+    ROLE_A : String(22);
+    ROLE_B : String(22);
+    RELATIONID : String(22);
+    BRELTYP : String(4);
+    UTCTIME : Decimal;
+  };
+
+  type DDIC.BRELATTR {
+    ATTRIBUT : String(10);
+    @RFCAbapType : 'N'
+    POSNR : String(4);
+    GATTRDATA : String(250);
   };
 };
 

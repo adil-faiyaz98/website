@@ -171,6 +171,49 @@ module.exports = class S4HANARemoteService extends cds.ApplicationService {
       return lineItems;
     });
 
+    this.on('postAccDocument', async (req) => {
+      const {
+        DOCUMENTHEADER, CONTRACTHEADER, CUSTOMERCPD,
+        ACCOUNTGL, ACCOUNTPAYABLE, ACCOUNTRECEIVABLE,
+        ACCOUNTTAX, ACCOUNTWT, CONTRACTITEM,
+        CRITERIA, CURRENCYAMOUNT, EXTENSION1,
+        EXTENSION2, PAYMENTCARD, REALESTATE, VALUEFIELD
+      } = req.data;
+
+      const result = await S4RFC.BAPI_ACC_DOCUMENT_POST({
+        DOCUMENTHEADER,
+        CONTRACTHEADER:    CONTRACTHEADER    ?? {},
+        CUSTOMERCPD:       CUSTOMERCPD       ?? {},
+        ACCOUNTGL:         ACCOUNTGL         ?? [],
+        ACCOUNTPAYABLE:    ACCOUNTPAYABLE    ?? [],
+        ACCOUNTRECEIVABLE: ACCOUNTRECEIVABLE ?? [],
+        ACCOUNTTAX:        ACCOUNTTAX        ?? [],
+        ACCOUNTWT:         ACCOUNTWT         ?? [],
+        CONTRACTITEM:      CONTRACTITEM      ?? [],
+        CRITERIA:          CRITERIA          ?? [],
+        CURRENCYAMOUNT:    CURRENCYAMOUNT    ?? [],
+        EXTENSION1:        EXTENSION1        ?? [],
+        EXTENSION2:        EXTENSION2        ?? [],
+        PAYMENTCARD:       PAYMENTCARD       ?? [],
+        REALESTATE:        REALESTATE        ?? [],
+        RETURN:            [],
+        VALUEFIELD:        VALUEFIELD        ?? []
+      });
+      return result;
+    });
+
+    this.on('createBinaryRelation', async (req) => {
+      const { OBJ_ROLEA, OBJ_ROLEB, RELATIONTYPE, BINREL_ATTRIB } = req.data;
+
+      const result = await S4RFC.BINARY_RELATION_CREATE_COMMIT({
+        OBJ_ROLEA,
+        OBJ_ROLEB,
+        RELATIONTYPE,
+        BINREL_ATTRIB: BINREL_ATTRIB ?? []
+      });
+      return result;
+    });
+
     return super.init();
   }
 };
