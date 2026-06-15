@@ -11,10 +11,30 @@ using {S4RFC.BAPI_CURRENCY_GETLIST.ResultType as ResultTypeCurrencies} from './e
 using {S4RFC.BAPI_PO_GET_LIST.ResultType as ResultTypePOList} from './external/S4RFC';
 using {S4RFC.BAPI_ACC_DOCUMENT_POST.ResultType as ResultTypeAccDocumentPost} from './external/S4RFC';
 using {S4RFC.BINARY_RELATION_CREATE_COMMIT.ResultType as ResultTypeBinaryRelation} from './external/S4RFC';
+using {
+  S4RFC.DDIC.BAPIACHE09 as BAPIACHE09,
+  S4RFC.DDIC.BAPIACCAHD as BAPIACCAHD,
+  S4RFC.DDIC.BAPIACPA09 as BAPIACPA09,
+  S4RFC.DDIC.BAPIACGL09 as BAPIACGL09,
+  S4RFC.DDIC.BAPIACAP09 as BAPIACAP09,
+  S4RFC.DDIC.BAPIACAR09 as BAPIACAR09,
+  S4RFC.DDIC.BAPIACTX09 as BAPIACTX09,
+  S4RFC.DDIC.BAPIACWT09 as BAPIACWT09,
+  S4RFC.DDIC.BAPIACCAIT as BAPIACCAIT,
+  S4RFC.DDIC.BAPIACKEC9 as BAPIACKEC9,
+  S4RFC.DDIC.BAPIACCR09 as BAPIACCR09,
+  S4RFC.DDIC.BAPIACEXTC as BAPIACEXTC,
+  S4RFC.DDIC.BAPIPAREX  as BAPIPAREX,
+  S4RFC.DDIC.BAPIACPC09 as BAPIACPC09,
+  S4RFC.DDIC.BAPIACRE09 as BAPIACRE09,
+  S4RFC.DDIC.BAPIACKEV9 as BAPIACKEV9,
+  S4RFC.DDIC.BORIDENT   as BORIDENT,
+  S4RFC.DDIC.BRELATTR   as BRELATTR
+} from './external/S4RFC';
 
 @path: '/s4hana-remote'
 service S4HANARemoteService {
-  @readonly entity PaymentBlockTexts     as projection on s4hana.PaymentBlockTexts;
+  @readonly entity PaymentBlockTexts     as select from s4hana.PaymentBlockTexts;
   @readonly entity PaymentMethods        as projection on s4hana.PaymentMethods;
   @readonly entity TaxKeys               as projection on s4hana.TaxKeys;
   @readonly entity TaxCodeTexts          as projection on s4hana.TaxCodeTexts;
@@ -146,28 +166,28 @@ service S4HANARemoteService {
   ) returns ResultTypeInternalOrders;
 
   action postAccDocument(
-    DOCUMENTHEADER    : S4RFC.DDIC.BAPIACHE09 not null,
-    CONTRACTHEADER    : S4RFC.DDIC.BAPIACCAHD,
-    CUSTOMERCPD       : S4RFC.DDIC.BAPIACPA09,
-    ACCOUNTGL         : array of S4RFC.DDIC.BAPIACGL09,
-    ACCOUNTPAYABLE    : array of S4RFC.DDIC.BAPIACAP09,
-    ACCOUNTRECEIVABLE : array of S4RFC.DDIC.BAPIACAR09,
-    ACCOUNTTAX        : array of S4RFC.DDIC.BAPIACTX09,
-    ACCOUNTWT         : array of S4RFC.DDIC.BAPIACWT09,
-    CONTRACTITEM      : array of S4RFC.DDIC.BAPIACCAIT,
-    CRITERIA          : array of S4RFC.DDIC.BAPIACKEC9,
-    CURRENCYAMOUNT    : array of S4RFC.DDIC.BAPIACCR09,
-    EXTENSION1        : array of S4RFC.DDIC.BAPIACEXTC,
-    EXTENSION2        : array of S4RFC.DDIC.BAPIPAREX,
-    PAYMENTCARD       : array of S4RFC.DDIC.BAPIACPC09,
-    REALESTATE        : array of S4RFC.DDIC.BAPIACRE09,
-    VALUEFIELD        : array of S4RFC.DDIC.BAPIACKEV9
+    DOCUMENTHEADER    : BAPIACHE09 not null,
+    CONTRACTHEADER    : BAPIACCAHD,
+    CUSTOMERCPD       : BAPIACPA09,
+    ACCOUNTGL         : array of BAPIACGL09,
+    ACCOUNTPAYABLE    : array of BAPIACAP09,
+    ACCOUNTRECEIVABLE : array of BAPIACAR09,
+    ACCOUNTTAX        : array of BAPIACTX09,
+    ACCOUNTWT         : array of BAPIACWT09,
+    CONTRACTITEM      : array of BAPIACCAIT,
+    CRITERIA          : array of BAPIACKEC9,
+    CURRENCYAMOUNT    : array of BAPIACCR09,
+    EXTENSION1        : array of BAPIACEXTC,
+    EXTENSION2        : array of BAPIPAREX,
+    PAYMENTCARD       : array of BAPIACPC09,
+    REALESTATE        : array of BAPIACRE09,
+    VALUEFIELD        : array of BAPIACKEV9
   ) returns ResultTypeAccDocumentPost;
 
   action createBinaryRelation(
-    OBJ_ROLEA     : S4RFC.DDIC.BORIDENT not null,
-    OBJ_ROLEB     : S4RFC.DDIC.BORIDENT not null,
+    OBJ_ROLEA     : BORIDENT not null,
+    OBJ_ROLEB     : BORIDENT not null,
     RELATIONTYPE  : String(4) not null,
-    BINREL_ATTRIB : array of S4RFC.DDIC.BRELATTR
+    BINREL_ATTRIB : array of BRELATTR
   ) returns ResultTypeBinaryRelation;
 }

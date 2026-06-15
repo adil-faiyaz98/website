@@ -10,6 +10,10 @@ module.exports = class S4HANARemoteService extends cds.ApplicationService {
       if (req.http?.req && !req.http.req.locale) req.http.req.locale = 'EN';
     });
 
+    this.before('READ', 'PaymentBlockTexts', (req) => {
+      req.query.where({ SPRAS: 'E' });
+    });
+
     this.on('getCompanyCodes', async () => {
       const result = await S4RFC.BAPI_COMPANYCODE_GETLIST({
         COMPANYCODE_LIST: []
