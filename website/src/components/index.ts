@@ -10,6 +10,7 @@ export { CTABanner } from "./CTABanner";
 export { Footer } from "./Footer";
 export { StatsSection } from "./StatsSection";
 export { ClientLogos } from "./ClientLogos";
+export { ProductShowcase } from "./ProductShowcase";
 
 // UI Components
 export { ScrollReveal } from "./ui/ScrollReveal";

@@ -3,6 +3,14 @@ import { HeroSection, ScrollReveal, ErrorBoundary } from "@/components";
 import { NoiseTexture } from "@/components/ui/NoiseTexture";
 
 // Dynamic imports for below-fold sections (code splitting)
+const ProductShowcase = dynamic(
+  () =>
+    import("@/components/ProductShowcase").then(
+      (mod) => mod.ProductShowcase
+    ),
+  { loading: () => null }
+);
+
 const CapabilitiesSection = dynamic(
   () =>
     import("@/components/CapabilitiesSection").then(
@@ -53,6 +61,10 @@ export default function Home() {
       </ErrorBoundary>
 
       <HeroSection />
+
+      <ScrollReveal>
+        <ProductShowcase />
+      </ScrollReveal>
 
       <ScrollReveal>
         <CapabilitiesSection />

@@ -1,19 +1,35 @@
 /**
  * Case studies data for the Learn / Case Studies page.
- * Each entry represents a customer migration success story.
+ * Each entry represents a customer success story.
  */
 
 export interface CaseStudy {
   slug: string;
   company: string;
   industry: string;
-  platform: "dell-boomi" | "informatica" | "mulesoft";
+  platform: "dell-boomi" | "informatica" | "mulesoft" | "quebec-tax-calculator";
   metrics: { label: string; value: string }[];
   excerpt: string;
   logoSrc?: string;
+  featured?: boolean;
 }
 
 export const caseStudies: CaseStudy[] = [
+  {
+    slug: "quebec-aerospace-rd-transformation",
+    company: "Precision Aero Technologies",
+    industry: "Aerospace Manufacturing",
+    platform: "quebec-tax-calculator",
+    metrics: [
+      { label: "Additional Credits", value: "$847K" },
+      { label: "Processing Time", value: "3 Days" },
+      { label: "Error Reduction", value: "96%" },
+    ],
+    excerpt:
+      "A Quebec aerospace manufacturer recovered $847K in tax credits by automating CRIC and SR&ED claims, identifying 4 previously missed programs while reducing processing time from 3 weeks to 3 days.",
+    logoSrc: "/logos/generic.svg",
+    featured: true,
+  },
   {
     slug: "global-pharma-boomi-migration",
     company: "Global Pharma Corp",
