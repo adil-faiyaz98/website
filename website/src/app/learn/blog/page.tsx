@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { blogPosts } from "@/data/blog";
 import { GlassCard } from "@/components/ui";
 
@@ -45,12 +46,12 @@ export default function BlogPage() {
         {/* Blog Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {blogPosts.map((post) => (
-            <GlassCard
-              key={post.slug}
-              interactive={true}
-              as="article"
-              className="p-6 flex flex-col"
-            >
+            <Link key={post.slug} href={`/learn/blog/${post.slug}`}>
+              <GlassCard
+                interactive={true}
+                as="article"
+                className="p-6 flex flex-col h-full"
+              >
               {/* Category & Read Time */}
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-medium text-accent-primary bg-accent-primary/10 px-3 py-1 rounded-full">
@@ -90,7 +91,8 @@ export default function BlogPage() {
               >
                 {formatDate(post.publishedDate)}
               </time>
-            </GlassCard>
+              </GlassCard>
+            </Link>
           ))}
         </div>
       </div>

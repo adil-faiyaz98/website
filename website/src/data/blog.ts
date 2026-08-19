@@ -15,6 +15,17 @@ export interface BlogPost {
 
 export const blogPosts: BlogPost[] = [
   {
+    slug: "quebec-tax-credits-maximizing-rd-incentives-2026",
+    title:
+      "Quebec Tax Credits: Maximizing R&D Incentives with the New CRIC in 2026",
+    excerpt:
+      "Discover how Quebec's new CRIC (Tax Credit for Research, Innovation and Commercialization) helps businesses unlock up to 50% in combined tax credits. Learn about the 2025 reforms, new pre-commercialization eligibility, and ROI analysis.",
+    publishedDate: "2026-08-15",
+    category: "Tax Strategy",
+    tags: ["Quebec Tax", "CRIC", "SR&ED", "R&D Credits", "Tax Automation"],
+    readTimeMinutes: 15,
+  },
+  {
     slug: "sap-pi-po-end-of-life-what-you-need-to-know",
     title: "SAP PI/PO End of Life: What You Need to Know",
     excerpt:
