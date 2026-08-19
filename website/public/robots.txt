@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://sdaint-migrationworkbench.com
+
+# Sitemaps
+Sitemap: https://sdaint-migrationworkbench.com/sitemap.xml
