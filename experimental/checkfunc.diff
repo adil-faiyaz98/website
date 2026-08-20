@@ -1,0 +1,181 @@
+diff --git a/app/vim_ui/webapp/controller/Detail.controller.js b/app/vim_ui/webapp/controller/Detail.controller.js
+index d672d8037..9459e53ac 100644
+--- a/app/vim_ui/webapp/controller/Detail.controller.js
++++ b/app/vim_ui/webapp/controller/Detail.controller.js
+@@ -6624,15 +6624,20 @@ sap.ui.define([
+     var dueDate = this.getView().byId("dtmInvoiceViewDueDate").getValue();
+     var formattedDueDate = this.formatDateFromPicker(dueDate).replaceAll("-", "");;
+     var formattedInvDate = this.formatDateFromPicker(documentDate).replaceAll("-", "");;
+-    var formattedPostingDate = this.formatDateFromPicker(postingDate).replaceAll("-", "");;
++    var formattedPostingDate = this.formatDateFromPicker(postingDate).replaceAll("-", "");
++    var docTypeVal = this.getView().byId("cmbInvoiceViewDocumentType").getSelectedKey();
++    if(docTypeVal === "RE" || docTypeVal === "KR"){
++      checkPayload.HEADERDATA.INVOICE_IND = 'X';
++    }
++    var invParty = this.getView().byId("txtInvoiceViewInvoicingParty").getValue().replace(/\s*\(.*\)\s*$/, '');
+     checkPayload.HEADERDATA.HEADER_TXT = this.getView().byId("txtInvoiceViewInvoiceNumber").getValue();        
+-    checkPayload.HEADERDATA.DIFF_INV = this.getView().byId("txtInvoiceViewInvoicingParty").getValue().replace(/\s*\(.*\)\s*$/, '');
++    checkPayload.HEADERDATA.DIFF_INV = "0000"+invParty;
+     checkPayload.HEADERDATA.REF_DOC_NO = this.getView().byId("txtInvoiceViewInvoiceNumber").getValue();
+     checkPayload.HEADERDATA.COMP_CODE = this.getView().byId("cmbInvoiceViewCompanyCode").getValue().replace(/\s*\(.*\)\s*$/, '');
+     checkPayload.HEADERDATA.BLINE_DATE = formattedDueDate;
+     checkPayload.HEADERDATA.DOC_DATE = formattedInvDate;
+     checkPayload.HEADERDATA.PSTNG_DATE = formattedPostingDate;
+-    checkPayload.HEADERDATA.DOC_TYPE = this.getView().byId("cmbInvoiceViewDocumentType").getSelectedKey();
++    checkPayload.HEADERDATA.DOC_TYPE = docTypeVal;
+     var amtValue = this.getView().byId("txtInvoiceViewInvoiceAmount").getValue();
+     if (amtValue.includes('-')) {
+       amtValue = amtValue.replace('-', '');
+@@ -6893,6 +6898,7 @@ getTableItems: function() {
+   var oTable = this.getView().byId("tblInvoiceItems");
+   var oModel = this.getView().getModel("invoiceItemsModel");
+   var aAllItemsData = [];  
++  var checkDocType =  this.getView().byId("cmbInvoiceViewDocumentType").getSelectedKey();
+   try {    
+     var oBinding = oTable.getBinding("items");
+     var oData = oBinding ? oBinding.getModel().oData : null;
+@@ -6916,6 +6922,7 @@ getTableItems: function() {
+       if (aAllData && aAllData.length > 0) {     
+         aAllData.forEach(function(oItem) {
+            sDeCReInd = "";
++           if(checkDocType === "KR" || checkDocType === "KG"){
+            if (oItem.NetAmount != null && oItem.NetAmount !== "") {
+               fNetAmount = parseFloat(oItem.NetAmount);
+            if (!isNaN(fNetAmount)) {
+@@ -6924,7 +6931,11 @@ getTableItems: function() {
+             } else {
+                 sDeCReInd = "S"; // Positive amount or zero
+             }
+-          }}
++          }
++        }
++      }else{
++            sDeCReInd = " ";
++          }
+           var oItemData = {};
+           
+           if (that.isPOGL === "PO") {
+diff --git a/app/vimapmanager/webapp/controller/Detail.controller.js b/app/vimapmanager/webapp/controller/Detail.controller.js
+index 27a16581b..bb52d6a2b 100644
+--- a/app/vimapmanager/webapp/controller/Detail.controller.js
++++ b/app/vimapmanager/webapp/controller/Detail.controller.js
+@@ -10488,16 +10488,21 @@ sap.ui.define([
+     var postingDate = this.getView().byId("dtmInvoiceViewPostingDate").getValue();
+     var dueDate = this.getView().byId("dtmInvoiceViewDueDate").getValue();
+     var formattedDueDate = this.formatDateFromPicker(dueDate).replaceAll("-", "");;
+-    var formattedInvDate = this.formatDateFromPicker(documentDate).replaceAll("-", "");;
+-    var formattedPostingDate = this.formatDateFromPicker(postingDate).replaceAll("-", "");;
++    var formattedInvDate = this.formatDateFromPicker(documentDate).replaceAll("-", "");
++    var formattedPostingDate = this.formatDateFromPicker(postingDate).replaceAll("-", "");
++    var docTypeVal = this.getView().byId("cmbInvoiceViewDocumentType").getSelectedKey();
++    if(docTypeVal === "RE" || docTypeVal === "KR"){
++      checkPayload.HEADERDATA.INVOICE_IND = 'X';
++    }
++    var invParty = this.getView().byId("txtInvoiceViewInvoicingParty").getValue().replace(/\s*\(.*\)\s*$/, '');
+     checkPayload.HEADERDATA.HEADER_TXT = this.getView().byId("txtInvoiceViewInvoiceNumber").getValue();        
+-    checkPayload.HEADERDATA.DIFF_INV = this.getView().byId("txtInvoiceViewInvoicingParty").getValue().replace(/\s*\(.*\)\s*$/, '');
++    checkPayload.HEADERDATA.DIFF_INV = "0000"+invParty;
+     checkPayload.HEADERDATA.REF_DOC_NO = this.getView().byId("txtInvoiceViewInvoiceNumber").getValue();
+     checkPayload.HEADERDATA.COMP_CODE = this.getView().byId("cmbInvoiceViewCompanyCode").getValue().replace(/\s*\(.*\)\s*$/, '');
+     checkPayload.HEADERDATA.BLINE_DATE = formattedDueDate;
+     checkPayload.HEADERDATA.DOC_DATE = formattedInvDate;
+     checkPayload.HEADERDATA.PSTNG_DATE = formattedPostingDate;
+-    checkPayload.HEADERDATA.DOC_TYPE = this.getView().byId("cmbInvoiceViewDocumentType").getSelectedKey();
++    checkPayload.HEADERDATA.DOC_TYPE = docTypeVal;
+     var amtValue = this.getView().byId("txtInvoiceViewInvoiceAmount").getValue();
+     if (amtValue.includes('-')) {
+       amtValue = amtValue.replace('-', '');
+@@ -10618,10 +10623,12 @@ sap.ui.define([
+         }      
+         var aTableData = oModel.getProperty("/results") || [];
+         var aProcessedData = [];      
++        var checkDocType =  this.getView().byId("cmbInvoiceViewDocumentType").getSelectedKey();
+         aTableData.forEach(function(oRecord, index) {
+             var sItemNumber = oRecord.InvoiceItemNumber || (index + 1).toString();
+             var oItemData;          
+             var sDeCReInd = "";
++            if(checkDocType === "KR" || checkDocType === "KG"){
+              if (oRecord.NetAmount != null && oRecord.NetAmount !== "") {
+                 var fNetAmount = parseFloat(oRecord.NetAmount);
+              if (!isNaN(fNetAmount)) {
+@@ -10632,6 +10639,9 @@ sap.ui.define([
+               }
+           }
+       }
++    }else{
++      sDeCReInd = " ";
++    }
+             if (that.isPOGL === "PO") {
+                 oItemData = {
+                     ItemNumber: sItemNumber,
+diff --git a/app/vimapmanager/webapp/controller/MyCockpitDetail.controller.js b/app/vimapmanager/webapp/controller/MyCockpitDetail.controller.js
+index 94972bbd6..ba214e159 100644
+--- a/app/vimapmanager/webapp/controller/MyCockpitDetail.controller.js
++++ b/app/vimapmanager/webapp/controller/MyCockpitDetail.controller.js
+@@ -9640,17 +9640,22 @@ sap.ui.define([
+   var documentDate = this.getView().byId("dtmInvoiceViewInvoiceDate").getValue();        
+   var postingDate = this.getView().byId("dtmInvoiceViewPostingDate").getValue();
+   var dueDate = this.getView().byId("dtmInvoiceViewDueDate").getValue();
+-  var formattedDueDate = this.formatDateFromPicker(dueDate).replaceAll("-", "");;
+-  var formattedInvDate = this.formatDateFromPicker(documentDate).replaceAll("-", "");;
+-  var formattedPostingDate = this.formatDateFromPicker(postingDate).replaceAll("-", "");;
++  var formattedDueDate = this.formatDateFromPicker(dueDate).replaceAll("-", "");
++  var formattedInvDate = this.formatDateFromPicker(documentDate).replaceAll("-", "");
++  var formattedPostingDate = this.formatDateFromPicker(postingDate).replaceAll("-", "");
++  var docTypeVal = this.getView().byId("cmbInvoiceViewDocumentType").getSelectedKey();
++    if(docTypeVal === "RE" || docTypeVal === "KR"){
++      checkPayload.HEADERDATA.INVOICE_IND = 'X';
++    }
++  var invParty = this.getView().byId("txtInvoiceViewInvoicingParty").getValue().replace(/\s*\(.*\)\s*$/, '');
+   checkPayload.HEADERDATA.HEADER_TXT = this.getView().byId("txtInvoiceViewInvoiceNumber").getValue();        
+-  checkPayload.HEADERDATA.DIFF_INV = this.getView().byId("txtInvoiceViewInvoicingParty").getValue().replace(/\s*\(.*\)\s*$/, '');
++  checkPayload.HEADERDATA.DIFF_INV = "0000"+invParty;
+   checkPayload.HEADERDATA.REF_DOC_NO = this.getView().byId("txtInvoiceViewInvoiceNumber").getValue();
+   checkPayload.HEADERDATA.COMP_CODE = this.getView().byId("cmbInvoiceViewCompanyCode").getValue().replace(/\s*\(.*\)\s*$/, '');
+   checkPayload.HEADERDATA.BLINE_DATE = formattedDueDate;
+   checkPayload.HEADERDATA.DOC_DATE = formattedInvDate;
+   checkPayload.HEADERDATA.PSTNG_DATE = formattedPostingDate;
+-  checkPayload.HEADERDATA.DOC_TYPE = this.getView().byId("cmbInvoiceViewDocumentType").getSelectedKey();
++  checkPayload.HEADERDATA.DOC_TYPE = docTypeVal;
+   var amtValue = this.getView().byId("txtInvoiceViewInvoiceAmount").getValue();
+   if (amtValue.includes('-')) {
+     amtValue = amtValue.replace('-', '');
+@@ -9766,6 +9771,7 @@ sap.ui.define([
+     try {
+       var that = this;
+       var oModel = this.getView().getModel("invoiceItemsModel");
++     var checkDocType =  this.getView().byId("cmbInvoiceViewDocumentType").getSelectedKey();
+       if (!oModel) {
+           throw new Error("Invoice items model not found");
+       }      
+@@ -9775,6 +9781,7 @@ sap.ui.define([
+           var sItemNumber = oRecord.InvoiceItemNumber || (index + 1).toString();
+           var oItemData;          
+           var sDeCReInd = "";
++          if(checkDocType === "KR" || checkDocType === "KG"){
+            if (oRecord.NetAmount != null && oRecord.NetAmount !== "") {
+               var fNetAmount = parseFloat(oRecord.NetAmount);
+            if (!isNaN(fNetAmount)) {
+@@ -9785,6 +9792,9 @@ sap.ui.define([
+             }
+         }
+     }
++           }else{
++                  sDeCReInd = " ";
++             }
+           if (that.isPOGL === "PO") {
+               oItemData = {
+                   ItemNumber: sItemNumber,
+diff --git a/mta.yaml b/mta.yaml
+index 5c05a7f04..1a2219dbf 100644
+--- a/mta.yaml
++++ b/mta.yaml
+@@ -1,7 +1,7 @@
+ _schema-version: 3.3.0
+ ID: vendor-invoice-management-api
+ description: SDA Vendor Invoice Management
+-version: 2.11.56
++version: 2.11.57
+ modules:
+ - name: vendor-invoice-management-api-service
+   type: nodejs

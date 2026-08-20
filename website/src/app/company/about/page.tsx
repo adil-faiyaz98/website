@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GlassCard, AnimatedCounter } from "@/components/ui";
+import { SapIcon } from "@/components";
 
 export const metadata: Metadata = {
   title: "About Us | SDA Migration WorkBench",
@@ -95,25 +96,25 @@ const coreValues = [
     title: "Precision",
     description:
       "Every interface, every mapping, every test case matters. We obsess over accuracy so our customers don't have to.",
-    icon: "🎯",
+    icon: "target-group",
   },
   {
     title: "Transparency",
     description:
       "No black boxes. Our customers see real-time progress, detailed assessments, and honest timelines at every step.",
-    icon: "🔍",
+    icon: "overview-chart",
   },
   {
     title: "Speed Without Compromise",
     description:
       "Automation accelerates delivery, but never at the cost of quality. We ship fast and ship right.",
-    icon: "⚡",
+    icon: "performance",
   },
   {
     title: "Customer Partnership",
     description:
       "We don't just deliver migrations — we partner with teams to build lasting integration capability and confidence.",
-    icon: "🤝",
+    icon: "collaborate",
   },
 ];
 
@@ -212,7 +213,9 @@ export default function AboutPage() {
                 interactive={true}
                 className="p-8"
               >
-                <div className="text-4xl mb-4">{value.icon}</div>
+                <div className="w-12 h-12 rounded-xl bg-accent-primary/10 flex items-center justify-center mb-4">
+                  <SapIcon name={value.icon} size={28} className="text-accent-primary" />
+                </div>
                 <h3 className="text-xl font-semibold text-text-primary mb-3">
                   {value.title}
                 </h3>

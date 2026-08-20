@@ -260,6 +260,14 @@ const SAP_ICONS: Record<string, string> = {
   "unpaid-leave": "\ue1d4",
   "program-triangles": "\ue1e8",
   "program-triangles-2": "\ue1e9",
+  
+  // Additional icons for Company pages
+  "heart": "\ue0e7",
+  "favorite-list": "\ue087",
+  "learning-assistant": "\ue1ba",
+  "education": "\ue17f",
+  "suitcase": "\ue0d3",
+  "home": "\ue08a",
 };
 
 export interface SapIconProps extends HTMLAttributes<HTMLSpanElement> {

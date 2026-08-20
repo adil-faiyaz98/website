@@ -1,0 +1,281 @@
+/* ==========================================================================
+   SOC Command Center - Dark Mode Styles
+   Dark mode rendering optimized for SOC environments with reduced eye strain.
+   Activated via CSS custom properties override when .soc-dark-mode class is applied.
+   ========================================================================== */
+
+/* Dark mode variable overrides */
+.soc-dark-mode,
+body.soc-dark-mode {
+  --soc-primary: #4db1ff;
+  --soc-success: #4caf50;
+  --soc-warning: #ffb74d;
+  --soc-danger: #ef5350;
+  --soc-orange: #ff9800;
+  --soc-bg-primary: #1a1a2e;
+  --soc-bg-secondary: #16213e;
+  --soc-text-primary: #e0e0e0;
+  --soc-text-secondary: #a0a0a0;
+  --soc-border: #2a2a4a;
+  --soc-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --soc-map-bg: #16213e;
+  --soc-map-land: #1a3a5c;
+  --soc-map-border: #2a4a6c;
+  --soc-map-grid: #2a2a4a;
+  --soc-map-text: #a0a0a0;
+}
+
+/* ==========================================================================
+   Page and Container Overrides
+   ========================================================================== */
+
+.soc-dark-mode .sapMPage {
+  background-color: var(--soc-bg-secondary) !important;
+}
+
+.soc-dark-mode .sapMPageHeader {
+  background-color: var(--soc-bg-primary) !important;
+  border-bottom: 1px solid var(--soc-border) !important;
+}
+
+.soc-dark-mode .sapMBar {
+  background-color: var(--soc-bg-primary) !important;
+}
+
+.soc-dark-mode .sapMPanel {
+  background-color: var(--soc-bg-primary) !important;
+  border-color: var(--soc-border) !important;
+}
+
+.soc-dark-mode .sapMPanelHdr {
+  color: var(--soc-text-primary) !important;
+}
+
+/* ==========================================================================
+   Text and Label Overrides
+   ========================================================================== */
+
+.soc-dark-mode .sapMTitle,
+.soc-dark-mode .sapMLabel,
+.soc-dark-mode .sapMText,
+.soc-dark-mode .sapUiFormLbl {
+  color: var(--soc-text-primary) !important;
+}
+
+.soc-dark-mode .socMutedText,
+.soc-dark-mode .socAutoRefreshLabel,
+.soc-dark-mode .socFooterLabel {
+  color: var(--soc-text-secondary) !important;
+}
+
+/* ==========================================================================
+   Card Overrides
+   ========================================================================== */
+
+.soc-dark-mode .sapFCard {
+  background-color: var(--soc-bg-primary) !important;
+  border-color: var(--soc-border) !important;
+  box-shadow: var(--soc-card-shadow) !important;
+}
+
+.soc-dark-mode .sapFCardHeader {
+  border-color: var(--soc-border) !important;
+}
+
+.soc-dark-mode .socKpiCard {
+  background-color: var(--soc-bg-primary) !important;
+  border: 1px solid var(--soc-border) !important;
+}
+
+/* ==========================================================================
+   List Overrides
+   ========================================================================== */
+
+.soc-dark-mode .sapMList {
+  background-color: var(--soc-bg-primary) !important;
+}
+
+.soc-dark-mode .sapMLIB {
+  background-color: var(--soc-bg-primary) !important;
+  border-color: var(--soc-border) !important;
+}
+
+.soc-dark-mode .sapMLIB:hover {
+  background-color: var(--soc-bg-secondary) !important;
+}
+
+.soc-dark-mode .sapMOHTitle,
+.soc-dark-mode .sapMLIBContent {
+  color: var(--soc-text-primary) !important;
+}
+
+/* ==========================================================================
+   Table Overrides
+   ========================================================================== */
+
+.soc-dark-mode .sapMTable {
+  background-color: var(--soc-bg-primary) !important;
+}
+
+.soc-dark-mode .sapMListTblHeader {
+  background-color: var(--soc-bg-secondary) !important;
+  border-color: var(--soc-border) !important;
+}
+
+.soc-dark-mode .sapMListTblCell {
+  border-color: var(--soc-border) !important;
+}
+
+.soc-dark-mode .sapMColumnHeader .sapMLabel {
+  color: var(--soc-text-secondary) !important;
+}
+
+/* ==========================================================================
+   System Node Overrides
+   ========================================================================== */
+
+.soc-dark-mode .socSystemNode {
+  background-color: var(--soc-bg-primary) !important;
+  border-color: var(--soc-border) !important;
+}
+
+.soc-dark-mode .socSystemNode:hover {
+  background-color: var(--soc-bg-secondary) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+.soc-dark-mode .socSystemNodeName {
+  color: var(--soc-text-primary) !important;
+}
+
+.soc-dark-mode .socSystemNodeType {
+  color: var(--soc-text-secondary) !important;
+}
+
+/* ==========================================================================
+   Toolbar Overrides
+   ========================================================================== */
+
+.soc-dark-mode .sapMTB {
+  background-color: var(--soc-bg-primary) !important;
+  border-color: var(--soc-border) !important;
+}
+
+.soc-dark-mode .socAutoRefreshToolbar {
+  background-color: var(--soc-bg-secondary) !important;
+  border-color: var(--soc-border) !important;
+}
+
+/* ==========================================================================
+   Threat Feed Overrides
+   ========================================================================== */
+
+.soc-dark-mode .socThreatFeedItem {
+  border-color: var(--soc-border) !important;
+}
+
+.soc-dark-mode .socThreatFeedItem:hover {
+  background-color: var(--soc-bg-secondary) !important;
+}
+
+.soc-dark-mode .socEventDescription {
+  color: var(--soc-text-secondary) !important;
+}
+
+/* ==========================================================================
+   Map Overrides
+   ========================================================================== */
+
+.soc-dark-mode .socMapWrapper {
+  background-color: var(--soc-bg-primary);
+  border-radius: 8px;
+}
+
+.soc-dark-mode .socMapSvg text {
+  fill: var(--soc-text-primary);
+}
+
+/* ==========================================================================
+   Legend Overrides
+   ========================================================================== */
+
+.soc-dark-mode .socLegend {
+  background-color: var(--soc-bg-primary) !important;
+  border-color: var(--soc-border) !important;
+}
+
+/* ==========================================================================
+   Button and Input Overrides
+   ========================================================================== */
+
+.soc-dark-mode .sapMBtn {
+  color: var(--soc-text-primary) !important;
+}
+
+.soc-dark-mode .sapMSF {
+  background-color: var(--soc-bg-secondary) !important;
+  border-color: var(--soc-border) !important;
+}
+
+.soc-dark-mode .sapMSFI .sapMInputBaseInner {
+  background-color: var(--soc-bg-secondary) !important;
+  color: var(--soc-text-primary) !important;
+}
+
+.soc-dark-mode .sapMSelect {
+  background-color: var(--soc-bg-secondary) !important;
+}
+
+/* ==========================================================================
+   Switch Override for Dark Mode Toggle
+   ========================================================================== */
+
+.soc-dark-mode .sapMSwt {
+  background-color: var(--soc-primary) !important;
+}
+
+/* ==========================================================================
+   VizFrame / Chart Overrides
+   ========================================================================== */
+
+.soc-dark-mode .sapVizChart {
+  background-color: var(--soc-bg-primary) !important;
+}
+
+/* ==========================================================================
+   Critical Flash in Dark Mode
+   ========================================================================== */
+
+@keyframes criticalFlashDark {
+  0% { background-color: var(--soc-bg-secondary); }
+  25% { background-color: rgba(239, 83, 80, 0.15); }
+  50% { background-color: var(--soc-bg-secondary); }
+  75% { background-color: rgba(239, 83, 80, 0.15); }
+  100% { background-color: var(--soc-bg-secondary); }
+}
+
+.soc-dark-mode .soc-critical-flash {
+  animation: criticalFlashDark 1s ease-in-out;
+}
+
+/* ==========================================================================
+   Scrollbar Styling for Dark Mode
+   ========================================================================== */
+
+.soc-dark-mode ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.soc-dark-mode ::-webkit-scrollbar-track {
+  background: var(--soc-bg-secondary);
+}
+
+.soc-dark-mode ::-webkit-scrollbar-thumb {
+  background-color: var(--soc-border);
+  border-radius: 4px;
+}
+
+.soc-dark-mode ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--soc-text-secondary);
+}

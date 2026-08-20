@@ -1,0 +1,150 @@
+<mvc:View
+  controllerName="finsecure.ai.domaindashboards.controller.ComplianceDashboard"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.f"
+  xmlns:layout="sap.ui.layout">
+  <Page id="compliancePage" title="{i18n>complianceTitle}" showNavButton="true" navButtonPress=".onNavBack">
+    <headerContent>
+      <Button icon="sap-icon://refresh" press=".onRefresh" tooltip="{i18n>refresh}"/>
+    </headerContent>
+    <content>
+      <IconTabBar id="complianceTabBar" selectedKey="overview">
+        <items>
+          <!-- Framework Overview Cards -->
+          <IconTabFilter key="overview" text="Frameworks" icon="sap-icon://overview-chart">
+            <content>
+              <f:GridContainer id="frameworkGrid" class="sapUiSmallMargin">
+                <f:items>
+                  <!-- Framework cards dynamically bound -->
+                  <GenericTile id="tileSOXDORA"
+                    header="SOX / DORA / PCI"
+                    press=".onFrameworkDrillDown"
+                    frameType="TwoByOne"
+                    class="sapUiSmallMargin">
+                    <TileContent unit="%">
+                      <NumericContent
+                        value="{viewModel>/frameworks/SOX_DORA_PCI/percentage}"
+                        valueColor="{viewModel>/frameworks/SOX_DORA_PCI/valueColor}"
+                        indicator="{viewModel>/frameworks/SOX_DORA_PCI/indicator}"
+                        scale="%"/>
+                    </TileContent>
+                  </GenericTile>
+                  <GenericTile id="tileNERCCIP"
+                    header="NERC CIP"
+                    press=".onFrameworkDrillDown"
+                    frameType="TwoByOne"
+                    class="sapUiSmallMargin">
+                    <TileContent unit="%">
+                      <NumericContent
+                        value="{viewModel>/frameworks/NERC_CIP/percentage}"
+                        valueColor="{viewModel>/frameworks/NERC_CIP/valueColor}"
+                        indicator="{viewModel>/frameworks/NERC_CIP/indicator}"
+                        scale="%"/>
+                    </TileContent>
+                  </GenericTile>
+                  <GenericTile id="tileCMMCITAR"
+                    header="CMMC / ITAR"
+                    press=".onFrameworkDrillDown"
+                    frameType="TwoByOne"
+                    class="sapUiSmallMargin">
+                    <TileContent unit="%">
+                      <NumericContent
+                        value="{viewModel>/frameworks/CMMC_ITAR/percentage}"
+                        valueColor="{viewModel>/frameworks/CMMC_ITAR/valueColor}"
+                        indicator="{viewModel>/frameworks/CMMC_ITAR/indicator}"
+                        scale="%"/>
+                    </TileContent>
+                  </GenericTile>
+                  <GenericTile id="tileFEDRAMP"
+                    header="FedRAMP / NIST"
+                    press=".onFrameworkDrillDown"
+                    frameType="TwoByOne"
+                    class="sapUiSmallMargin">
+                    <TileContent unit="%">
+                      <NumericContent
+                        value="{viewModel>/frameworks/FEDRAMP_NIST/percentage}"
+                        valueColor="{viewModel>/frameworks/FEDRAMP_NIST/valueColor}"
+                        indicator="{viewModel>/frameworks/FEDRAMP_NIST/indicator}"
+                        scale="%"/>
+                    </TileContent>
+                  </GenericTile>
+                  <GenericTile id="tilePIPEDA"
+                    header="PIPEDA / OSFI"
+                    press=".onFrameworkDrillDown"
+                    frameType="TwoByOne"
+                    class="sapUiSmallMargin">
+                    <TileContent unit="%">
+                      <NumericContent
+                        value="{viewModel>/frameworks/PIPEDA_OSFI/percentage}"
+                        valueColor="{viewModel>/frameworks/PIPEDA_OSFI/valueColor}"
+                        indicator="{viewModel>/frameworks/PIPEDA_OSFI/indicator}"
+                        scale="%"/>
+                    </TileContent>
+                  </GenericTile>
+                </f:items>
+              </f:GridContainer>
+            </content>
+          </IconTabFilter>
+
+          <!-- Controls Drill-Down Tab -->
+          <IconTabFilter key="controls" text="Controls" icon="sap-icon://checklist-item">
+            <content>
+              <VBox class="sapUiSmallMargin">
+                <Toolbar>
+                  <Select id="frameworkSelect" change=".onFrameworkChange" forceSelection="false">
+                    <core:Item key="" text="All Frameworks"/>
+                    <core:Item key="SOX_DORA_PCI" text="SOX / DORA / PCI"/>
+                    <core:Item key="NERC_CIP" text="NERC CIP"/>
+                    <core:Item key="CMMC_ITAR" text="CMMC / ITAR"/>
+                    <core:Item key="FEDRAMP_NIST" text="FedRAMP / NIST"/>
+                    <core:Item key="PIPEDA_OSFI" text="PIPEDA / OSFI"/>
+                  </Select>
+                  <ToolbarSpacer/>
+                  <SearchField placeholder="Search controls..." search=".onControlSearch" width="250px"/>
+                </Toolbar>
+                <Table id="controlsTable"
+                  items="{
+                    path: 'auditor>/ComplianceControls',
+                    parameters: {
+                      $orderby: 'frameworkRef,controlId'
+                    }
+                  }"
+                  growing="true"
+                  growingThreshold="50"
+                  noDataText="{i18n>noData}">
+                  <columns>
+                    <Column width="10%"><Text text="Control ID"/></Column>
+                    <Column width="15%"><Text text="Framework"/></Column>
+                    <Column width="25%"><Text text="Name"/></Column>
+                    <Column width="10%" hAlign="Center"><Text text="Status"/></Column>
+                    <Column width="10%" hAlign="Center"><Text text="Severity"/></Column>
+                    <Column width="30%"><Text text="Objective"/></Column>
+                  </columns>
+                  <items>
+                    <ColumnListItem type="Navigation" press=".onControlPress">
+                      <cells>
+                        <Text text="{auditor>controlId}"/>
+                        <Text text="{auditor>frameworkRef}"/>
+                        <Text text="{auditor>name}"/>
+                        <ObjectStatus text="{auditor>status}"
+                          state="{= ${auditor>status} === 'ACTIVE' ? 'Success' : 'None'}"/>
+                        <ObjectStatus text="{auditor>severity}"
+                          state="{
+                            path: 'auditor>severity',
+                            formatter: '.formatter.severityState'
+                          }"/>
+                        <Text text="{auditor>objective}" wrapping="true" maxLines="2"/>
+                      </cells>
+                    </ColumnListItem>
+                  </items>
+                </Table>
+              </VBox>
+            </content>
+          </IconTabFilter>
+        </items>
+      </IconTabBar>
+    </content>
+  </Page>
+</mvc:View>

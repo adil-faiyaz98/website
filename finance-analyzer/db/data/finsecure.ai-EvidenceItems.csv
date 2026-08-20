@@ -1,0 +1,8 @@
+ID;investigation_ID;evidenceType;content;reference;createdAt;modifiedAt
+ev-001;inv-001;TRANSACTION_LOG;Journal entry 5000000001 posted by JSMITH01 on 2024-07-08 for $250,000 USD. Debit: 0010000, Credit: 0020000. Vendor: V10003.;SAP Document 5000000001;2024-07-08T15:00:00Z;2024-07-08T15:00:00Z
+ev-002;inv-001;VENDOR_RECORD;Vendor V10003 (Sunshine Consulting LLC) created on 2024-07-08 by JSMITH01. Bank: First National Bank, Account: ****9876. No prior purchase orders.;XK03-V10003;2024-07-08T15:15:00Z;2024-07-08T15:15:00Z
+ev-003;inv-001;HR_RECORD;Employee JSMITH01 submitted resignation on 2024-07-01. Last working day: 2024-07-22. Role: Senior Financial Analyst.;HR-TERMINATION-2024-0789;2024-07-08T16:00:00Z;2024-07-08T16:00:00Z
+ev-004;inv-002;BANK_CHANGE_LOG;Vendor V20001 bank details changed on 2024-07-02 by LCHEN04. Previous bank: Royal Bank ****1234. New bank: TD Bank ****5678.;FK02-Change-Log;2024-07-07T17:00:00Z;2024-07-07T17:00:00Z
+ev-005;inv-002;INVOICE_DOCUMENT;Invoice receipt 6000000003 for CAD 510,000 against PO 6000000001 (CAD 500,000). Variance: 2.03% exceeding threshold of 2%.;MIRO-6000000003;2024-07-07T17:30:00Z;2024-07-07T17:30:00Z
+ev-006;inv-003;VPN_LOG;ADMIN01 authenticated via VPN at 23:15 from IP 85.214.132.117. GeoIP: Frankfurt, Germany. User home location: Toronto, Canada.;VPN-AUTH-20240707-2315;2024-07-08T00:30:00Z;2024-07-08T00:30:00Z
+ev-007;inv-003;SYSTEM_LOG;Activities by ADMIN01 between 23:15-23:45: SU01 unlock SVCACCT, PFCG assign SAP_ALL to JSMITH01, SU01 password reset SVCACCT.;SM21-20240707;2024-07-08T00:45:00Z;2024-07-08T00:45:00Z

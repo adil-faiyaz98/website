@@ -1,0 +1,143 @@
+<mvc:View
+  controllerName="finsecure.ai.domaindashboards.controller.InsiderThreat"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:layout="sap.ui.layout"
+  xmlns:micro="sap.suite.ui.microchart">
+  <Page id="insiderPage" title="{i18n>insiderTitle}" showNavButton="true" navButtonPress=".onNavBack">
+    <headerContent>
+      <Button icon="sap-icon://sort" press=".onSortByScore" tooltip="Sort by Score"/>
+      <Button icon="sap-icon://refresh" press=".onRefresh" tooltip="{i18n>refresh}"/>
+    </headerContent>
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <!-- Search Toolbar -->
+        <Toolbar>
+          <SearchField id="threatSearch" placeholder="Search by User ID..." search=".onSearch" width="300px"/>
+          <ToolbarSpacer/>
+          <Label text="Showing users sorted by composite threat score (0-100)"/>
+        </Toolbar>
+
+        <layout:Splitter height="600px">
+          <layout:contentAreas>
+            <!-- Users List -->
+            <Table id="threatTable"
+              items="{viewModel>/users}"
+              mode="SingleSelectMaster"
+              selectionChange=".onUserSelect"
+              growing="true"
+              growingThreshold="50"
+              noDataText="{i18n>noData}">
+              <headerToolbar>
+                <OverflowToolbar>
+                  <Title text="Users by Threat Score" level="H3"/>
+                </OverflowToolbar>
+              </headerToolbar>
+              <columns>
+                <Column width="20%"><Text text="{i18n>insiderUser}"/></Column>
+                <Column width="25%" hAlign="Center"><Text text="{i18n>insiderScore}"/></Column>
+                <Column width="25%"><Text text="Last Activity"/></Column>
+                <Column width="30%"><Text text="Risk Level"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem type="Active" highlight="{
+                  path: 'viewModel>compositeScore',
+                  formatter: '.formatter.riskScoreState'
+                }">
+                  <cells>
+                    <Text text="{viewModel>userId}"/>
+                    <ObjectNumber number="{viewModel>compositeScore}" unit="/100"
+                      state="{
+                        path: 'viewModel>compositeScore',
+                        formatter: '.formatter.riskScoreState'
+                      }"/>
+                    <Text text="{
+                      path: 'viewModel>lastActivity',
+                      formatter: '.formatter.dateTimeFormat'
+                    }"/>
+                    <ProgressIndicator
+                      percentValue="{viewModel>compositeScore}"
+                      displayValue="{
+                        path: 'viewModel>compositeScore',
+                        formatter: '.formatter.threatScoreLabel'
+                      }"
+                      state="{
+                        path: 'viewModel>compositeScore',
+                        formatter: '.formatter.riskScoreState'
+                      }"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+
+            <!-- Dimension Breakdown Panel -->
+            <Panel id="dimensionPanel"
+              headerText="Risk Dimension Breakdown"
+              visible="{= !!${viewModel>/selectedUser}}"
+              class="sapUiSmallMargin">
+              <content>
+                <VBox class="sapUiSmallMargin">
+                  <ObjectHeader
+                    title="User: {viewModel>/selectedUser/userId}"
+                    number="{viewModel>/selectedUser/compositeScore}"
+                    numberUnit="/100"/>
+
+                  <!-- Dimension bars -->
+                  <layout:form.SimpleForm editable="false" layout="ResponsiveGridLayout" columnsL="1" columnsM="1">
+                    <core:Title text="Contributing Risk Dimensions"/>
+
+                    <Label text="Access Anomaly"/>
+                    <ProgressIndicator
+                      percentValue="{viewModel>/selectedUser/dimensions/accessAnomaly}"
+                      displayValue="{viewModel>/selectedUser/dimensions/accessAnomaly}/100"
+                      state="{
+                        path: 'viewModel>/selectedUser/dimensions/accessAnomaly',
+                        formatter: '.formatter.riskScoreState'
+                      }"/>
+
+                    <Label text="Behavioral Deviation"/>
+                    <ProgressIndicator
+                      percentValue="{viewModel>/selectedUser/dimensions/behavioralDeviation}"
+                      displayValue="{viewModel>/selectedUser/dimensions/behavioralDeviation}/100"
+                      state="{
+                        path: 'viewModel>/selectedUser/dimensions/behavioralDeviation',
+                        formatter: '.formatter.riskScoreState'
+                      }"/>
+
+                    <Label text="Data Exfiltration"/>
+                    <ProgressIndicator
+                      percentValue="{viewModel>/selectedUser/dimensions/dataExfiltration}"
+                      displayValue="{viewModel>/selectedUser/dimensions/dataExfiltration}/100"
+                      state="{
+                        path: 'viewModel>/selectedUser/dimensions/dataExfiltration',
+                        formatter: '.formatter.riskScoreState'
+                      }"/>
+
+                    <Label text="Privilege Abuse"/>
+                    <ProgressIndicator
+                      percentValue="{viewModel>/selectedUser/dimensions/privilegeAbuse}"
+                      displayValue="{viewModel>/selectedUser/dimensions/privilegeAbuse}/100"
+                      state="{
+                        path: 'viewModel>/selectedUser/dimensions/privilegeAbuse',
+                        formatter: '.formatter.riskScoreState'
+                      }"/>
+
+                    <Label text="Policy Violation"/>
+                    <ProgressIndicator
+                      percentValue="{viewModel>/selectedUser/dimensions/policyViolation}"
+                      displayValue="{viewModel>/selectedUser/dimensions/policyViolation}/100"
+                      state="{
+                        path: 'viewModel>/selectedUser/dimensions/policyViolation',
+                        formatter: '.formatter.riskScoreState'
+                      }"/>
+                  </layout:form.SimpleForm>
+                </VBox>
+              </content>
+            </Panel>
+          </layout:contentAreas>
+        </layout:Splitter>
+      </VBox>
+    </content>
+  </Page>
+</mvc:View>

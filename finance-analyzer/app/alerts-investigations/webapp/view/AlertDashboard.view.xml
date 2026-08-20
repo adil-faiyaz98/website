@@ -1,0 +1,232 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:f="sap.f"
+  xmlns:core="sap.ui.core"
+  xmlns:layout="sap.ui.layout"
+  controllerName="finsecure.ai.alertsinvestigations.controller.AlertDashboard">
+
+  <Page
+    id="alertDashboardPage"
+    title="{i18n>alertDashboardTitle}"
+    showNavButton="false">
+
+    <headerContent>
+      <Button
+        id="btnAccessReview"
+        text="{i18n>accessReviewTitle}"
+        icon="sap-icon://shield"
+        press=".onNavigateToAccessReview"
+        type="Emphasized" />
+      <Button
+        id="btnRefresh"
+        icon="sap-icon://refresh"
+        press=".onRefresh"
+        tooltip="{i18n>refresh}" />
+    </headerContent>
+
+    <content>
+      <!-- SLA Summary Strip -->
+      <Panel id="slaSummaryPanel" headerText="SLA Overview" class="sapUiSmallMargin">
+        <HBox justifyContent="SpaceBetween" class="sapUiSmallMargin">
+          <VBox alignItems="Center" id="slaOnTrackBox">
+            <ObjectNumber
+              id="slaOnTrackCount"
+              number="{dashboard>/slaOnTrack}"
+              unit="On Track"
+              state="Success" />
+          </VBox>
+          <VBox alignItems="Center" id="slaWarningBox">
+            <ObjectNumber
+              id="slaWarningCount"
+              number="{dashboard>/slaWarning}"
+              unit="At Risk"
+              state="Warning" />
+          </VBox>
+          <VBox alignItems="Center" id="slaCriticalBox">
+            <ObjectNumber
+              id="slaCriticalCount"
+              number="{dashboard>/slaCritical}"
+              unit="Critical/Overdue"
+              state="Error" />
+          </VBox>
+        </HBox>
+      </Panel>
+
+      <!-- Facet Filter Bar -->
+      <IconTabBar
+        id="alertPriorityTabs"
+        select=".onPriorityTabSelect"
+        selectedKey="ALL">
+        <items>
+          <IconTabFilter
+            id="tabAll"
+            key="ALL"
+            text="All"
+            count="{dashboard>/totalAlerts}"
+            showAll="true" />
+          <IconTabFilter
+            id="tabCritical"
+            key="CRITICAL"
+            text="{i18n>priorityCritical}"
+            count="{dashboard>/criticalCount}"
+            iconColor="Negative"
+            icon="sap-icon://error" />
+          <IconTabFilter
+            id="tabHigh"
+            key="HIGH"
+            text="{i18n>priorityHigh}"
+            count="{dashboard>/highCount}"
+            iconColor="Critical"
+            icon="sap-icon://warning" />
+          <IconTabFilter
+            id="tabMedium"
+            key="MEDIUM"
+            text="{i18n>priorityMedium}"
+            count="{dashboard>/mediumCount}"
+            iconColor="Neutral"
+            icon="sap-icon://information" />
+          <IconTabFilter
+            id="tabLow"
+            key="LOW"
+            text="{i18n>priorityLow}"
+            count="{dashboard>/lowCount}"
+            iconColor="Positive"
+            icon="sap-icon://hint" />
+        </items>
+        <content>
+          <!-- Filter Bar -->
+          <Toolbar id="filterToolbar" class="sapUiSmallMarginTop">
+            <Select
+              id="filterStatus"
+              change=".onFilterChange"
+              selectedKey="OPEN">
+              <core:Item key="" text="All Statuses" />
+              <core:Item key="OPEN" text="{i18n>statusOpen}" />
+              <core:Item key="IN_PROGRESS" text="{i18n>statusInProgress}" />
+              <core:Item key="ESCALATED" text="{i18n>statusEscalated}" />
+            </Select>
+            <Select
+              id="filterCategory"
+              change=".onFilterChange">
+              <core:Item key="" text="All Categories" />
+              <core:Item key="ANOMALY" text="Anomaly" />
+              <core:Item key="SOD_VIOLATION" text="SoD Violation" />
+              <core:Item key="FRAUD_PATTERN" text="Fraud Pattern" />
+              <core:Item key="IAM_VIOLATION" text="IAM Violation" />
+              <core:Item key="PRIVILEGE_ESCALATION" text="Privilege Escalation" />
+              <core:Item key="INSIDER_THREAT" text="Insider Threat" />
+              <core:Item key="VENDOR_TAMPERING" text="Vendor Tampering" />
+              <core:Item key="P2P_CONTROL_GAP" text="P2P Control Gap" />
+            </Select>
+            <Select
+              id="filterAnalyst"
+              change=".onFilterChange">
+              <core:Item key="" text="All Analysts" />
+            </Select>
+            <ToolbarSpacer />
+            <SearchField
+              id="alertSearch"
+              placeholder="Search alerts..."
+              search=".onSearch"
+              width="300px" />
+          </Toolbar>
+
+          <!-- Alert List Table -->
+          <Table
+            id="alertTable"
+            items="{
+              path: '/Alerts',
+              parameters: {
+                $orderby: 'createdAt desc'
+              },
+              sorter: { path: 'createdAt', descending: true }
+            }"
+            growing="true"
+            growingThreshold="50"
+            mode="SingleSelectMaster"
+            selectionChange=".onAlertSelect"
+            noDataText="{i18n>noData}">
+            <columns>
+              <Column id="colPriority" width="6rem" hAlign="Center">
+                <Text text="{i18n>filterPriority}" />
+              </Column>
+              <Column id="colTitle">
+                <Text text="Alert" />
+              </Column>
+              <Column id="colRiskScore" width="7rem" hAlign="Center">
+                <Text text="{i18n>riskScore}" />
+              </Column>
+              <Column id="colCategory" width="10rem">
+                <Text text="{i18n>filterCategory}" />
+              </Column>
+              <Column id="colStatus" width="9rem">
+                <Text text="{i18n>filterStatus}" />
+              </Column>
+              <Column id="colAnalyst" width="8rem">
+                <Text text="{i18n>filterAnalyst}" />
+              </Column>
+              <Column id="colSLA" width="12rem">
+                <Text text="{i18n>slaDeadline}" />
+              </Column>
+            </columns>
+            <items>
+              <ColumnListItem type="Navigation" press=".onAlertPress">
+                <cells>
+                  <ObjectStatus
+                    text="{priority}"
+                    state="{
+                      path: 'priority',
+                      formatter: '.formatter.priorityState'
+                    }"
+                    icon="{
+                      path: 'priority',
+                      formatter: '.formatter.priorityIcon'
+                    }" />
+                  <VBox>
+                    <Text text="{title}" maxLines="2" />
+                    <ObjectStatus
+                      text="{
+                        path: 'financialExposure',
+                        type: 'sap.ui.model.type.Currency',
+                        formatOptions: { showMeasure: false }
+                      }"
+                      state="None"
+                      visible="{= ${financialExposure} > 0}" />
+                  </VBox>
+                  <ObjectNumber
+                    number="{riskScore}"
+                    unit="/100"
+                    state="{
+                      path: 'riskScore',
+                      formatter: '.formatter.riskScoreState'
+                    }" />
+                  <Text text="{riskCategory}" />
+                  <ObjectStatus
+                    text="{
+                      path: 'status',
+                      formatter: '.formatter.statusLabel'
+                    }"
+                    state="{
+                      path: 'status',
+                      formatter: '.formatter.statusState'
+                    }" />
+                  <Text text="{assignedAnalyst}" />
+                  <ObjectStatus
+                    text="{
+                      path: 'slaDeadline',
+                      formatter: '.formatter.slaCountdown'
+                    }"
+                    state="{
+                      path: 'slaDeadline',
+                      formatter: '.formatter.slaStatus'
+                    }" />
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </IconTabBar>
+    </content>
+  </Page>
+</mvc:View>

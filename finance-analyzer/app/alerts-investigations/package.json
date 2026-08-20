@@ -1,0 +1,16 @@
+{
+  "name": "alerts-investigations",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Alert & Investigation Management UI for FinSecure AI",
+  "keywords": [],
+  "sapux": true,
+  "devDependencies": {
+    "@ui5/cli": "^3",
+    "@sap/ux-specification": "latest"
+  },
+  "scripts": {
+    "start": "ui5 serve --config=ui5.yaml --open index.html",
+    "build": "ui5 build --config=ui5.yaml --clean-dest --dest dist"
+  }
+}

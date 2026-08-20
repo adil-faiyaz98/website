@@ -1,0 +1,87 @@
+<mvc:View
+  controllerName="finsecure.ai.domaindashboards.controller.IAMHeatmap"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:layout="sap.ui.layout"
+  xmlns:viz="sap.viz.ui5.controls"
+  xmlns:vizData="sap.viz.ui5.data">
+  <Page id="iamPage" title="{i18n>iamTitle}" showNavButton="true" navButtonPress=".onNavBack">
+    <headerContent>
+      <Button icon="sap-icon://refresh" press=".onRefresh" tooltip="{i18n>refresh}"/>
+    </headerContent>
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <!-- Legend -->
+        <Toolbar>
+          <Label text="Risk Score Legend:" class="sapUiSmallMarginEnd"/>
+          <ObjectStatus text="Critical (≥80)" state="Error" class="sapUiSmallMarginEnd"/>
+          <ObjectStatus text="High (≥60)" state="Warning" class="sapUiSmallMarginEnd"/>
+          <ObjectStatus text="Medium (≥40)" state="Information" class="sapUiSmallMarginEnd"/>
+          <ObjectStatus text="Low (&lt;40)" state="Success"/>
+        </Toolbar>
+
+        <!-- Heatmap Chart: Users vs Privilege Categories -->
+        <viz:VizFrame id="iamHeatmapChart" vizType="heatmap" width="100%" height="500px">
+          <viz:dataset>
+            <vizData:FlattenedDataset data="{viewModel>/heatmapData}">
+              <vizData:dimensions>
+                <vizData:DimensionDefinition name="User" value="{viewModel>userId}"/>
+                <vizData:DimensionDefinition name="Privilege Category" value="{viewModel>category}"/>
+              </vizData:dimensions>
+              <vizData:measures>
+                <vizData:MeasureDefinition name="Risk Score" value="{viewModel>riskScore}"/>
+              </vizData:measures>
+            </vizData:FlattenedDataset>
+          </viz:dataset>
+          <viz:feeds>
+            <viz:ui5.controls.common.feeds.FeedItem uid="categoryAxis" type="Dimension" values="User"/>
+            <viz:ui5.controls.common.feeds.FeedItem uid="categoryAxis2" type="Dimension" values="Privilege Category"/>
+            <viz:ui5.controls.common.feeds.FeedItem uid="color" type="Measure" values="Risk Score"/>
+          </viz:feeds>
+        </viz:VizFrame>
+
+        <!-- Detailed Grid/Table View -->
+        <Panel headerText="Privilege Risk Details" expandable="true" expanded="false" class="sapUiSmallMarginTop">
+          <content>
+            <Table id="iamDetailTable"
+              items="{viewModel>/heatmapData}"
+              growing="true"
+              growingThreshold="50"
+              noDataText="{i18n>noData}">
+              <columns>
+                <Column width="20%"><Text text="{i18n>iamUser}"/></Column>
+                <Column width="30%"><Text text="{i18n>iamPrivilegeCategory}"/></Column>
+                <Column width="20%" hAlign="Center"><Text text="{i18n>iamRiskScore}"/></Column>
+                <Column width="30%"><Text text="Risk Indicator"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem highlight="{
+                  path: 'viewModel>riskScore',
+                  formatter: '.formatter.riskScoreState'
+                }">
+                  <cells>
+                    <Text text="{viewModel>userId}"/>
+                    <Text text="{viewModel>category}"/>
+                    <ObjectNumber number="{viewModel>riskScore}" unit="/100"
+                      state="{
+                        path: 'viewModel>riskScore',
+                        formatter: '.formatter.riskScoreState'
+                      }"/>
+                    <ProgressIndicator
+                      percentValue="{viewModel>riskScore}"
+                      displayValue="{viewModel>riskScore}%"
+                      state="{
+                        path: 'viewModel>riskScore',
+                        formatter: '.formatter.riskScoreState'
+                      }"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </content>
+        </Panel>
+      </VBox>
+    </content>
+  </Page>
+</mvc:View>

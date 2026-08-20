@@ -1,0 +1,114 @@
+{
+  "_version": "1.59.0",
+  "sap.app": {
+    "id": "finsecure.ai.riskIntelligence",
+    "type": "application",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "dataSources": {
+      "analystService": {
+        "uri": "/analyst/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "sap-icon://shield"
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.uxap": {},
+        "sap.ui.layout": {},
+        "sap.ovp": {},
+        "sap.viz": {},
+        "sap.suite.ui.microchart": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "finsecure.ai.riskIntelligence.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "analystService",
+        "preload": true,
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true,
+          "groupId": "$auto"
+        }
+      }
+    },
+    "resources": {
+      "css": []
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "async": true,
+        "viewPath": "finsecure.ai.riskIntelligence.view",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide"
+      },
+      "routes": [
+        {
+          "name": "dashboard",
+          "pattern": "",
+          "target": ["dashboard"]
+        },
+        {
+          "name": "transactionDetail",
+          "pattern": "Transactions({transactionId})",
+          "target": ["transactionDetail"]
+        }
+      ],
+      "targets": {
+        "dashboard": {
+          "viewName": "RiskDashboard",
+          "viewId": "riskDashboard",
+          "viewLevel": 1
+        },
+        "transactionDetail": {
+          "viewName": "TransactionDetail",
+          "viewId": "transactionDetail",
+          "viewLevel": 2
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "finsecure.ai.riskIntelligence.view.App",
+      "type": "XML",
+      "async": true,
+      "id": "appView"
+    }
+  }
+}

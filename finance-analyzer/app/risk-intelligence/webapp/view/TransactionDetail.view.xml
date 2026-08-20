@@ -1,0 +1,83 @@
+<mvc:View
+  controllerName="finsecure.ai.riskIntelligence.controller.TransactionDetail"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+
+  <Page
+    id="transactionDetailPage"
+    title="{i18n>drillDownTitle}"
+    showNavButton="true"
+    navButtonPress="onNavBack">
+
+    <content>
+      <Table
+        id="transactionsTable"
+        growing="true"
+        growingThreshold="50"
+        growingScrollToLoad="true"
+        alternateRowColors="true"
+        sticky="ColumnHeaders,HeaderToolbar"
+        items="{
+          path: '/Transactions',
+          sorter: { path: 'createdAt', descending: true }
+        }">
+
+        <headerToolbar>
+          <OverflowToolbar>
+            <Title text="{i18n>drillDownTitle}" level="H2"/>
+            <ToolbarSpacer/>
+            <SearchField
+              id="transactionSearch"
+              placeholder="Search transactions..."
+              search="onTransactionSearch"
+              width="20rem"/>
+          </OverflowToolbar>
+        </headerToolbar>
+
+        <columns>
+          <Column>
+            <Text text="Document #"/>
+          </Column>
+          <Column>
+            <Text text="Type"/>
+          </Column>
+          <Column>
+            <Text text="Amount"/>
+          </Column>
+          <Column>
+            <Text text="User"/>
+          </Column>
+          <Column>
+            <Text text="Company Code"/>
+          </Column>
+          <Column>
+            <Text text="Risk Score"/>
+          </Column>
+          <Column>
+            <Text text="Posting Date"/>
+          </Column>
+        </columns>
+
+        <items>
+          <ColumnListItem type="Navigation" press="onTransactionPress">
+            <cells>
+              <ObjectIdentifier title="{documentNumber}" text="{ID}"/>
+              <Text text="{documentType}"/>
+              <ObjectNumber number="{amount}" unit="{currency}"/>
+              <Text text="{userId}"/>
+              <Text text="{companyCode}"/>
+              <ObjectStatus
+                text="{riskScore}"
+                state="{
+                  path: 'riskScore',
+                  formatter: '.formatter.riskScoreState'
+                }"/>
+              <Text text="{postingDate}"/>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </content>
+  </Page>
+</mvc:View>

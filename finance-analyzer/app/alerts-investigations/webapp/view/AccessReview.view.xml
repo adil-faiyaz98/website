@@ -1,0 +1,181 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:layout="sap.ui.layout"
+  controllerName="finsecure.ai.alertsinvestigations.controller.AccessReview">
+
+  <Page
+    id="accessReviewPage"
+    title="{i18n>accessReviewTitle}"
+    showNavButton="true"
+    navButtonPress=".onNavBack">
+
+    <headerContent>
+      <Button
+        id="btnRefreshCampaigns"
+        icon="sap-icon://refresh"
+        press=".onRefresh"
+        tooltip="{i18n>refresh}" />
+    </headerContent>
+
+    <content>
+      <!-- Campaign Overview -->
+      <Panel id="campaignPanel" headerText="{i18n>campaignList}" class="sapUiSmallMargin">
+        <content>
+          <Table
+            id="campaignTable"
+            items="{iam>/AccessReviewCampaigns}"
+            mode="SingleSelectMaster"
+            selectionChange=".onCampaignSelect"
+            noDataText="{i18n>noData}">
+            <columns>
+              <Column id="campIdCol" width="12rem">
+                <Text text="Campaign" />
+              </Column>
+              <Column id="campTriggerCol" width="10rem">
+                <Text text="{i18n>campaignTrigger}" />
+              </Column>
+              <Column id="campStatusCol" width="8rem">
+                <Text text="{i18n>campaignStatus}" />
+              </Column>
+              <Column id="campCompletionCol" width="8rem" hAlign="Center">
+                <Text text="{i18n>campaignCompletion}" />
+              </Column>
+              <Column id="campDeadlineCol" width="10rem">
+                <Text text="{i18n>campaignDeadline}" />
+              </Column>
+            </columns>
+            <items>
+              <ColumnListItem type="Navigation" press=".onCampaignPress">
+                <cells>
+                  <Text text="{iam>ID}" />
+                  <Text text="{iam>triggerType}" />
+                  <ObjectStatus
+                    text="{iam>status}"
+                    state="{
+                      path: 'iam>status',
+                      formatter: '.formatter.campaignStatusState'
+                    }" />
+                  <ProgressIndicator
+                    percentValue="{iam>completionRate}"
+                    displayValue="{
+                      path: 'iam>completionRate',
+                      formatter: '.formatter.completionRateText'
+                    }"
+                    state="{= ${iam>completionRate} >= 80 ? 'Success' : ${iam>completionRate} >= 50 ? 'Warning' : 'Error'}" />
+                  <Text text="{iam>deadline}" />
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </Panel>
+
+      <!-- Task Review Interface -->
+      <Panel
+        id="taskReviewPanel"
+        headerText="{i18n>taskReview}"
+        class="sapUiSmallMargin"
+        visible="{accessReview>/tasksPanelVisible}">
+        <headerToolbar>
+          <Toolbar id="taskToolbar">
+            <Title id="taskTitle" text="{i18n>taskReview}" level="H4" />
+            <ToolbarSpacer />
+            <Button
+              id="btnBulkApprove"
+              text="{i18n>decisionApprove}"
+              type="Accept"
+              icon="sap-icon://accept"
+              press=".onBulkDecision"
+              enabled="{accessReview>/bulkEnabled}" />
+            <Button
+              id="btnBulkRevoke"
+              text="{i18n>decisionRevoke}"
+              type="Reject"
+              icon="sap-icon://decline"
+              press=".onBulkDecision"
+              enabled="{accessReview>/bulkEnabled}" />
+            <Button
+              id="btnBulkFlag"
+              text="{i18n>decisionFlag}"
+              type="Default"
+              icon="sap-icon://flag"
+              press=".onBulkDecision"
+              enabled="{accessReview>/bulkEnabled}" />
+          </Toolbar>
+        </headerToolbar>
+        <content>
+          <Table
+            id="taskTable"
+            items="{iam>tasks}"
+            mode="MultiSelect"
+            selectionChange=".onTaskSelectionChange"
+            noDataText="{i18n>noData}">
+            <columns>
+              <Column id="taskUserCol" width="8rem">
+                <Text text="{i18n>taskUser}" />
+              </Column>
+              <Column id="taskRolesCol">
+                <Text text="{i18n>taskRoles}" />
+              </Column>
+              <Column id="taskReviewerCol" width="8rem">
+                <Text text="{i18n>taskReviewer}" />
+              </Column>
+              <Column id="taskDecisionCol" width="10rem">
+                <Text text="{i18n>taskDecision}" />
+              </Column>
+              <Column id="taskJustificationCol">
+                <Text text="{i18n>taskJustification}" />
+              </Column>
+              <Column id="taskActionsCol" width="16rem" hAlign="Center">
+                <Text text="Actions" />
+              </Column>
+            </columns>
+            <items>
+              <ColumnListItem>
+                <cells>
+                  <ObjectIdentifier title="{iam>userId}" />
+                  <Text text="{iam>roles}" />
+                  <Text text="{iam>reviewerId}" />
+                  <ObjectStatus
+                    text="{
+                      path: 'iam>decision',
+                      formatter: '.formatter.reviewDecisionLabel'
+                    }"
+                    state="{
+                      path: 'iam>decision',
+                      formatter: '.formatter.reviewDecisionState'
+                    }" />
+                  <Text text="{iam>justification}" maxLines="2" />
+                  <HBox justifyContent="Center">
+                    <Button
+                      icon="sap-icon://accept"
+                      type="Accept"
+                      tooltip="{i18n>decisionApprove}"
+                      press=".onApproveTask"
+                      class="sapUiTinyMarginEnd"
+                      enabled="{= !${iam>decision}}" />
+                    <Button
+                      icon="sap-icon://decline"
+                      type="Reject"
+                      tooltip="{i18n>decisionRevoke}"
+                      press=".onRevokeTask"
+                      class="sapUiTinyMarginEnd"
+                      enabled="{= !${iam>decision}}" />
+                    <Button
+                      icon="sap-icon://flag"
+                      type="Default"
+                      tooltip="{i18n>decisionFlag}"
+                      press=".onFlagTask"
+                      enabled="{= !${iam>decision}}" />
+                  </HBox>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </Panel>
+    </content>
+  </Page>
+</mvc:View>

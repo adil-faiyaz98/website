@@ -1,0 +1,207 @@
+{
+  "_version": "1.59.0",
+  "sap.app": {
+    "id": "finsecure.ai.soc.commandcenter",
+    "type": "application",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "dataSources": {
+      "analystService": {
+        "uri": "/analyst/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      },
+      "adminService": {
+        "uri": "/admin/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      },
+      "executiveService": {
+        "uri": "/executive/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      },
+      "iamService": {
+        "uri": "/iam/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      },
+      "auditorService": {
+        "uri": "/auditor/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "sap-icon://shield"
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": false
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "rootView": {
+      "viewName": "finsecure.ai.soc.commandcenter.view.CommandCenter",
+      "type": "XML",
+      "id": "commandCenterView"
+    },
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ui.layout": {},
+        "sap.f": {},
+        "sap.uxap": {},
+        "sap.viz": {},
+        "sap.ui.table": {},
+        "sap.suite.ui.commons": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "finsecure.ai.soc.commandcenter.i18n.i18n"
+        }
+      },
+      "analyst": {
+        "dataSource": "analystService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true
+        }
+      },
+      "admin": {
+        "dataSource": "adminService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true
+        }
+      },
+      "executive": {
+        "dataSource": "executiveService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true
+        }
+      },
+      "iam": {
+        "dataSource": "iamService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true
+        }
+      },
+      "dashboard": {
+        "type": "sap.ui.model.json.JSONModel",
+        "settings": {
+          "data": {
+            "darkMode": false,
+            "currentRole": "",
+            "notificationsEnabled": false,
+            "shareableUrl": "",
+            "kpis": {
+              "mttd": 0,
+              "mttr": 0,
+              "alertVolume7d": 0,
+              "alertVolume30d": 0,
+              "falsePositiveRate": 0,
+              "complianceCoverage": 0
+            }
+          }
+        }
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/command-center.css"
+        },
+        {
+          "uri": "css/dark-mode.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "finsecure.ai.soc.commandcenter.view",
+        "controlId": "commandCenterApp",
+        "controlAggregation": "pages"
+      },
+      "routes": [
+        {
+          "name": "main",
+          "pattern": "",
+          "target": "commandCenter"
+        },
+        {
+          "name": "landscape",
+          "pattern": "landscape",
+          "target": "landscapeView"
+        },
+        {
+          "name": "geographic",
+          "pattern": "geographic",
+          "target": "geographicView"
+        },
+        {
+          "name": "threatFeed",
+          "pattern": "threat-feed",
+          "target": "threatFeed"
+        }
+      ],
+      "targets": {
+        "commandCenter": {
+          "viewName": "CommandCenter",
+          "viewLevel": 1
+        },
+        "landscapeView": {
+          "viewName": "LandscapeView",
+          "viewLevel": 2
+        },
+        "geographicView": {
+          "viewName": "GeographicView",
+          "viewLevel": 2
+        },
+        "threatFeed": {
+          "viewName": "ThreatFeed",
+          "viewLevel": 2
+        }
+      }
+    }
+  }
+}

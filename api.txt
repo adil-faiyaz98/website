@@ -1,0 +1,2948 @@
+openapi: 3.1.0
+info:
+  title: SAP Migration Workbench API
+  version: 1.0.0
+  description: |
+    REST API for the SAP Migration Workbench — an enterprise-grade platform that
+    migrates integration scenarios from SAP PI/PO, MuleSoft, Dell Boomi, and
+    TIBCO BusinessWorks into SAP Integration Suite.
+
+    ## Async model
+
+    Long-running operations (discovery, batch transformation, deployment,
+    regression runs) return `202 Accepted` with a `Job` envelope containing a
+    `jobId`. Clients poll `GET /jobs/{jobId}` for status and retrieve the
+    result via the resource-specific GET endpoint once `status` is `completed`.
+
+    Synchronous operations (single iFlow transformation, validation of a
+    pre-generated artifact, comparison) return their result directly with
+    `200 OK`.
+
+    ## Error model
+
+    All endpoints return errors using the `Error` schema with an RFC 7807-style
+    structure. Validation failures return `400`; missing resources return `404`;
+    long-running operations that exceed their timeout return `408`.
+
+    ## Authentication
+
+    All endpoints require OAuth2 Client Credentials. The UI obtains a Bearer
+    token from the configured token endpoint and presents it in the
+    `Authorization: Bearer <token>` header.
+
+  contact:
+    name: SAP Migration Workbench Team
+  license:
+    name: Internal
+
+servers:
+  - url: https://migration-workbench.example.com/api/v1
+    description: Production tenant
+  - url: https://migration-workbench-qa.example.com/api/v1
+    description: QA tenant
+  - url: http://localhost:3000/api/v1
+    description: Local dev
+
+security:
+  - oauth2ClientCredentials: []
+
+tags:
+  - name: Jobs
+    description: Async job status and polling
+  - name: Discovery
+    description: Source-platform scenario discovery (SAP PO, MuleSoft, Boomi, TIBCO)
+  - name: Risk Assessment
+    description: Complexity scoring, wave planning, mitigation plans
+  - name: Transformation
+    description: Migration_IR → iFlow XML conversion
+  - name: Validation
+    description: Structural, semantic, and business-rule validation of iFlows
+  - name: Reconciliation
+    description: Record count + field-level comparison post-migration
+  - name: Governance
+    description: CPILint compliance + auto-remediation
+  - name: Consolidation
+    description: Multi-vendor consolidation analysis + cost/roadmap reports
+  - name: Blueprint
+    description: Data requirements capture + process traceability
+  - name: Deployment
+    description: Tenant deployment + PR generation + promotion
+  - name: Regression Testing
+    description: Production message capture + replay against migrated iFlows
+  - name: Pipeline
+    description: End-to-end migration orchestration
+
+# ─── Reusable Components ────────────────────────────────────────────────────────
+
+components:
+  securitySchemes:
+    oauth2ClientCredentials:
+      type: oauth2
+      description: OAuth2 Client Credentials grant
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes:
+            workbench:read: Read access to all migration resources
+            workbench:write: Create and modify migration resources
+            workbench:deploy: Deploy artifacts to SAP Integration Suite tenants
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number (1-based)
+      schema: { type: integer, minimum: 1, default: 1 }
+    PageSizeParam:
+      name: pageSize
+      in: query
+      description: Items per page (max 500)
+      schema: { type: integer, minimum: 1, maximum: 500, default: 50 }
+    JobIdParam:
+      name: jobId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    BadRequest:
+      description: Malformed request or schema violation
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Missing or invalid OAuth token
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Token lacks the required scope
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource does not exist or is not visible to this caller
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Resource state prevents the requested operation
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimited:
+      description: Too many requests
+      headers:
+        Retry-After:
+          schema: { type: integer }
+          description: Seconds until retry is allowed
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Error' }
+    AcceptedJob:
+      description: Operation accepted; poll the returned job for completion
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Job' }
+      headers:
+        Location:
+          schema: { type: string }
+          description: URL of the created job resource
+
+  schemas:
+
+    # ── Core / shared ──────────────────────────────────────────────────────────
+
+    Error:
+      type: object
+      description: RFC 7807-style problem details
+      required: [type, title, status]
+      properties:
+        type:    { type: string, format: uri, description: 'Stable error identifier (URI)' }
+        title:   { type: string, description: 'Short, human-readable summary' }
+        status:  { type: integer, description: 'HTTP status code' }
+        detail:  { type: string, description: 'Human-readable explanation' }
+        instance: { type: string, description: 'URI reference identifying the specific occurrence' }
+        validationErrors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:   { type: string }
+              message: { type: string }
+
+    Pagination:
+      type: object
+      required: [page, pageSize, total]
+      properties:
+        page:     { type: integer }
+        pageSize: { type: integer }
+        total:    { type: integer }
+        hasNext:  { type: boolean }
+
+    Job:
+      type: object
+      required: [jobId, kind, status, createdAt]
+      properties:
+        jobId:    { type: string, format: uuid }
+        kind:
+          type: string
+          description: Kind of job (one of the long-running operations)
+          enum:
+            - discovery
+            - risk_assessment
+            - transformation_batch
+            - validation_batch
+            - reconciliation_field
+            - consolidation_analysis
+            - deployment
+            - regression_capture
+            - regression_run
+            - regression_bulk_run
+            - pipeline
+        status:
+          type: string
+          enum: [pending, running, completed, failed, cancelled]
+        progress:
+          type: object
+          description: Best-effort progress update; populated while running
+          properties:
+            processed: { type: integer }
+            total:     { type: integer }
+            phase:     { type: string }
+            message:   { type: string }
+        resourceUrl:
+          type: string
+          format: uri
+          description: URL of the resource produced by the job (populated when completed)
+        error:
+          $ref: '#/components/schemas/Error'
+        createdAt:   { type: string, format: date-time }
+        startedAt:   { type: string, format: date-time }
+        completedAt: { type: string, format: date-time }
+
+    JobList:
+      type: object
+      required: [items, pagination]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Job' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    # ── Enums (echo of src/core/enums.ts) ─────────────────────────────────────
+
+    PlatformType:
+      type: string
+      enum: [SAP_PO, MULESOFT, BOOMI, TIBCO, CUSTOM]
+
+    ComplexityCategory:
+      type: string
+      enum: [Low, Medium, High, Critical]
+
+    ComplexityScore:
+      type: string
+      enum: [S, M, L, XL]
+
+    ProjectRole:
+      type: string
+      enum:
+        - Migration Architect
+        - Integration Developer
+        - Data Analyst
+        - Quality Lead
+        - Viewer
+
+    DeploymentEnvironment:
+      type: string
+      enum: [Development, Quality, Production]
+
+    ConnectorType:
+      type: string
+      enum: [ODBC, JDBC, BAPI, RFC, OLAP, OPEN_HUB]
+
+    SAPModule:
+      type: string
+      enum: [FI, CO, MM, SD, PP, HR, PM, QM, WM]
+
+    # ── Migration_IR (src/core/migration-ir.ts) ───────────────────────────────
+
+    MigrationIR:
+      type: object
+      required: [metadata, endpoints, transformations, routing, errorHandling, externalizedParams]
+      properties:
+        metadata:           { $ref: '#/components/schemas/IRMetadata' }
+        endpoints:
+          type: array
+          items: { $ref: '#/components/schemas/IREndpoint' }
+        transformations:
+          type: array
+          items: { $ref: '#/components/schemas/IRTransformation' }
+        routing:
+          type: array
+          items: { $ref: '#/components/schemas/IRRoutingRule' }
+        errorHandling:
+          type: array
+          items: { $ref: '#/components/schemas/IRErrorHandler' }
+        externalizedParams:
+          type: array
+          items: { $ref: '#/components/schemas/IRParameter' }
+
+    IRMetadata:
+      type: object
+      required: [sourceId, sourcePlatform, scenarioName, version, discoveredAt]
+      properties:
+        sourceId:         { type: string }
+        sourcePlatform:   { type: string }
+        scenarioName:     { type: string }
+        version:          { type: string }
+        discoveredAt:     { type: string, format: date-time }
+        complexityScore:  { $ref: '#/components/schemas/ComplexityScore' }
+        estimatedEffortDays: { type: number, minimum: 0 }
+        dependencies:
+          type: array
+          items: { type: string }
+        consolidationGroup: { type: string }
+        customCodeLanguages:
+          type: array
+          items: { type: string }
+
+    IREndpoint:
+      type: object
+      required: [id, direction, adapterType, protocol, authMethod, properties]
+      properties:
+        id:          { type: string }
+        direction:   { type: string, enum: [sender, receiver] }
+        adapterType: { type: string }
+        protocol:    { type: string }
+        authMethod:  { type: string }
+        properties:
+          type: object
+          additionalProperties: { type: string }
+
+    IRTransformation:
+      type: object
+      required: [id, type, sourceStructure, targetStructure, mappingRules, resources]
+      properties:
+        id:               { type: string }
+        type:
+          type: string
+          enum: [message_mapping, xslt, java, abap, groovy, custom]
+        sourceStructure: { type: string }
+        targetStructure: { type: string }
+        mappingRules:
+          type: array
+          items: { $ref: '#/components/schemas/IRMappingRule' }
+        resources:
+          type: array
+          items: { $ref: '#/components/schemas/IRResource' }
+
+    IRMappingRule:
+      type: object
+      required: [sourceField, targetField]
+      properties:
+        sourceField: { type: string }
+        targetField: { type: string }
+        function:    { type: string }
+        condition:   { type: string }
+        parameters:
+          type: object
+          additionalProperties: { type: string }
+
+    IRResource:
+      type: object
+      required: [id, name, type, content]
+      properties:
+        id:      { type: string }
+        name:    { type: string }
+        type:    { type: string }
+        content: { type: string }
+
+    IRRoutingRule:
+      type: object
+      required: [id, pattern, conditions]
+      properties:
+        id:          { type: string }
+        pattern:     { type: string, enum: [content_based, recipient_list, multicast] }
+        conditions:
+          type: array
+          items: { $ref: '#/components/schemas/IRCondition' }
+        defaultRoute: { type: string }
+
+    IRCondition:
+      type: object
+      required: [id, expression, targetRoute]
+      properties:
+        id:           { type: string }
+        expression:   { type: string }
+        targetRoute:  { type: string }
+        priority:     { type: integer }
+
+    IRErrorHandler:
+      type: object
+      required: [id, triggerCondition, actions]
+      properties:
+        id:               { type: string }
+        triggerCondition: { type: string }
+        actions:
+          type: array
+          items: { $ref: '#/components/schemas/IRErrorAction' }
+
+    IRErrorAction:
+      type: object
+      required: [type, config]
+      properties:
+        type:
+          type: string
+          enum: [log, alert, custom_response, retry, route]
+        config:
+          type: object
+          additionalProperties: { type: string }
+
+    IRParameter:
+      type: object
+      required: [name, value, category]
+      properties:
+        name:     { type: string }
+        value:    { type: string }
+        category:
+          type: string
+          enum: [endpoint, credential, path, queue, retry, other]
+
+    # ── Discovery (src/discovery/interfaces.ts) ───────────────────────────────
+
+    CredentialReference:
+      type: object
+      required: [type, reference]
+      properties:
+        type:      { type: string }
+        reference: { type: string }
+
+    SourcePlatformConfig:
+      type: object
+      required: [platformType, connectionParams, credentials]
+      properties:
+        platformType: { $ref: '#/components/schemas/PlatformType' }
+        connectionParams:
+          type: object
+          additionalProperties: { type: string }
+        credentials: { $ref: '#/components/schemas/CredentialReference' }
+
+    ConnectionResult:
+      type: object
+      required: [success]
+      properties:
+        success:      { type: boolean }
+        connectionId: { type: string }
+        error:        { $ref: '#/components/schemas/ConnectionError' }
+
+    ConnectionError:
+      type: object
+      required: [category, message, correctiveAction, timestamp]
+      properties:
+        category:
+          type: string
+          enum: [authentication, network, authorization, configuration]
+        message:          { type: string }
+        correctiveAction: { type: string }
+        timestamp:        { type: string, format: date-time }
+
+    DiscoveryOptions:
+      type: object
+      properties:
+        timeoutMs:             { type: integer, minimum: 1000 }
+        maxScenarios:          { type: integer, minimum: 1, maximum: 5000 }
+        checkpointBatchSize:   { type: integer, minimum: 1, maximum: 1000 }
+
+    DiscoveryRequest:
+      type: object
+      required: [config]
+      properties:
+        config:  { $ref: '#/components/schemas/SourcePlatformConfig' }
+        options: { $ref: '#/components/schemas/DiscoveryOptions' }
+
+    DiscoveryProgress:
+      type: object
+      required: [scenariosFound, currentPhase, checkpointId, discoveryId, timestamp]
+      properties:
+        scenariosFound:        { type: integer }
+        currentPhase:          { type: string }
+        checkpointId:          { type: string }
+        discoveryId:           { type: string }
+        timestamp:             { type: string, format: date-time }
+        lastProcessedScenario: { type: string }
+
+    DiscoveredScenarioEntry:
+      type: object
+      required: [id, scenarioName, sourceAdapterType, targetAdapterType, messageProtocol, mappingType, totalMessageCount, avgDailyMessageCount, rawMetadata]
+      properties:
+        id:                   { type: string }
+        scenarioName:         { type: string }
+        sourceAdapterType:    { type: string }
+        targetAdapterType:    { type: string }
+        messageProtocol:      { type: string }
+        mappingType:          { type: string }
+        totalMessageCount:    { type: integer }
+        avgDailyMessageCount: { type: integer }
+        rawMetadata:
+          type: object
+          additionalProperties: true
+
+    ScenarioInventory:
+      type: object
+      required: [discoveryId, connectionId, platformType, scenarios, discoveredAt, totalCount, warnings]
+      properties:
+        discoveryId:  { type: string }
+        connectionId: { type: string }
+        platformType: { $ref: '#/components/schemas/PlatformType' }
+        scenarios:
+          type: array
+          items: { $ref: '#/components/schemas/DiscoveredScenarioEntry' }
+        discoveredAt: { type: string, format: date-time }
+        completedAt:  { type: string, format: date-time }
+        totalCount:   { type: integer }
+        warnings:
+          type: array
+          items: { type: string }
+
+    ScenarioInventoryPage:
+      type: object
+      required: [discoveryId, platformType, scenarios, pagination]
+      properties:
+        discoveryId:  { type: string }
+        platformType: { $ref: '#/components/schemas/PlatformType' }
+        scenarios:
+          type: array
+          items: { $ref: '#/components/schemas/DiscoveredScenarioEntry' }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+
+    # ── Risk Assessment (src/discovery/risk-assessment-engine.ts) ─────────────
+
+    RiskFactorBreakdown:
+      type: object
+      required: [customMappings, unsupportedAdapters, messageVolume, routingComplexity, externalDependencies, errorHandling]
+      properties:
+        customMappings:       { type: number, minimum: 0, maximum: 100 }
+        unsupportedAdapters:  { type: number, minimum: 0, maximum: 100 }
+        messageVolume:        { type: number, minimum: 0, maximum: 100 }
+        routingComplexity:    { type: number, minimum: 0, maximum: 100 }
+        externalDependencies: { type: number, minimum: 0, maximum: 100 }
+        errorHandling:        { type: number, minimum: 0, maximum: 100 }
+
+    RemediationItem:
+      type: object
+      required: [factorName, description, targetEquivalent, additionalEffort]
+      properties:
+        factorName:        { type: string }
+        description:       { type: string }
+        targetEquivalent:  { type: string }
+        additionalEffort:  { type: number, minimum: 0 }
+
+    RiskAssessment:
+      type: object
+      required: [id, scenarioId, riskScore, complexityCategory, effortEstimate, factorBreakdown, remediations]
+      properties:
+        id:                 { type: string }
+        scenarioId:         { type: string }
+        riskScore:          { type: number, minimum: 0, maximum: 100 }
+        complexityCategory: { $ref: '#/components/schemas/ComplexityCategory' }
+        effortEstimate:     { type: number, minimum: 0 }
+        factorBreakdown:    { $ref: '#/components/schemas/RiskFactorBreakdown' }
+        remediations:
+          type: array
+          items: { $ref: '#/components/schemas/RemediationItem' }
+
+    RiskScoreBreakdown:
+      type: object
+      required: [scenarioId, totalScore, category, factors, effortEstimate, remediationRecommendations]
+      properties:
+        scenarioId:                  { type: string }
+        totalScore:                  { type: number, minimum: 0, maximum: 100 }
+        category:                    { $ref: '#/components/schemas/ComplexityCategory' }
+        factors:                     { $ref: '#/components/schemas/RiskFactorBreakdown' }
+        effortEstimate:              { type: number, minimum: 0 }
+        remediationRecommendations:
+          type: array
+          items: { $ref: '#/components/schemas/RemediationItem' }
+
+    RiskAssessmentReport:
+      type: object
+      required: [projectId, assessedAt, totalScenarios, assessments, summary]
+      properties:
+        projectId:      { type: string }
+        assessedAt:     { type: string, format: date-time }
+        totalScenarios: { type: integer }
+        assessments:
+          type: array
+          items: { $ref: '#/components/schemas/RiskAssessment' }
+        summary:
+          type: object
+          properties:
+            low:              { type: integer }
+            medium:           { type: integer }
+            high:             { type: integer }
+            critical:         { type: integer }
+            averageScore:     { type: number }
+            totalEffortDays:  { type: number }
+
+    RiskMigrationWave:
+      type: object
+      required: [waveNumber, name, scenarios, complexityRange, estimatedEffortDays]
+      properties:
+        waveNumber:           { type: integer, minimum: 1 }
+        name:                 { type: string }
+        scenarios:
+          type: array
+          items: { type: string }
+        complexityRange:
+          type: object
+          properties:
+            min: { type: number, minimum: 0, maximum: 100 }
+            max: { type: number, minimum: 0, maximum: 100 }
+        estimatedEffortDays:  { type: number, minimum: 0 }
+
+    MigrationWavePlan:
+      type: object
+      required: [projectId, generatedAt, waves, totalEffortDays, estimatedDurationWeeks]
+      properties:
+        projectId:                { type: string }
+        generatedAt:              { type: string, format: date-time }
+        waves:
+          type: array
+          items: { $ref: '#/components/schemas/RiskMigrationWave' }
+        totalEffortDays:          { type: number }
+        estimatedDurationWeeks:   { type: number }
+
+    FallbackStrategy:
+      type: object
+      required: [riskFactor, strategy, description, estimatedEffortDays]
+      properties:
+        riskFactor:           { type: string }
+        strategy:             { type: string }
+        description:          { type: string }
+        estimatedEffortDays:  { type: number, minimum: 0 }
+
+    SpecialistSkill:
+      type: object
+      required: [skillName, riskFactor, justification]
+      properties:
+        skillName:      { type: string }
+        riskFactor:     { type: string }
+        justification:  { type: string }
+
+    RiskMitigationPlan:
+      type: object
+      required: [scenarioId, scenarioName, riskScore, category, generatedAt, fallbackStrategies, requiredSpecialistSkills, estimatedAdditionalEffortDays]
+      properties:
+        scenarioId:    { type: string }
+        scenarioName:  { type: string }
+        riskScore:     { type: number, minimum: 0, maximum: 100 }
+        category:      { $ref: '#/components/schemas/ComplexityCategory' }
+        generatedAt:   { type: string, format: date-time }
+        fallbackStrategies:
+          type: array
+          items: { $ref: '#/components/schemas/FallbackStrategy' }
+        requiredSpecialistSkills:
+          type: array
+          items: { $ref: '#/components/schemas/SpecialistSkill' }
+        estimatedAdditionalEffortDays: { type: number, minimum: 0 }
+
+    # ── Transformation (src/transformation/types.ts) ──────────────────────────
+
+    TransformOptions:
+      type: object
+      properties:
+        externalizeParams:           { type: boolean, default: true }
+        generateExceptionSubprocess: { type: boolean, default: true }
+        paramPrefix:                 { type: string }
+
+    IFlowArtifact:
+      type: object
+      required: [id, scenarioMigrationId, artifactName, version, iflowXml, status, externalizedParams, createdAt]
+      properties:
+        id:                  { type: string }
+        scenarioMigrationId: { type: string }
+        artifactName:        { type: string }
+        version:             { type: string }
+        iflowXml:            { type: string }
+        status:
+          type: string
+          enum: [draft, converted, requires_manual_completion, validated, approved, deployed, failed]
+        externalizedParams:
+          type: object
+          additionalProperties: { type: string }
+        createdAt:           { type: string, format: date-time }
+
+    ArtifactOutcome:
+      type: object
+      required: [artifactId, artifactName, artifactType, outcome]
+      properties:
+        artifactId:   { type: string }
+        artifactName: { type: string }
+        artifactType: { type: string }
+        outcome:      { type: string, enum: [converted, flagged, gap] }
+        details:      { type: string }
+
+    MigrationGap:
+      type: object
+      required: [sourceArtifactId, sourceArtifactType, sourceArtifactName, reason]
+      properties:
+        sourceArtifactId:   { type: string }
+        sourceArtifactType: { type: string }
+        sourceArtifactName: { type: string }
+        reason:             { type: string }
+        suggestedApproach:  { type: string }
+
+    TransformationSummary:
+      type: object
+      required: [converted, flaggedForReview, gapsIdentified]
+      properties:
+        converted:        { type: integer }
+        flaggedForReview: { type: integer }
+        gapsIdentified:   { type: integer }
+
+    TransformationReport:
+      type: object
+      required: [sourceArtifacts, summary]
+      properties:
+        sourceArtifacts:
+          type: array
+          items: { $ref: '#/components/schemas/ArtifactOutcome' }
+        summary: { $ref: '#/components/schemas/TransformationSummary' }
+
+    TransformationResult:
+      type: object
+      required: [scenarioId, iFlowArtifact, transformationReport, status, gaps]
+      properties:
+        scenarioId:           { type: string }
+        iFlowArtifact:        { $ref: '#/components/schemas/IFlowArtifact' }
+        transformationReport: { $ref: '#/components/schemas/TransformationReport' }
+        status:
+          type: string
+          enum: [converted, requires_manual_completion, failed]
+        gaps:
+          type: array
+          items: { $ref: '#/components/schemas/MigrationGap' }
+
+    ConsolidatedTransformationReport:
+      type: object
+      required: [totalScenarios, successfullyConverted, requiresManualCompletion, failed, totalArtifacts, gaps]
+      properties:
+        totalScenarios:           { type: integer }
+        successfullyConverted:    { type: integer }
+        requiresManualCompletion: { type: integer }
+        failed:                   { type: integer }
+        totalArtifacts:           { $ref: '#/components/schemas/TransformationSummary' }
+        gaps:
+          type: array
+          items: { $ref: '#/components/schemas/MigrationGap' }
+
+    BatchTransformationResult:
+      type: object
+      required: [results, consolidatedReport]
+      properties:
+        results:
+          type: array
+          items: { $ref: '#/components/schemas/TransformationResult' }
+        consolidatedReport: { $ref: '#/components/schemas/ConsolidatedTransformationReport' }
+
+    TransformationRequest:
+      type: object
+      required: [ir]
+      properties:
+        ir:      { $ref: '#/components/schemas/MigrationIR' }
+        options: { $ref: '#/components/schemas/TransformOptions' }
+
+    BatchTransformationRequest:
+      type: object
+      required: [irs]
+      properties:
+        irs:
+          type: array
+          items: { $ref: '#/components/schemas/MigrationIR' }
+          maxItems: 5000
+        options: { $ref: '#/components/schemas/TransformOptions' }
+
+    # ── Validation (src/validation/types.ts) ──────────────────────────────────
+
+    SchemaViolation:
+      type: object
+      required: [lineNumber, type, message, elementPath, severity]
+      properties:
+        lineNumber:   { type: integer, minimum: 1 }
+        columnNumber: { type: integer, minimum: 1 }
+        type:
+          type: string
+          enum:
+            - missing_element
+            - invalid_element
+            - incorrect_ordering
+            - invalid_attribute
+            - missing_attribute
+            - invalid_namespace
+            - malformed_xml
+            - missing_namespace
+            - invalid_value
+        message:      { type: string }
+        elementPath:  { type: string }
+        severity:     { type: string, enum: [error, warning, info] }
+
+    AutoCorrection:
+      type: object
+      required: [violation, description, suggestedFix, confidence]
+      properties:
+        violation:     { $ref: '#/components/schemas/SchemaViolation' }
+        description:   { type: string }
+        suggestedFix:  { type: string }
+        confidence:    { type: number, minimum: 0, maximum: 1 }
+
+    StructuralValidationResult:
+      type: object
+      required: [valid, violations, autoCorrections, validationDurationMs]
+      properties:
+        valid:                 { type: boolean }
+        violations:
+          type: array
+          items: { $ref: '#/components/schemas/SchemaViolation' }
+        autoCorrections:
+          type: array
+          items: { $ref: '#/components/schemas/AutoCorrection' }
+        validationDurationMs:  { type: integer, minimum: 0 }
+
+    SemanticCheck:
+      type: object
+      required: [checkType, passed, elementName, location, message]
+      properties:
+        checkType:
+          type: string
+          enum: [credential_alias, endpoint_connectivity, resource_existence]
+        passed:      { type: boolean }
+        elementName: { type: string }
+        location:    { type: string }
+        message:     { type: string }
+
+    SemanticValidationResult:
+      type: object
+      required: [valid, checks]
+      properties:
+        valid: { type: boolean }
+        checks:
+          type: array
+          items: { $ref: '#/components/schemas/SemanticCheck' }
+
+    BusinessRule:
+      type: object
+      required: [name, type]
+      properties:
+        name:        { type: string }
+        type:        { type: string, enum: [referential, mandatory, range, cross_field] }
+        field:       { type: string }
+        expression:  { type: string }
+        message:     { type: string }
+
+    BusinessRuleViolation:
+      type: object
+      required: [recordId, ruleName, failingFieldValues, message]
+      properties:
+        recordId:    { type: string }
+        ruleName:    { type: string }
+        failingFieldValues:
+          type: object
+          additionalProperties: true
+        message:     { type: string }
+
+    BusinessRuleResult:
+      type: object
+      required: [valid, violations, haltProcessing]
+      properties:
+        valid:           { type: boolean }
+        violations:
+          type: array
+          items: { $ref: '#/components/schemas/BusinessRuleViolation' }
+        haltProcessing:  { type: boolean }
+
+    MigrationRecord:
+      type: object
+      required: [id, fields]
+      properties:
+        id: { type: string }
+        fields:
+          type: object
+          additionalProperties: true
+
+    MigrationBatch:
+      type: object
+      required: [batchId, records]
+      properties:
+        batchId: { type: string }
+        records:
+          type: array
+          items: { $ref: '#/components/schemas/MigrationRecord' }
+
+    # ── Reconciliation ────────────────────────────────────────────────────────
+
+    RecordCountRequest:
+      type: object
+      required: [sourceCount, targetCount]
+      properties:
+        sourceCount:        { type: integer, minimum: 0 }
+        targetCount:        { type: integer, minimum: 0 }
+        toleranceThreshold: { type: integer, minimum: 0, default: 0 }
+
+    RecordCountResult:
+      type: object
+      required: [matches, sourceCount, targetCount, delta, withinThreshold]
+      properties:
+        matches:          { type: boolean }
+        sourceCount:      { type: integer }
+        targetCount:      { type: integer }
+        delta:            { type: integer }
+        withinThreshold:  { type: boolean }
+
+    FieldComparisonRequest:
+      type: object
+      required: [sourceConnection, targetConnection, fieldMappings]
+      properties:
+        sourceConnection: { $ref: '#/components/schemas/CredentialReference' }
+        targetConnection: { $ref: '#/components/schemas/CredentialReference' }
+        sampleSizePercent: { type: number, minimum: 0.1, maximum: 100, default: 10 }
+        minSampleSize:     { type: integer, minimum: 100, default: 1000 }
+        fieldMappings:
+          type: array
+          items:
+            type: object
+            properties:
+              sourceField: { type: string }
+              targetField: { type: string }
+
+    Discrepancy:
+      type: object
+      required: [recordId, fieldName, sourceValue, targetValue, rootCauseCategory]
+      properties:
+        recordId:          { type: string }
+        fieldName:         { type: string }
+        sourceValue:       { type: string }
+        targetValue:       { type: string }
+        rootCauseCategory:
+          type: string
+          enum: [data_type_mismatch, encoding_issue, transformation_error, source_data_change, unknown]
+
+    FieldComparisonResult:
+      type: object
+      required: [sampleSize, totalDiscrepancies, discrepancies]
+      properties:
+        sampleSize:         { type: integer }
+        totalDiscrepancies: { type: integer }
+        discrepancies:
+          type: array
+          items: { $ref: '#/components/schemas/Discrepancy' }
+
+    ReconciliationCertificate:
+      type: object
+      required: [id, sourceRecordCount, targetRecordCount, integrityHash, generatedAt, generatedBy]
+      properties:
+        id:                  { type: string }
+        sourceRecordCount:   { type: integer }
+        targetRecordCount:   { type: integer }
+        integrityHash:       { type: string, description: 'SHA-256 hex digest' }
+        generatedAt:         { type: string, format: date-time }
+        generatedBy:         { type: string }
+
+    # ── Governance (src/governance/types.ts) ──────────────────────────────────
+
+    GeneratedIFlow:
+      type: object
+      required: [name, xml, directory]
+      properties:
+        name:      { type: string }
+        xml:       { type: string }
+        directory: { type: string }
+
+    GovernanceViolation:
+      type: object
+      required: [ruleId, category, severity, message, location, autoRemediable]
+      properties:
+        ruleId:    { type: string }
+        category:  { type: string, enum: [naming, security, architecture, documentation] }
+        severity:  { type: string, enum: [error, warning] }
+        message:   { type: string }
+        location:  { type: string }
+        autoRemediable: { type: boolean }
+        remediation:    { type: string }
+
+    GovernanceReport:
+      type: object
+      required: [iflowName, compliant, violations, autoRemediable, manualReviewRequired]
+      properties:
+        iflowName:   { type: string }
+        compliant:   { type: boolean }
+        violations:
+          type: array
+          items: { $ref: '#/components/schemas/GovernanceViolation' }
+        autoRemediable:
+          type: array
+          items: { $ref: '#/components/schemas/GovernanceViolation' }
+        manualReviewRequired:
+          type: array
+          items: { $ref: '#/components/schemas/GovernanceViolation' }
+
+    RemediationResult:
+      type: object
+      required: [originalXml, remediatedXml, remediationsApplied, remainingViolations]
+      properties:
+        originalXml:          { type: string }
+        remediatedXml:        { type: string }
+        remediationsApplied:
+          type: array
+          items: { type: string }
+        remainingViolations:
+          type: array
+          items: { $ref: '#/components/schemas/GovernanceViolation' }
+
+    BatchGovernanceReport:
+      type: object
+      required: [totalIFlows, compliantCount, violationsFound, autoRemediatedCount, manualReviewRequired, reports]
+      properties:
+        totalIFlows:           { type: integer }
+        compliantCount:        { type: integer }
+        violationsFound:       { type: integer }
+        autoRemediatedCount:   { type: integer }
+        manualReviewRequired:  { type: integer }
+        reports:
+          type: array
+          items: { $ref: '#/components/schemas/GovernanceReport' }
+
+    # ── Consolidation (src/transformation/consolidation-types.ts) ─────────────
+
+    DiscoveredInterface:
+      type: object
+      required: [id, name, sourceSystem, targetSystem, protocol, complexityScore, dependencies]
+      properties:
+        id:               { type: string }
+        name:             { type: string }
+        sourceSystem:     { type: string }
+        targetSystem:     { type: string }
+        protocol:         { type: string }
+        businessProcess:  { type: string }
+        complexityScore:  { $ref: '#/components/schemas/ComplexityScore' }
+        dependencies:
+          type: array
+          items: { type: string }
+
+    VendorCosts:
+      type: object
+      required: [platform, annualLicenseCost, annualOperationsCost, skillSetCount, monitoringToolCount]
+      properties:
+        platform:              { type: string }
+        annualLicenseCost:     { type: number, minimum: 0 }
+        annualOperationsCost:  { type: number, minimum: 0 }
+        skillSetCount:         { type: integer, minimum: 0 }
+        monitoringToolCount:   { type: integer, minimum: 0 }
+
+    PlatformInventory:
+      type: object
+      required: [platform, interfaces, currentCosts]
+      properties:
+        platform: { type: string }
+        interfaces:
+          type: array
+          items: { $ref: '#/components/schemas/DiscoveredInterface' }
+        currentCosts: { $ref: '#/components/schemas/VendorCosts' }
+
+    DuplicateGroup:
+      type: object
+      required: [businessProcess, sourceSystem, targetSystem, interfaces, recommendation]
+      properties:
+        businessProcess:  { type: string }
+        sourceSystem:     { type: string }
+        targetSystem:     { type: string }
+        interfaces:
+          type: array
+          items:
+            type: object
+            required: [platform, interfaceId, name]
+            properties:
+              platform:    { type: string }
+              interfaceId: { type: string }
+              name:        { type: string }
+        recommendation:   { type: string, enum: [merge, keep_best, redesign] }
+
+    ConsolidationOpportunity:
+      type: object
+      required: [description, affectedInterfaces, estimatedSavings, effort]
+      properties:
+        description:        { type: string }
+        affectedInterfaces:
+          type: array
+          items: { type: string }
+        estimatedSavings:   { type: number }
+        effort:             { type: string, enum: [low, medium, high] }
+
+    ConsolidationArchitecture:
+      type: object
+      required: [apiLayer, integrationLayer, governanceLayer, monitoringLayer, partnerDirectory]
+      properties:
+        apiLayer:
+          type: object
+          properties:
+            apiManagementEnabled: { type: boolean }
+            apiPolicies:
+              type: array
+              items: { type: string }
+            rateLimiting:
+              type: object
+              properties:
+                enabled:           { type: boolean }
+                requestsPerMinute: { type: integer }
+        integrationLayer:
+          type: object
+          properties:
+            iflowCount:                  { type: integer }
+            pipelineApproachEnabled:     { type: boolean }
+            edgeIntegrationCellRequired: { type: boolean }
+            jmsQueuesRequired:
+              type: array
+              items: { type: string }
+        governanceLayer:
+          type: object
+          properties:
+            cpilintRulesPath:    { type: string }
+            namingConventions:
+              type: object
+              additionalProperties: { type: string }
+            securityPolicies:
+              type: array
+              items: { type: string }
+        monitoringLayer:
+          type: object
+          properties:
+            cloudAlmEnabled:  { type: boolean }
+            alertingRules:
+              type: array
+              items: { type: string }
+            dashboardWidgets:
+              type: array
+              items: { type: string }
+        partnerDirectory:
+          type: object
+          properties:
+            entries:
+              type: array
+              items:
+                type: object
+                properties:
+                  partnerId:   { type: string }
+                  adapterType: { type: string }
+                  endpoint:    { type: string }
+                  parameters:
+                    type: object
+                    additionalProperties: { type: string }
+
+    ConsolidationAnalysis:
+      type: object
+      required: [totalInterfaces, duplicateGroups, consolidationOpportunities, recommendedArchitecture]
+      properties:
+        totalInterfaces: { type: integer }
+        duplicateGroups:
+          type: array
+          items: { $ref: '#/components/schemas/DuplicateGroup' }
+        consolidationOpportunities:
+          type: array
+          items: { $ref: '#/components/schemas/ConsolidationOpportunity' }
+        recommendedArchitecture: { $ref: '#/components/schemas/ConsolidationArchitecture' }
+
+    VendorSavings:
+      type: object
+      required: [platform, currentCost, eliminatedCost, remainingCost]
+      properties:
+        platform:        { type: string }
+        currentCost:     { type: number }
+        eliminatedCost:  { type: number }
+        remainingCost:   { type: number }
+
+    CostReductionReport:
+      type: object
+      required: [currentTotalCost, projectedConsolidatedCost, annualSavings, savingsPercentage, breakdownByVendor, paybackPeriodMonths]
+      properties:
+        currentTotalCost:          { type: number }
+        projectedConsolidatedCost: { type: number }
+        annualSavings:             { type: number }
+        savingsPercentage:         { type: number }
+        breakdownByVendor:
+          type: array
+          items: { $ref: '#/components/schemas/VendorSavings' }
+        paybackPeriodMonths:       { type: number }
+
+    WaveInterface:
+      type: object
+      required: [interfaceId, name, platform, complexityScore, estimatedEffortDays]
+      properties:
+        interfaceId:         { type: string }
+        name:                { type: string }
+        platform:            { type: string }
+        complexityScore:     { $ref: '#/components/schemas/ComplexityScore' }
+        estimatedEffortDays: { type: number, minimum: 0 }
+
+    ConsolidationWave:
+      type: object
+      required: [waveNumber, name, interfaces, estimatedDurationWeeks, priority, dependencies]
+      properties:
+        waveNumber:             { type: integer, minimum: 1 }
+        name:                   { type: string }
+        interfaces:
+          type: array
+          items: { $ref: '#/components/schemas/WaveInterface' }
+        estimatedDurationWeeks: { type: number, minimum: 0 }
+        priority:               { type: string, enum: [critical, high, medium, low] }
+        dependencies:
+          type: array
+          items: { type: integer }
+
+    MigrationRoadmap:
+      type: object
+      required: [waves, totalDurationWeeks, criticalPath]
+      properties:
+        waves:
+          type: array
+          items: { $ref: '#/components/schemas/ConsolidationWave' }
+        totalDurationWeeks: { type: number }
+        criticalPath:
+          type: array
+          items: { type: string }
+
+    # ── Blueprint (src/blueprint/interfaces.ts) ───────────────────────────────
+
+    FieldMapping:
+      type: object
+      required: [sourceField, targetField, mandatory]
+      properties:
+        sourceField:    { type: string }
+        targetField:    { type: string }
+        transformation: { type: string }
+        mandatory:      { type: boolean }
+
+    DataQualityRule:
+      type: object
+      required: [id, type, field, expression, severity]
+      properties:
+        id:         { type: string }
+        type:       { type: string, enum: [not_null, range, regex, reference, custom] }
+        field:      { type: string }
+        expression: { type: string }
+        severity:   { type: string, enum: [error, warning] }
+
+    DataRequirement:
+      type: object
+      required: [id, module, name, description, sourceSystem, targetTable, fieldMappings, qualityRules, volumeEstimate, mandatory]
+      properties:
+        id:             { type: string }
+        module:         { $ref: '#/components/schemas/SAPModule' }
+        name:           { type: string }
+        description:    { type: string }
+        sourceSystem:   { type: string }
+        targetTable:    { type: string }
+        fieldMappings:
+          type: array
+          items: { $ref: '#/components/schemas/FieldMapping' }
+        qualityRules:
+          type: array
+          items: { $ref: '#/components/schemas/DataQualityRule' }
+        volumeEstimate: { type: integer, minimum: 0 }
+        mandatory:      { type: boolean }
+        createdAt:      { type: string, format: date-time }
+        updatedAt:      { type: string, format: date-time }
+
+    ProcessHierarchyNode:
+      type: object
+      required: [id, name, level, children, transactionCodes, dataTables]
+      properties:
+        id:               { type: string }
+        name:             { type: string }
+        level:            { type: integer, minimum: 1 }
+        parentId:         { type: string }
+        children:
+          type: array
+          items: { $ref: '#/components/schemas/ProcessHierarchyNode' }
+        transactionCodes:
+          type: array
+          items: { type: string }
+        dataTables:
+          type: array
+          items: { type: string }
+
+    SAPField:
+      type: object
+      required: [name, dataType, length, isKey, notNull]
+      properties:
+        name:        { type: string }
+        dataType:    { type: string }
+        length:      { type: integer }
+        isKey:       { type: boolean }
+        notNull:     { type: boolean }
+        description: { type: string }
+
+    SAPTableStructure:
+      type: object
+      required: [tableName, fields]
+      properties:
+        tableName: { type: string }
+        fields:
+          type: array
+          items: { $ref: '#/components/schemas/SAPField' }
+
+    TraceabilityLink:
+      type: object
+      required: [id, processNodeId, dataRequirementId, usage]
+      properties:
+        id:                 { type: string }
+        processNodeId:      { type: string }
+        dataRequirementId:  { type: string }
+        usage:              { type: string, enum: [read, write, update, delete] }
+
+    SpecificationDocument:
+      type: object
+      required: [id, blueprintId, version, module, generatedAt, content, summary]
+      properties:
+        id:            { type: string }
+        blueprintId:   { type: string }
+        version:       { type: string }
+        module:        { $ref: '#/components/schemas/SAPModule' }
+        generatedAt:   { type: string, format: date-time }
+        content:       { type: string, description: 'Markdown' }
+        summary:
+          type: object
+          properties:
+            totalRequirements: { type: integer }
+            totalMappings:     { type: integer }
+            totalRules:        { type: integer }
+            estimatedVolume:   { type: integer }
+
+    BlueprintVersion:
+      type: object
+      required: [versionId, blueprintId, label, createdAt, createdBy, requirements, processHierarchy, links]
+      properties:
+        versionId:    { type: string }
+        blueprintId:  { type: string }
+        label:        { type: string }
+        createdAt:    { type: string, format: date-time }
+        createdBy:    { type: string }
+        requirements:
+          type: array
+          items: { $ref: '#/components/schemas/DataRequirement' }
+        processHierarchy:
+          type: array
+          items: { $ref: '#/components/schemas/ProcessHierarchyNode' }
+        links:
+          type: array
+          items: { $ref: '#/components/schemas/TraceabilityLink' }
+
+    BlueprintRequirementDiff:
+      type: object
+      required: [requirementId, changes]
+      properties:
+        requirementId: { type: string }
+        changes:
+          type: array
+          items:
+            type: object
+            properties:
+              field:  { type: string }
+              before: {}
+              after:  {}
+
+    BlueprintComparison:
+      type: object
+      required: [versionA, versionB, added, removed, modified]
+      properties:
+        versionA: { type: string }
+        versionB: { type: string }
+        added:
+          type: array
+          items: { $ref: '#/components/schemas/DataRequirement' }
+        removed:
+          type: array
+          items: { $ref: '#/components/schemas/DataRequirement' }
+        modified:
+          type: array
+          items: { $ref: '#/components/schemas/BlueprintRequirementDiff' }
+
+    # ── Deployment (src/deployment/interfaces.ts) ────────────────────────────
+
+    TenantCredentials:
+      type: object
+      required: [type]
+      properties:
+        type:         { type: string, enum: [oauth2, basic, certificate] }
+        tokenUrl:     { type: string }
+        clientId:     { type: string }
+        clientSecret: { type: string, format: password }
+        username:     { type: string }
+        password:     { type: string, format: password }
+
+    TenantConfig:
+      type: object
+      required: [id, name, environment, baseUrl, credentials, maxParallelDeployments, deploymentTimeout]
+      properties:
+        id:                     { type: string }
+        name:                   { type: string }
+        environment:            { $ref: '#/components/schemas/DeploymentEnvironment' }
+        baseUrl:                { type: string, format: uri }
+        credentials:            { $ref: '#/components/schemas/TenantCredentials' }
+        maxParallelDeployments: { type: integer, minimum: 1, maximum: 50 }
+        deploymentTimeout:      { type: integer, description: 'Milliseconds' }
+
+    DeploymentStrategy:
+      type: object
+      required: [type, parallelism, rollbackOnFailure, validationAfterDeploy, promotionApprovalRequired]
+      properties:
+        type:                      { type: string, enum: [sequential, parallel, rolling, blue_green] }
+        parallelism:               { type: integer, minimum: 1, maximum: 50 }
+        rollbackOnFailure:         { type: boolean }
+        validationAfterDeploy:     { type: boolean }
+        promotionApprovalRequired: { type: boolean }
+
+    PreDeploymentCheck:
+      type: object
+      required: [name, type, passed]
+      properties:
+        name:    { type: string }
+        type:    { type: string, enum: [governance, connectivity, credential, dependency] }
+        passed:  { type: boolean }
+        message: { type: string }
+
+    DeploymentArtifact:
+      type: object
+      required: [id, iFlowArtifact, packageId, packageName, dependencies, preDeploymentChecks, status]
+      properties:
+        id:                  { type: string }
+        iFlowArtifact:       { $ref: '#/components/schemas/IFlowArtifact' }
+        packageId:           { type: string }
+        packageName:         { type: string }
+        dependencies:
+          type: array
+          items: { type: string }
+        preDeploymentChecks:
+          type: array
+          items: { $ref: '#/components/schemas/PreDeploymentCheck' }
+        status:
+          type: string
+          enum: [pending, validating, deploying, deployed, failed, rolled_back, skipped]
+
+    DeploymentBatch:
+      type: object
+      required: [id, name, artifacts, targetTenant, strategy, createdAt, status, dependencyOrder]
+      properties:
+        id:               { type: string }
+        name:             { type: string }
+        artifacts:
+          type: array
+          items: { $ref: '#/components/schemas/DeploymentArtifact' }
+        targetTenant:     { $ref: '#/components/schemas/TenantConfig' }
+        strategy:         { $ref: '#/components/schemas/DeploymentStrategy' }
+        createdAt:        { type: string, format: date-time }
+        status:
+          type: string
+          enum: [pending, validating, deploying, validating_post, completed, failed, rolled_back, partially_deployed]
+        dependencyOrder:
+          type: array
+          items:
+            type: array
+            items: { type: string }
+
+    ArtifactDeploymentResult:
+      type: object
+      required: [artifactId, artifactName, status]
+      properties:
+        artifactId:    { type: string }
+        artifactName:  { type: string }
+        status:
+          type: string
+          enum: [pending, validating, deploying, deployed, failed, rolled_back, skipped]
+        deployedAt:    { type: string, format: date-time }
+        error:         { type: string }
+        deploymentUrl: { type: string, format: uri }
+        version:       { type: string }
+
+    DeploymentSummary:
+      type: object
+      required: [totalArtifacts, deployed, failed, skipped, rolledBack, durationMs]
+      properties:
+        totalArtifacts: { type: integer }
+        deployed:       { type: integer }
+        failed:         { type: integer }
+        skipped:        { type: integer }
+        rolledBack:     { type: integer }
+        durationMs:     { type: integer }
+
+    RollbackInfo:
+      type: object
+      required: [triggeredAt, reason, artifactsRolledBack, rollbackSuccess]
+      properties:
+        triggeredAt:          { type: string, format: date-time }
+        reason:               { type: string }
+        artifactsRolledBack:
+          type: array
+          items: { type: string }
+        rollbackSuccess:      { type: boolean }
+
+    DeploymentResult:
+      type: object
+      required: [batchId, status, startedAt, artifactResults, summary]
+      properties:
+        batchId:     { type: string }
+        status:
+          type: string
+          enum: [pending, validating, deploying, validating_post, completed, failed, rolled_back, partially_deployed]
+        startedAt:   { type: string, format: date-time }
+        completedAt: { type: string, format: date-time }
+        artifactResults:
+          type: array
+          items: { $ref: '#/components/schemas/ArtifactDeploymentResult' }
+        summary:      { $ref: '#/components/schemas/DeploymentSummary' }
+        rollbackInfo: { $ref: '#/components/schemas/RollbackInfo' }
+
+    PRFile:
+      type: object
+      required: [path, content, operation]
+      properties:
+        path:      { type: string }
+        content:   { type: string }
+        operation: { type: string, enum: [add, modify, delete] }
+
+    PRGenerationConfig:
+      type: object
+      required: [repositoryUrl, baseBranch, branchPrefix, commitMessageTemplate, prTitleTemplate, prBodyTemplate, reviewers, labels, autoMerge]
+      properties:
+        repositoryUrl:         { type: string, format: uri }
+        baseBranch:            { type: string }
+        branchPrefix:          { type: string }
+        commitMessageTemplate: { type: string }
+        prTitleTemplate:       { type: string }
+        prBodyTemplate:        { type: string }
+        reviewers:
+          type: array
+          items: { type: string }
+        labels:
+          type: array
+          items: { type: string }
+        autoMerge:             { type: boolean }
+
+    GeneratedPR:
+      type: object
+      required: [id, title, body, branch, baseBranch, artifacts, files, status, createdAt]
+      properties:
+        id:          { type: string }
+        title:       { type: string }
+        body:        { type: string }
+        branch:      { type: string }
+        baseBranch:  { type: string }
+        artifacts:
+          type: array
+          items: { type: string }
+        files:
+          type: array
+          items: { $ref: '#/components/schemas/PRFile' }
+        status:      { type: string, enum: [draft, open, approved, merged, closed] }
+        url:         { type: string, format: uri }
+        createdAt:   { type: string, format: date-time }
+
+    BulkPRResult:
+      type: object
+      required: [totalPRs, generatedPRs, failedArtifacts, generatedAt]
+      properties:
+        totalPRs: { type: integer }
+        generatedPRs:
+          type: array
+          items: { $ref: '#/components/schemas/GeneratedPR' }
+        failedArtifacts:
+          type: array
+          items:
+            type: object
+            properties:
+              artifactId: { type: string }
+              reason:     { type: string }
+        generatedAt: { type: string, format: date-time }
+
+    PromotionRequest:
+      type: object
+      required: [id, sourceEnvironment, targetEnvironment, artifacts, requestedBy, status, createdAt]
+      properties:
+        id:                 { type: string }
+        sourceEnvironment:  { $ref: '#/components/schemas/DeploymentEnvironment' }
+        targetEnvironment:  { $ref: '#/components/schemas/DeploymentEnvironment' }
+        artifacts:
+          type: array
+          items: { type: string }
+        requestedBy:        { type: string }
+        approvedBy:         { type: string }
+        status:             { type: string, enum: [pending, approved, rejected, executed] }
+        createdAt:          { type: string, format: date-time }
+
+    # ── Regression Testing (src/testing/types.ts) ────────────────────────────
+
+    SourceSystemConnection:
+      type: object
+      required: [platform, host, port, credentials]
+      properties:
+        platform:    { type: string }
+        host:        { type: string }
+        port:        { type: integer, minimum: 1, maximum: 65535 }
+        credentials: { $ref: '#/components/schemas/CredentialReference' }
+
+    IFlowTarget:
+      type: object
+      required: [tenantUrl, iflowName, credentials]
+      properties:
+        tenantUrl:    { type: string, format: uri }
+        iflowName:    { type: string }
+        credentials:  { $ref: '#/components/schemas/CredentialReference' }
+
+    CaptureConfig:
+      type: object
+      required: [sourceSystem, captureWindow]
+      properties:
+        sourceSystem:    { $ref: '#/components/schemas/SourceSystemConnection' }
+        interfaceFilter:
+          type: array
+          items: { type: string }
+        captureWindow:
+          type: object
+          required: [start, end]
+          properties:
+            start: { type: string, format: date-time }
+            end:   { type: string, format: date-time }
+        maxMessages:     { type: integer, minimum: 1 }
+
+    Message:
+      type: object
+      required: [headers, body, contentType]
+      properties:
+        headers:
+          type: object
+          additionalProperties: { type: string }
+        body:        { type: string }
+        contentType: { type: string }
+
+    TestCase:
+      type: object
+      required: [id, request, expectedResponse, metadata]
+      properties:
+        id:               { type: string }
+        request:          { $ref: '#/components/schemas/Message' }
+        expectedResponse: { $ref: '#/components/schemas/Message' }
+        metadata:
+          type: object
+          additionalProperties: { type: string }
+
+    RegressionTestSuite:
+      type: object
+      required: [id, name, sourceInterface, sourcePlatform, migratedIFlowName, testCases, createdAt]
+      properties:
+        id:                  { type: string }
+        name:                { type: string }
+        sourceInterface:     { type: string }
+        sourcePlatform:      { type: string }
+        migratedIFlowName:   { type: string }
+        testCases:
+          type: array
+          items: { $ref: '#/components/schemas/TestCase' }
+        createdAt:           { type: string, format: date-time }
+        lastExecutedAt:      { type: string, format: date-time }
+
+    CompareOptions:
+      type: object
+      properties:
+        ignoreWhitespace:   { type: boolean }
+        ignoreElementOrder: { type: boolean }
+        ignoreNamespaces:   { type: boolean }
+
+    Difference:
+      type: object
+      required: [path, expected, actual, type]
+      properties:
+        path:     { type: string }
+        expected: { type: string }
+        actual:   { type: string }
+        type:     { type: string, enum: [structural, semantic, cosmetic] }
+
+    ComparisonResult:
+      type: object
+      required: [match, differences]
+      properties:
+        match:           { type: boolean }
+        differenceType:  { type: string, enum: [structural, semantic, cosmetic] }
+        differences:
+          type: array
+          items: { $ref: '#/components/schemas/Difference' }
+
+    TestCaseResult:
+      type: object
+      required: [testCaseId, status, executionTimeMs]
+      properties:
+        testCaseId:      { type: string }
+        status:          { type: string, enum: [passed, failed, error] }
+        comparison:      { $ref: '#/components/schemas/ComparisonResult' }
+        executionTimeMs: { type: integer, minimum: 0 }
+        error:           { type: string }
+
+    TestExecutionReport:
+      type: object
+      required: [suiteId, totalTests, passed, failed, executionTimeMs, results]
+      properties:
+        suiteId:          { type: string }
+        totalTests:       { type: integer }
+        passed:           { type: integer }
+        failed:           { type: integer }
+        executionTimeMs:  { type: integer }
+        results:
+          type: array
+          items: { $ref: '#/components/schemas/TestCaseResult' }
+
+    FailureClassification:
+      type: object
+      required: [structural, semantic, cosmetic]
+      properties:
+        structural: { type: integer }
+        semantic:   { type: integer }
+        cosmetic:   { type: integer }
+
+    BulkTestReport:
+      type: object
+      required: [totalSuites, totalTests, passedTests, failedTests, executionTimeMs, suiteResults, failureSummary]
+      properties:
+        totalSuites:     { type: integer }
+        totalTests:      { type: integer }
+        passedTests:     { type: integer }
+        failedTests:     { type: integer }
+        executionTimeMs: { type: integer }
+        suiteResults:
+          type: array
+          items: { $ref: '#/components/schemas/TestExecutionReport' }
+        failureSummary:  { $ref: '#/components/schemas/FailureClassification' }
+
+    # ── Pipeline (src/pipeline/migration-pipeline.ts) ────────────────────────
+
+    MigrationPipelineConfig:
+      type: object
+      required: [source]
+      properties:
+        source:                    { $ref: '#/components/schemas/SourcePlatformConfig' }
+        maxScenarios:              { type: integer, minimum: 1 }
+        skipComplexityCategories:
+          type: array
+          items: { $ref: '#/components/schemas/ComplexityCategory' }
+        parallelism:               { type: integer, minimum: 1 }
+        deploymentTarget:          { $ref: '#/components/schemas/TenantConfig' }
+        deploymentStrategy:        { $ref: '#/components/schemas/DeploymentStrategy' }
+        haltOnValidationError:     { type: boolean, default: false }
+
+    ScenarioMigrationRecord:
+      type: object
+      required: [scenarioId, scenarioName, sourcePlatform, status]
+      properties:
+        scenarioId:           { type: string }
+        scenarioName:         { type: string }
+        sourcePlatform:       { type: string }
+        riskAssessment:       { $ref: '#/components/schemas/RiskAssessment' }
+        transformationResult: { $ref: '#/components/schemas/TransformationResult' }
+        structuralValidation: { $ref: '#/components/schemas/StructuralValidationResult' }
+        semanticValidation:   { $ref: '#/components/schemas/SemanticValidationResult' }
+        status:
+          type: string
+          enum: [discovered, skipped, transformed, validated, requires_manual_completion, deployed, failed]
+        error:                { type: string }
+        failedAtStage:
+          type: string
+          enum: [discovery, risk_assessment, transformation, validation, deployment]
+
+    PipelineSummary:
+      type: object
+      required: [totalDiscovered, totalSkipped, totalTransformed, totalValidated, totalRequiresManual, totalDeployed, totalFailed, durationMs]
+      properties:
+        totalDiscovered:     { type: integer }
+        totalSkipped:        { type: integer }
+        totalTransformed:    { type: integer }
+        totalValidated:      { type: integer }
+        totalRequiresManual: { type: integer }
+        totalDeployed:       { type: integer }
+        totalFailed:         { type: integer }
+        durationMs:          { type: integer }
+
+    PipelineResult:
+      type: object
+      required: [inventory, riskReport, transformationReport, records, summary, startedAt, completedAt]
+      properties:
+        inventory:            { $ref: '#/components/schemas/ScenarioInventory' }
+        riskReport:           { $ref: '#/components/schemas/RiskAssessmentReport' }
+        transformationReport: { $ref: '#/components/schemas/ConsolidatedTransformationReport' }
+        records:
+          type: array
+          items: { $ref: '#/components/schemas/ScenarioMigrationRecord' }
+        deployment:           { $ref: '#/components/schemas/DeploymentResult' }
+        summary:              { $ref: '#/components/schemas/PipelineSummary' }
+        startedAt:            { type: string, format: date-time }
+        completedAt:          { type: string, format: date-time }
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Paths
+# ──────────────────────────────────────────────────────────────────────────────
+
+paths:
+
+  # ── Jobs ─────────────────────────────────────────────────────────────────
+
+  /jobs:
+    get:
+      tags: [Jobs]
+      summary: List jobs
+      description: Returns a paginated list of jobs, optionally filtered by status or kind.
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: status
+          in: query
+          schema: { type: string, enum: [pending, running, completed, failed, cancelled] }
+        - name: kind
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of jobs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/JobList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /jobs/{jobId}:
+    get:
+      tags: [Jobs]
+      summary: Get job status
+      description: Poll this endpoint to check the status of a long-running operation. Returns `200` with the job envelope. When `status` is `completed`, the produced resource is available at `resourceUrl`.
+      parameters:
+        - $ref: '#/components/parameters/JobIdParam'
+      responses:
+        '200':
+          description: Job status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Job' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    delete:
+      tags: [Jobs]
+      summary: Cancel a job
+      description: Request cancellation of a running job. Returns `204` immediately; the job will transition to `cancelled` when the worker observes the cancel signal.
+      parameters:
+        - $ref: '#/components/parameters/JobIdParam'
+      responses:
+        '204': { description: Cancellation requested }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Job is already in a terminal state
+          $ref: '#/components/responses/Conflict'
+
+  # ── Discovery ────────────────────────────────────────────────────────────
+
+  /discoveries:
+    post:
+      tags: [Discovery]
+      summary: Start a discovery
+      description: Begins discovering scenarios from a source platform. Returns a job ID for polling.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DiscoveryRequest' }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /discoveries/{discoveryId}:
+    get:
+      tags: [Discovery]
+      summary: Get the inventory of a completed discovery
+      parameters:
+        - name: discoveryId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Scenario inventory
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScenarioInventory' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /discoveries/{discoveryId}/scenarios:
+    get:
+      tags: [Discovery]
+      summary: List scenarios in a discovery with pagination
+      parameters:
+        - name: discoveryId
+          in: path
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: adapterType
+          in: query
+          schema: { type: string }
+        - name: mappingType
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Paginated scenarios
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScenarioInventoryPage' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /discoveries/{discoveryId}/resume:
+    post:
+      tags: [Discovery]
+      summary: Resume a discovery from its last checkpoint
+      description: Valid only within 72 hours of the original discovery. Returns a job ID for polling.
+      parameters:
+        - name: discoveryId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                checkpointId: { type: string }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Checkpoint expired
+          $ref: '#/components/responses/Conflict'
+
+  # ── Risk Assessment ──────────────────────────────────────────────────────
+
+  /risk-assessments:
+    post:
+      tags: [Risk Assessment]
+      summary: Assess risk across a scenario inventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [inventory]
+              properties:
+                inventory: { $ref: '#/components/schemas/ScenarioInventory' }
+                projectId: { type: string }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /risk-assessments/{assessmentId}:
+    get:
+      tags: [Risk Assessment]
+      summary: Get a completed risk assessment report
+      parameters:
+        - name: assessmentId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Risk assessment report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RiskAssessmentReport' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /risk-assessments/{assessmentId}/breakdown/{scenarioId}:
+    get:
+      tags: [Risk Assessment]
+      summary: Get detailed risk score breakdown for a scenario
+      parameters:
+        - name: assessmentId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: scenarioId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Score breakdown
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RiskScoreBreakdown' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /risk-assessments/{assessmentId}/migration-plan:
+    post:
+      tags: [Risk Assessment]
+      summary: Generate a migration wave plan
+      parameters:
+        - name: assessmentId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Migration wave plan
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MigrationWavePlan' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /risk-assessments/{assessmentId}/mitigation-plans/{scenarioId}:
+    post:
+      tags: [Risk Assessment]
+      summary: Generate a mitigation plan for a Critical scenario
+      parameters:
+        - name: assessmentId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: scenarioId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Mitigation plan
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RiskMitigationPlan' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Transformation ───────────────────────────────────────────────────────
+
+  /transformations:
+    post:
+      tags: [Transformation]
+      summary: Transform a single Migration_IR into an iFlow artifact
+      description: Synchronous — returns immediately for a single IR.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransformationRequest' }
+      responses:
+        '200':
+          description: Transformation result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TransformationResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /transformations/batch:
+    post:
+      tags: [Transformation]
+      summary: Transform multiple Migration_IRs in a batch
+      description: Async — returns a job ID. Poll `/jobs/{jobId}`; on completion fetch results at `resourceUrl`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BatchTransformationRequest' }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /transformations/batch/{jobId}:
+    get:
+      tags: [Transformation]
+      summary: Retrieve a completed batch transformation result
+      parameters:
+        - $ref: '#/components/parameters/JobIdParam'
+      responses:
+        '200':
+          description: Batch result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BatchTransformationResult' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /iflows/{artifactId}:
+    get:
+      tags: [Transformation]
+      summary: Fetch an iFlow artifact by ID
+      parameters:
+        - name: artifactId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: iFlow artifact
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IFlowArtifact' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Validation ───────────────────────────────────────────────────────────
+
+  /validations/structural:
+    post:
+      tags: [Validation]
+      summary: Validate iFlow XML against the SAP Integration Suite schema
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [artifact]
+              properties:
+                artifact: { $ref: '#/components/schemas/IFlowArtifact' }
+      responses:
+        '200':
+          description: Structural validation result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StructuralValidationResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /validations/semantic:
+    post:
+      tags: [Validation]
+      summary: Verify credential aliases, endpoint connectivity, resource existence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [artifact]
+              properties:
+                artifact: { $ref: '#/components/schemas/IFlowArtifact' }
+      responses:
+        '200':
+          description: Semantic validation result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SemanticValidationResult' }
+
+  /validations/business-rules:
+    post:
+      tags: [Validation]
+      summary: Validate a migration batch against business rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [batch, rules]
+              properties:
+                batch: { $ref: '#/components/schemas/MigrationBatch' }
+                rules:
+                  type: array
+                  items: { $ref: '#/components/schemas/BusinessRule' }
+      responses:
+        '200':
+          description: Business rule result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BusinessRuleResult' }
+
+  # ── Reconciliation ───────────────────────────────────────────────────────
+
+  /reconciliations/record-counts:
+    post:
+      tags: [Reconciliation]
+      summary: Compare source vs target record counts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RecordCountRequest' }
+      responses:
+        '200':
+          description: Record count comparison
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RecordCountResult' }
+
+  /reconciliations/field-comparison:
+    post:
+      tags: [Reconciliation]
+      summary: Field-level comparison on a configurable sample
+      description: Async — large samples can take minutes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FieldComparisonRequest' }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+
+  /reconciliations/field-comparison/{jobId}:
+    get:
+      tags: [Reconciliation]
+      summary: Retrieve a completed field comparison
+      parameters:
+        - $ref: '#/components/parameters/JobIdParam'
+      responses:
+        '200':
+          description: Field comparison result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FieldComparisonResult' }
+
+  /reconciliations/certificates:
+    post:
+      tags: [Reconciliation]
+      summary: Generate a reconciliation certificate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourceRecordCount, targetRecordCount]
+              properties:
+                sourceRecordCount: { type: integer, minimum: 0 }
+                targetRecordCount: { type: integer, minimum: 0 }
+                generatedBy:       { type: string }
+      responses:
+        '201':
+          description: Certificate generated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReconciliationCertificate' }
+
+  /reconciliations/certificates/{certificateId}:
+    get:
+      tags: [Reconciliation]
+      summary: Fetch a stored reconciliation certificate
+      parameters:
+        - name: certificateId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Certificate
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReconciliationCertificate' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Governance ───────────────────────────────────────────────────────────
+
+  /governance/reports:
+    post:
+      tags: [Governance]
+      summary: Validate a generated iFlow against governance rules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [iflow]
+              properties:
+                iflow: { $ref: '#/components/schemas/GeneratedIFlow' }
+      responses:
+        '200':
+          description: Governance report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GovernanceReport' }
+
+  /governance/batch-reports:
+    post:
+      tags: [Governance]
+      summary: Validate a batch of iFlows
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [iflows]
+              properties:
+                iflows:
+                  type: array
+                  items: { $ref: '#/components/schemas/GeneratedIFlow' }
+      responses:
+        '200':
+          description: Batch governance report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BatchGovernanceReport' }
+
+  /governance/remediations:
+    post:
+      tags: [Governance]
+      summary: Auto-remediate governance violations in an iFlow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [iflow, violations]
+              properties:
+                iflow:      { $ref: '#/components/schemas/GeneratedIFlow' }
+                violations:
+                  type: array
+                  items: { $ref: '#/components/schemas/GovernanceViolation' }
+      responses:
+        '200':
+          description: Remediation result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RemediationResult' }
+
+  /governance/custom-rules:
+    post:
+      tags: [Governance]
+      summary: Load custom CPILint rules
+      requestBody:
+        required: true
+        content:
+          application/xml:
+            schema: { type: string, description: 'CPILint XML rules document' }
+      responses:
+        '204': { description: Rules loaded }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  # ── Consolidation ────────────────────────────────────────────────────────
+
+  /consolidation/analyses:
+    post:
+      tags: [Consolidation]
+      summary: Analyze interfaces across multiple platforms for consolidation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [inventories]
+              properties:
+                inventories:
+                  type: array
+                  items: { $ref: '#/components/schemas/PlatformInventory' }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+
+  /consolidation/analyses/{analysisId}:
+    get:
+      tags: [Consolidation]
+      summary: Get a completed consolidation analysis
+      parameters:
+        - name: analysisId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Consolidation analysis
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ConsolidationAnalysis' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /consolidation/duplicates:
+    post:
+      tags: [Consolidation]
+      summary: Identify duplicate interfaces across platforms
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [inventories]
+              properties:
+                inventories:
+                  type: array
+                  items: { $ref: '#/components/schemas/PlatformInventory' }
+      responses:
+        '200':
+          description: Duplicate groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DuplicateGroup' }
+
+  /consolidation/cost-analyses:
+    post:
+      tags: [Consolidation]
+      summary: Generate cost reduction analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [analysis, costs]
+              properties:
+                analysis: { $ref: '#/components/schemas/ConsolidationAnalysis' }
+                costs:
+                  type: array
+                  items: { $ref: '#/components/schemas/VendorCosts' }
+      responses:
+        '200':
+          description: Cost reduction report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CostReductionReport' }
+
+  /consolidation/roadmaps:
+    post:
+      tags: [Consolidation]
+      summary: Generate a phased migration roadmap
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [inventories]
+              properties:
+                inventories:
+                  type: array
+                  items: { $ref: '#/components/schemas/PlatformInventory' }
+      responses:
+        '200':
+          description: Migration roadmap
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MigrationRoadmap' }
+
+  # ── Blueprint ────────────────────────────────────────────────────────────
+
+  /blueprints:
+    post:
+      tags: [Blueprint]
+      summary: Create a new blueprint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [blueprintId]
+              properties:
+                blueprintId: { type: string }
+                description: { type: string }
+      responses:
+        '201':
+          description: Blueprint created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  blueprintId: { type: string }
+                  createdAt:   { type: string, format: date-time }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /blueprints/{blueprintId}/requirements:
+    get:
+      tags: [Blueprint]
+      summary: List data requirements
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: module
+          in: query
+          schema: { $ref: '#/components/schemas/SAPModule' }
+      responses:
+        '200':
+          description: Requirements
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/DataRequirement' }
+    post:
+      tags: [Blueprint]
+      summary: Create or update a data requirement
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DataRequirement' }
+      responses:
+        '200':
+          description: Stored requirement
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DataRequirement' }
+
+  /blueprints/{blueprintId}/requirements/{requirementId}:
+    delete:
+      tags: [Blueprint]
+      summary: Remove a data requirement
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: requirementId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204': { description: Removed }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /blueprints/{blueprintId}/process-hierarchy:
+    post:
+      tags: [Blueprint]
+      summary: Import an SAP business process hierarchy
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roots, source]
+              properties:
+                source: { type: string, enum: [solution_manager, signavio, manual] }
+                roots:
+                  type: array
+                  items: { $ref: '#/components/schemas/ProcessHierarchyNode' }
+      responses:
+        '200':
+          description: Import result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  rootNodes:
+                    type: array
+                    items: { $ref: '#/components/schemas/ProcessHierarchyNode' }
+                  errors:
+                    type: array
+                    items: { type: string }
+                  nestingDepth: { type: integer }
+
+  /blueprints/{blueprintId}/table-structures:
+    post:
+      tags: [Blueprint]
+      summary: Import an SAP DDIC table structure
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SAPTableStructure' }
+      responses:
+        '204': { description: Imported }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /blueprints/{blueprintId}/auto-link:
+    post:
+      tags: [Blueprint]
+      summary: Auto-link requirements to process nodes by matching target tables
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Number of links created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  linksCreated: { type: integer }
+
+  /blueprints/{blueprintId}/specifications:
+    post:
+      tags: [Blueprint]
+      summary: Generate a data requirements specification document
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [module, version]
+              properties:
+                module:  { $ref: '#/components/schemas/SAPModule' }
+                version: { type: string }
+      responses:
+        '200':
+          description: Specification document
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SpecificationDocument' }
+        '422':
+          description: Mandatory field source mappings missing
+          $ref: '#/components/responses/BadRequest'
+
+  /blueprints/{blueprintId}/versions:
+    get:
+      tags: [Blueprint]
+      summary: List blueprint versions
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Versions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BlueprintVersion' }
+    post:
+      tags: [Blueprint]
+      summary: Create a versioned snapshot of the current blueprint
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [label, createdBy]
+              properties:
+                label:     { type: string, minLength: 1 }
+                createdBy: { type: string }
+      responses:
+        '201':
+          description: Version created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BlueprintVersion' }
+
+  /blueprints/{blueprintId}/versions/compare:
+    post:
+      tags: [Blueprint]
+      summary: Side-by-side comparison of two versions
+      parameters:
+        - name: blueprintId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [versionA, versionB]
+              properties:
+                versionA: { type: string }
+                versionB: { type: string }
+      responses:
+        '200':
+          description: Comparison
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BlueprintComparison' }
+
+  # ── Deployment ───────────────────────────────────────────────────────────
+
+  /deployments:
+    post:
+      tags: [Deployment]
+      summary: Create and start a deployment batch
+      description: Async — returns a job ID. The Job's `resourceUrl` resolves to the deployment status endpoint.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [artifacts, target, strategy]
+              properties:
+                artifacts:
+                  type: array
+                  items: { $ref: '#/components/schemas/IFlowArtifact' }
+                target:   { $ref: '#/components/schemas/TenantConfig' }
+                strategy: { $ref: '#/components/schemas/DeploymentStrategy' }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /deployments/{batchId}:
+    get:
+      tags: [Deployment]
+      summary: Get deployment status and result
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deployment result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeploymentResult' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /deployments/{batchId}/rollback:
+    post:
+      tags: [Deployment]
+      summary: Trigger rollback of a deployment batch
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Rollback info
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RollbackInfo' }
+
+  /deployments/prs:
+    post:
+      tags: [Deployment]
+      summary: Generate bulk pull requests for migration artifacts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [artifacts, config]
+              properties:
+                artifacts:
+                  type: array
+                  items: { $ref: '#/components/schemas/IFlowArtifact' }
+                config: { $ref: '#/components/schemas/PRGenerationConfig' }
+      responses:
+        '200':
+          description: PRs generated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BulkPRResult' }
+
+  /promotions:
+    post:
+      tags: [Deployment]
+      summary: Promote artifacts between environments (Dev → QA → Prod)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PromotionRequest' }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /promotions/{promotionId}:
+    get:
+      tags: [Deployment]
+      summary: Get promotion status
+      parameters:
+        - name: promotionId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Promotion result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DeploymentResult' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── Regression Testing ───────────────────────────────────────────────────
+
+  /regression/suites:
+    post:
+      tags: [Regression Testing]
+      summary: Capture a regression test suite from a source system
+      description: Async — capture may take minutes for large windows.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CaptureConfig' }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+
+  /regression/suites/{suiteId}:
+    get:
+      tags: [Regression Testing]
+      summary: Retrieve a regression test suite
+      parameters:
+        - name: suiteId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Test suite
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RegressionTestSuite' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /regression/runs:
+    post:
+      tags: [Regression Testing]
+      summary: Execute a regression test suite against a migrated iFlow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [suite, target]
+              properties:
+                suite:  { $ref: '#/components/schemas/RegressionTestSuite' }
+                target: { $ref: '#/components/schemas/IFlowTarget' }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+
+  /regression/runs/{runId}:
+    get:
+      tags: [Regression Testing]
+      summary: Retrieve a test execution report
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Test execution report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TestExecutionReport' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /regression/bulk-runs:
+    post:
+      tags: [Regression Testing]
+      summary: Execute many suites in parallel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [suites]
+              properties:
+                suites:
+                  type: array
+                  items: { $ref: '#/components/schemas/RegressionTestSuite' }
+                concurrency: { type: integer, minimum: 1, maximum: 50, default: 4 }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+
+  /regression/bulk-runs/{runId}:
+    get:
+      tags: [Regression Testing]
+      summary: Retrieve a bulk test report
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Bulk test report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BulkTestReport' }
+
+  /regression/comparisons:
+    post:
+      tags: [Regression Testing]
+      summary: Compare two messages structurally
+      description: Synchronous helper — useful for ad-hoc diffs.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [expected, actual]
+              properties:
+                expected: { $ref: '#/components/schemas/Message' }
+                actual:   { $ref: '#/components/schemas/Message' }
+                options:  { $ref: '#/components/schemas/CompareOptions' }
+      responses:
+        '200':
+          description: Comparison result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComparisonResult' }
+
+  # ── Pipeline (end-to-end) ────────────────────────────────────────────────
+
+  /pipelines:
+    post:
+      tags: [Pipeline]
+      summary: Run the full end-to-end migration pipeline
+      description: |
+        Single-call orchestration: Discovery → Risk → Transform → Validate → (optional Deploy).
+        Async — returns a job ID; the produced `PipelineResult` is fetched via
+        `GET /pipelines/{pipelineId}` once `status` is `completed`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MigrationPipelineConfig' }
+      responses:
+        '202': { $ref: '#/components/responses/AcceptedJob' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /pipelines/{pipelineId}:
+    get:
+      tags: [Pipeline]
+      summary: Retrieve the final result of a completed pipeline run
+      parameters:
+        - name: pipelineId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Pipeline result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipelineResult' }
+        '404': { $ref: '#/components/responses/NotFound' }

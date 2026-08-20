@@ -1,0 +1,4 @@
+ID;subdomain;displayName;region;deploymentModel;status;provisionedAt;createdAt;modifiedAt
+a1b2c3d4-e5f6-7890-abcd-ef1234567890;acme-corp;Acme Corporation;us10;multi-tenant;active;2024-01-15T08:00:00Z;2024-01-15T08:00:00Z;2024-06-01T12:00:00Z
+b2c3d4e5-f6a7-8901-bcde-f12345678901;globex-fin;Globex Financial;ca10;multi-tenant;active;2024-02-20T10:30:00Z;2024-02-20T10:30:00Z;2024-06-15T09:00:00Z
+c3d4e5f6-a7b8-9012-cdef-123456789012;initech-eu;Initech Europe;us20;single-tenant;active;2024-03-10T14:00:00Z;2024-03-10T14:00:00Z;2024-07-01T08:00:00Z

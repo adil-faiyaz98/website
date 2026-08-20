@@ -1,0 +1,143 @@
+{
+  "xsappname": "finsecure-ai",
+  "tenant-mode": "shared",
+  "description": "FinSecure AI - Security and Authorization Configuration",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.SecurityAnalyst",
+      "description": "View alerts, investigations, dashboards; manage investigations"
+    },
+    {
+      "name": "$XSAPPNAME.SecurityAdmin",
+      "description": "Configure detection rules, playbooks, thresholds; manage all security settings"
+    },
+    {
+      "name": "$XSAPPNAME.Auditor",
+      "description": "View compliance reports, audit trails, control evidence; export evidence packages"
+    },
+    {
+      "name": "$XSAPPNAME.Executive",
+      "description": "View executive dashboards, risk summaries, trend reports"
+    },
+    {
+      "name": "$XSAPPNAME.IAMAdmin",
+      "description": "Manage access reviews, role assignments, identity governance"
+    },
+    {
+      "name": "$XSAPPNAME.SOCOperator",
+      "description": "Monitor real-time security events, manage alerts, execute playbooks"
+    },
+    {
+      "name": "$XSAPPNAME.TenantAdmin",
+      "description": "Manage tenant configuration, connected systems, compliance packs"
+    },
+    {
+      "name": "$XSAPPNAME.Callback",
+      "description": "SaaS Provisioning Service callback scope",
+      "grant-as-authority-to-apps": ["$XSAPPNAME(application, sap-provisioning, tenant-onboarding)"]
+    }
+  ],
+  "role-templates": [
+    {
+      "name": "SecurityAnalyst",
+      "description": "Security Analyst - Manages alerts, investigations, and risk events",
+      "scope-references": [
+        "$XSAPPNAME.SecurityAnalyst"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "SecurityAdmin",
+      "description": "Security Administrator - Configures detection rules, playbooks, and system settings",
+      "scope-references": [
+        "$XSAPPNAME.SecurityAdmin",
+        "$XSAPPNAME.SecurityAnalyst"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "Auditor",
+      "description": "Auditor - Reviews compliance evidence, generates audit reports",
+      "scope-references": [
+        "$XSAPPNAME.Auditor"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "Executive",
+      "description": "Executive - Views high-level risk dashboards and trend summaries",
+      "scope-references": [
+        "$XSAPPNAME.Executive"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "IAMAdmin",
+      "description": "IAM Administrator - Manages access reviews, role governance, and identity lifecycle",
+      "scope-references": [
+        "$XSAPPNAME.IAMAdmin"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "SOCOperator",
+      "description": "SOC Operator - Monitors real-time events, manages alerts, executes response playbooks",
+      "scope-references": [
+        "$XSAPPNAME.SOCOperator",
+        "$XSAPPNAME.SecurityAnalyst"
+      ],
+      "attribute-references": []
+    }
+  ],
+  "role-collections": [
+    {
+      "name": "FinSecure_SecurityAnalyst",
+      "description": "Security Analyst Role Collection",
+      "role-template-references": [
+        "$XSAPPNAME.SecurityAnalyst"
+      ]
+    },
+    {
+      "name": "FinSecure_SecurityAdmin",
+      "description": "Security Administrator Role Collection",
+      "role-template-references": [
+        "$XSAPPNAME.SecurityAdmin"
+      ]
+    },
+    {
+      "name": "FinSecure_Auditor",
+      "description": "Auditor Role Collection",
+      "role-template-references": [
+        "$XSAPPNAME.Auditor"
+      ]
+    },
+    {
+      "name": "FinSecure_Executive",
+      "description": "Executive Role Collection",
+      "role-template-references": [
+        "$XSAPPNAME.Executive"
+      ]
+    },
+    {
+      "name": "FinSecure_IAMAdmin",
+      "description": "IAM Administrator Role Collection",
+      "role-template-references": [
+        "$XSAPPNAME.IAMAdmin"
+      ]
+    },
+    {
+      "name": "FinSecure_SOCOperator",
+      "description": "SOC Operator Role Collection",
+      "role-template-references": [
+        "$XSAPPNAME.SOCOperator"
+      ]
+    }
+  ],
+  "oauth2-configuration": {
+    "token-validity": 900,
+    "refresh-token-validity": 1800,
+    "redirect-uris": [
+      "https://*.cfapps.*.hana.ondemand.com/**"
+    ]
+  }
+}

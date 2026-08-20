@@ -1,0 +1,148 @@
+_schema-version: "3.1"
+ID: finsecure-ai
+version: 1.0.0
+description: "AI-powered Financial Transaction Risk Intelligence and Application Security Platform"
+
+parameters:
+  enable-parallel-deployments: true
+
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npm ci
+        - npx cds build --production
+
+modules:
+  # CAP Application Server
+  - name: finsecure-ai-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+      memory: 512M
+      disk-quota: 1024M
+    build-parameters:
+      builder: npm
+    provides:
+      - name: srv-api
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: finsecure-ai-db
+      - name: finsecure-ai-xsuaa
+      - name: finsecure-ai-event-mesh
+      - name: finsecure-ai-aicore
+      - name: finsecure-ai-audit-log
+      - name: finsecure-ai-credential-store
+      - name: finsecure-ai-saas-registry
+      - name: finsecure-ai-alert-notification
+      - name: finsecure-ai-identity
+
+  # HANA Cloud Deployer
+  - name: finsecure-ai-db-deployer
+    type: hdb
+    path: gen/db
+    parameters:
+      buildpack: nodejs_buildpack
+      memory: 256M
+      disk-quota: 1024M
+    requires:
+      - name: finsecure-ai-db
+
+  # Fiori UI Application
+  - name: finsecure-ai-app
+    type: html5
+    path: app
+    parameters:
+      buildpack: staticfile_buildpack
+      memory: 64M
+      disk-quota: 256M
+    build-parameters:
+      builder: custom
+      commands:
+        - npm run build
+      supported-platforms: []
+    requires:
+      - name: finsecure-ai-xsuaa
+
+resources:
+  # SAP HANA Cloud
+  - name: finsecure-ai-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+    properties:
+      hdi-service-name: ${service-name}
+
+  # SAP Event Mesh
+  - name: finsecure-ai-event-mesh
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: enterprise-messaging
+      service-plan: default
+      path: ./event-mesh.json
+
+  # SAP AI Core
+  - name: finsecure-ai-aicore
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: aicore
+      service-plan: extended
+
+  # XSUAA (Authorization & Trust Management)
+  - name: finsecure-ai-xsuaa
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+
+  # SAP Audit Log Service
+  - name: finsecure-ai-audit-log
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: auditlog
+      service-plan: premium
+
+  # SAP Credential Store
+  - name: finsecure-ai-credential-store
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: credstore
+      service-plan: standard
+
+  # SAP SaaS Provisioning Service
+  - name: finsecure-ai-saas-registry
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: saas-registry
+      service-plan: application
+      config:
+        xsappname: finsecure-ai
+        appName: finsecure-ai
+        displayName: "FinSecure AI"
+        description: "AI-powered Financial Transaction Risk Intelligence Platform"
+        category: "Security"
+        appUrls:
+          getDependencies: ~{srv-api/srv-url}/mt/v1.0/subscriptions/dependencies
+          onSubscription: ~{srv-api/srv-url}/mt/v1.0/subscriptions/tenants/{tenantId}
+          onSubscriptionAsync: true
+          callbackTimeoutMillis: 300000
+    requires:
+      - name: srv-api
+
+  # SAP Alert Notification Service
+  - name: finsecure-ai-alert-notification
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: alert-notification
+      service-plan: standard
+
+  # SAP Identity Authentication Service (IAS)
+  - name: finsecure-ai-identity
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: identity
+      service-plan: application

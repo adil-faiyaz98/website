@@ -1,0 +1,204 @@
+<mvc:View
+  controllerName="finsecure.ai.domaindashboards.controller.EventProcessingHealth"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.f"
+  xmlns:viz="sap.viz.ui5.controls"
+  xmlns:vizData="sap.viz.ui5.data"
+  xmlns:layout="sap.ui.layout">
+  <Page id="eventHealthPage" title="{i18n>eventHealthTitle}" showNavButton="true" navButtonPress=".onNavBack">
+    <headerContent>
+      <Button icon="sap-icon://refresh" press=".onRefresh" tooltip="{i18n>refresh}"/>
+    </headerContent>
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <!-- KPI Tiles Row -->
+        <f:GridContainer>
+          <f:items>
+            <!-- Throughput KPI -->
+            <GenericTile header="Throughput" subheader="events/sec" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent>
+                <NumericContent
+                  value="{viewModel>/metrics/throughput}"
+                  valueColor="{= ${viewModel>/metrics/throughput} >= ${viewModel>/metrics/throughputTarget} ? 'Good' : 'Error'}"
+                  scale="e/s"/>
+              </TileContent>
+            </GenericTile>
+
+            <!-- Latency KPI -->
+            <GenericTile header="Avg Latency" subheader="milliseconds" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent unit="ms">
+                <NumericContent
+                  value="{viewModel>/metrics/avgLatency}"
+                  valueColor="{= ${viewModel>/metrics/avgLatency} &lt;= ${viewModel>/metrics/latencyThreshold} ? 'Good' : 'Error'}"
+                  indicator="{= ${viewModel>/metrics/avgLatency} &lt;= ${viewModel>/metrics/latencyThreshold} ? 'Down' : 'Up'}"/>
+              </TileContent>
+            </GenericTile>
+
+            <!-- Error Rate KPI -->
+            <GenericTile header="Error Rate" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent unit="%">
+                <NumericContent
+                  value="{viewModel>/metrics/errorRate}"
+                  valueColor="{= ${viewModel>/metrics/errorRate} &lt;= 1 ? 'Good' : ${viewModel>/metrics/errorRate} &lt;= 5 ? 'Critical' : 'Error'}"
+                  scale="%"/>
+              </TileContent>
+            </GenericTile>
+
+            <!-- DLQ Depth KPI -->
+            <GenericTile header="Dead Letter Queue" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent>
+                <NumericContent
+                  value="{viewModel>/metrics/dlqDepth}"
+                  valueColor="{= ${viewModel>/metrics/dlqDepth} === 0 ? 'Good' : ${viewModel>/metrics/dlqDepth} &lt;= 10 ? 'Critical' : 'Error'}"/>
+              </TileContent>
+            </GenericTile>
+
+            <!-- Back-Pressure Status -->
+            <GenericTile header="Back-Pressure" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent>
+                <NumericContent
+                  value="{= ${viewModel>/metrics/backPressureActive} ? 1 : 0}"
+                  valueColor="{= ${viewModel>/metrics/backPressureActive} ? 'Error' : 'Good'}"/>
+              </TileContent>
+            </GenericTile>
+          </f:items>
+        </f:GridContainer>
+
+        <!-- Throughput Time-Series -->
+        <Panel headerText="Throughput Over Time" expandable="true" expanded="true" class="sapUiSmallMarginTop">
+          <content>
+            <viz:VizFrame id="throughputChart" vizType="timeseries_line" width="100%" height="300px">
+              <viz:dataset>
+                <vizData:FlattenedDataset data="{viewModel>/throughputHistory}">
+                  <vizData:dimensions>
+                    <vizData:DimensionDefinition name="Time" value="{viewModel>timestamp}" dataType="date"/>
+                  </vizData:dimensions>
+                  <vizData:measures>
+                    <vizData:MeasureDefinition name="Throughput (e/s)" value="{viewModel>throughput}"/>
+                  </vizData:measures>
+                </vizData:FlattenedDataset>
+              </viz:dataset>
+              <viz:feeds>
+                <viz:ui5.controls.common.feeds.FeedItem uid="timeAxis" type="Dimension" values="Time"/>
+                <viz:ui5.controls.common.feeds.FeedItem uid="valueAxis" type="Measure" values="Throughput (e/s)"/>
+              </viz:feeds>
+            </viz:VizFrame>
+          </content>
+        </Panel>
+
+        <!-- Latency Percentile Chart -->
+        <Panel headerText="Latency Distribution" expandable="true" expanded="true" class="sapUiSmallMarginTop">
+          <content>
+            <viz:VizFrame id="latencyChart" vizType="bar" width="100%" height="250px">
+              <viz:dataset>
+                <vizData:FlattenedDataset data="{viewModel>/latencyPercentiles}">
+                  <vizData:dimensions>
+                    <vizData:DimensionDefinition name="Percentile" value="{viewModel>percentile}"/>
+                  </vizData:dimensions>
+                  <vizData:measures>
+                    <vizData:MeasureDefinition name="Latency (ms)" value="{viewModel>value}"/>
+                  </vizData:measures>
+                </vizData:FlattenedDataset>
+              </viz:dataset>
+              <viz:feeds>
+                <viz:ui5.controls.common.feeds.FeedItem uid="categoryAxis" type="Dimension" values="Percentile"/>
+                <viz:ui5.controls.common.feeds.FeedItem uid="valueAxis" type="Measure" values="Latency (ms)"/>
+              </viz:feeds>
+            </viz:VizFrame>
+          </content>
+        </Panel>
+
+        <!-- Connected Systems Health Table -->
+        <Panel headerText="Connected Systems Health" expandable="true" expanded="true" class="sapUiSmallMarginTop">
+          <content>
+            <Table id="systemsHealthTable"
+              items="{
+                path: 'admin>/ConnectedSystems',
+                parameters: {
+                  $orderby: 'name'
+                }
+              }"
+              growing="true"
+              growingThreshold="20"
+              noDataText="{i18n>noData}">
+              <columns>
+                <Column width="20%"><Text text="System Name"/></Column>
+                <Column width="15%"><Text text="Type"/></Column>
+                <Column width="15%" hAlign="Center"><Text text="Status"/></Column>
+                <Column width="20%"><Text text="Last Heartbeat"/></Column>
+                <Column width="15%" hAlign="Center"><Text text="Events/min"/></Column>
+                <Column width="15%" hAlign="Center"><Text text="Error Rate"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem highlight="{
+                  path: 'admin>status',
+                  formatter: '.formatter.systemStatusState'
+                }">
+                  <cells>
+                    <Text text="{admin>name}"/>
+                    <Text text="{admin>systemType}"/>
+                    <ObjectStatus text="{admin>status}"
+                      state="{
+                        path: 'admin>status',
+                        formatter: '.formatter.systemStatusState'
+                      }"/>
+                    <Text text="{
+                      path: 'admin>lastHeartbeat',
+                      type: 'sap.ui.model.type.DateTime',
+                      formatOptions: { style: 'medium' }
+                    }"/>
+                    <ObjectNumber number="{admin>eventsPerMinute}"/>
+                    <ObjectNumber number="{admin>errorRate}" unit="%" state="{= ${admin>errorRate} &lt;= 1 ? 'Success' : ${admin>errorRate} &lt;= 5 ? 'Warning' : 'Error'}"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </content>
+        </Panel>
+
+        <!-- Dead Letter Queue Table -->
+        <Panel headerText="Dead Letter Queue Entries" expandable="true" expanded="false" class="sapUiSmallMarginTop">
+          <content>
+            <Table id="dlqTable"
+              items="{
+                path: 'admin>/DeadLetterQueue',
+                parameters: {
+                  $orderby: 'failedAt desc',
+                  $top: 50
+                }
+              }"
+              growing="true"
+              growingThreshold="25"
+              noDataText="No dead letter entries">
+              <columns>
+                <Column width="15%"><Text text="Event Type"/></Column>
+                <Column width="15%"><Text text="Source System"/></Column>
+                <Column width="15%"><Text text="Failed At"/></Column>
+                <Column width="10%" hAlign="Center"><Text text="Retry Count"/></Column>
+                <Column width="45%"><Text text="Error Message"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem type="Active">
+                  <cells>
+                    <Text text="{admin>eventType}"/>
+                    <Text text="{admin>sourceSystem}"/>
+                    <Text text="{
+                      path: 'admin>failedAt',
+                      type: 'sap.ui.model.type.DateTime',
+                      formatOptions: { style: 'medium' }
+                    }"/>
+                    <ObjectNumber number="{admin>retryCount}"
+                      state="{= ${admin>retryCount} >= 3 ? 'Error' : 'Warning'}"/>
+                    <Text text="{admin>errorMessage}" wrapping="true" maxLines="2"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </content>
+        </Panel>
+      </VBox>
+    </content>
+  </Page>
+</mvc:View>

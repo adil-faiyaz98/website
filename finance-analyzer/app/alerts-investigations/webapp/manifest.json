@@ -1,0 +1,144 @@
+{
+  "_version": "1.59.0",
+  "sap.app": {
+    "id": "finsecure.ai.alertsinvestigations",
+    "type": "application",
+    "title": "Alerts & Investigations",
+    "description": "Alert management, investigation workflow, and access review",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "dataSources": {
+      "analystService": {
+        "uri": "/analyst/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      },
+      "iamService": {
+        "uri": "/iam/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.uxap": {},
+        "sap.ui.layout": {},
+        "sap.f": {},
+        "sap.suite.ui.commons": {}
+      }
+    },
+    "models": {
+      "": {
+        "dataSource": "analystService",
+        "preload": true,
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "iam": {
+        "dataSource": "iamService",
+        "preload": true,
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "finsecure.ai.alertsinvestigations.i18n.i18n"
+        }
+      }
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "finsecure.ai.alertsinvestigations.view",
+        "controlId": "appControl",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        {
+          "name": "AlertDashboard",
+          "pattern": "",
+          "target": "AlertDashboard"
+        },
+        {
+          "name": "AlertDetail",
+          "pattern": "Alerts/{alertId}",
+          "target": "AlertDetail"
+        },
+        {
+          "name": "InvestigationWorkflow",
+          "pattern": "Investigations/{investigationId}",
+          "target": "InvestigationWorkflow"
+        },
+        {
+          "name": "AccessReview",
+          "pattern": "AccessReview",
+          "target": "AccessReview"
+        },
+        {
+          "name": "AccessReviewDetail",
+          "pattern": "AccessReview/{campaignId}",
+          "target": "AccessReviewDetail"
+        }
+      ],
+      "targets": {
+        "AlertDashboard": {
+          "viewName": "AlertDashboard",
+          "viewLevel": 1
+        },
+        "AlertDetail": {
+          "viewName": "AlertDetail",
+          "viewLevel": 2
+        },
+        "InvestigationWorkflow": {
+          "viewName": "InvestigationWorkflow",
+          "viewLevel": 2
+        },
+        "AccessReview": {
+          "viewName": "AccessReview",
+          "viewLevel": 1
+        },
+        "AccessReviewDetail": {
+          "viewName": "AccessReview",
+          "viewLevel": 2
+        }
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": {
+      "icon": "sap-icon://alert"
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  }
+}

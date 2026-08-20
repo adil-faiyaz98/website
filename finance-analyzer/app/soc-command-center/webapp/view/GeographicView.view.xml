@@ -1,0 +1,113 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:l="sap.ui.layout"
+  xmlns:core="sap.ui.core"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  controllerName="finsecure.ai.soc.commandcenter.controller.GeographicView"
+  displayBlock="true">
+
+  <Page
+    id="geographicPage"
+    title="{i18n>geographicViewTitle}"
+    showNavButton="true"
+    navButtonPress=".onNavBack"
+    class="{= ${dashboard>/darkMode} ? 'soc-dark-mode' : ''}">
+
+    <headerContent>
+      <SegmentedButton id="mapViewSelector" selectionChange=".onMapViewChange">
+        <items>
+          <SegmentedButtonItem key="density" text="{i18n>alertDensity}" />
+          <SegmentedButtonItem key="systems" text="{i18n>systemLocations}" />
+        </items>
+      </SegmentedButton>
+      <Button icon="sap-icon://refresh" press=".onRefreshMap" tooltip="{i18n>tooltipRefresh}" />
+    </headerContent>
+
+    <content>
+      <!-- Alert Density Legend -->
+      <Panel id="densityLegend" class="sapUiSmallMargin">
+        <HBox alignItems="Center" justifyContent="Center" class="socLegend">
+          <HBox class="sapUiSmallMarginEnd">
+            <core:Icon src="sap-icon://circle-task-2" color="#a8d4a0" class="sapUiTinyMarginEnd" />
+            <Label text="{i18n>lowDensity} (1-5)" />
+          </HBox>
+          <HBox class="sapUiSmallMarginEnd">
+            <core:Icon src="sap-icon://circle-task-2" color="#e6a400" class="sapUiTinyMarginEnd" />
+            <Label text="{i18n>mediumDensity} (6-20)" />
+          </HBox>
+          <HBox class="sapUiSmallMarginEnd">
+            <core:Icon src="sap-icon://circle-task-2" color="#e87500" class="sapUiTinyMarginEnd" />
+            <Label text="{i18n>highDensity} (21-50)" />
+          </HBox>
+          <HBox>
+            <core:Icon src="sap-icon://circle-task-2" color="#cc1919" class="sapUiTinyMarginEnd" />
+            <Label text="{i18n>criticalDensity} (50+)" />
+          </HBox>
+        </HBox>
+      </Panel>
+
+      <!-- SVG Map Container -->
+      <Panel
+        id="mapContainer"
+        headerText="{i18n>alertDistributionMap}"
+        class="sapUiSmallMargin socMapPanel">
+        <core:HTML id="svgMapContainer" content="{dashboard>/mapSvgContent}" />
+      </Panel>
+
+      <!-- Region Alert Summary Table -->
+      <Panel
+        id="regionSummaryPanel"
+        headerText="{i18n>regionAlertSummary}"
+        expandable="true"
+        expanded="true"
+        class="sapUiSmallMargin">
+        <Table
+          id="regionTable"
+          items="{dashboard>/regions}"
+          growing="true"
+          growingThreshold="20"
+          alternateRowColors="true">
+          <columns>
+            <Column>
+              <Text text="{i18n>region}" />
+            </Column>
+            <Column>
+              <Text text="{i18n>dataCenterLocation}" />
+            </Column>
+            <Column hAlign="Center">
+              <Text text="{i18n>connectedSystems}" />
+            </Column>
+            <Column hAlign="Center">
+              <Text text="{i18n>activeAlerts}" />
+            </Column>
+            <Column hAlign="Center">
+              <Text text="{i18n>criticalAlerts}" />
+            </Column>
+            <Column hAlign="Center">
+              <Text text="{i18n>riskLevel}" />
+            </Column>
+          </columns>
+          <items>
+            <ColumnListItem type="Active" press=".onRegionPress">
+              <cells>
+                <Text text="{dashboard>region}" />
+                <Text text="{dashboard>location}" />
+                <ObjectNumber number="{dashboard>systemCount}" />
+                <ObjectNumber
+                  number="{dashboard>alertCount}"
+                  state="{= ${dashboard>alertCount} > 20 ? 'Error' : ${dashboard>alertCount} > 5 ? 'Warning' : 'Success'}" />
+                <ObjectNumber
+                  number="{dashboard>criticalCount}"
+                  state="{= ${dashboard>criticalCount} > 0 ? 'Error' : 'Success'}" />
+                <ObjectStatus
+                  text="{dashboard>riskLevel}"
+                  state="{= ${dashboard>riskLevel} === 'Critical' ? 'Error' : ${dashboard>riskLevel} === 'High' ? 'Warning' : 'Success'}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+      </Panel>
+    </content>
+  </Page>
+</mvc:View>

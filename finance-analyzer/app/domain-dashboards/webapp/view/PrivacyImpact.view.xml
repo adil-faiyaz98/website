@@ -1,0 +1,158 @@
+<mvc:View
+  controllerName="finsecure.ai.domaindashboards.controller.PrivacyImpact"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.f"
+  xmlns:viz="sap.viz.ui5.controls"
+  xmlns:vizData="sap.viz.ui5.data"
+  xmlns:layout="sap.ui.layout">
+  <Page id="privacyPage" title="{i18n>privacyTitle}" showNavButton="true" navButtonPress=".onNavBack">
+    <headerContent>
+      <Button icon="sap-icon://refresh" press=".onRefresh" tooltip="{i18n>refresh}"/>
+    </headerContent>
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <!-- KPI Tiles Row -->
+        <f:GridContainer>
+          <f:items>
+            <!-- Total Data Access Logs KPI -->
+            <GenericTile header="{i18n>privacyDataAccess}" subheader="Total Logs" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent>
+                <NumericContent value="{viewModel>/kpis/totalAccessLogs}"/>
+              </TileContent>
+            </GenericTile>
+
+            <!-- Sensitive Access Count KPI -->
+            <GenericTile header="Sensitive Access" subheader="Events" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent>
+                <NumericContent
+                  value="{viewModel>/kpis/sensitiveAccessCount}"
+                  valueColor="{= ${viewModel>/kpis/sensitiveAccessCount} === 0 ? 'Good' : 'Critical'}"/>
+              </TileContent>
+            </GenericTile>
+
+            <!-- Masking Effectiveness KPI -->
+            <GenericTile header="{i18n>privacyMasking}" subheader="Effectiveness" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent unit="%">
+                <NumericContent
+                  value="{viewModel>/kpis/maskingEffectiveness}"
+                  valueColor="{= ${viewModel>/kpis/maskingEffectiveness} >= 95 ? 'Good' : ${viewModel>/kpis/maskingEffectiveness} >= 80 ? 'Critical' : 'Error'}"
+                  scale="%"/>
+              </TileContent>
+            </GenericTile>
+
+            <!-- Retention Compliance KPI -->
+            <GenericTile header="{i18n>privacyRetention}" subheader="Compliance" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent unit="%">
+                <NumericContent
+                  value="{viewModel>/kpis/retentionCompliance}"
+                  valueColor="{= ${viewModel>/kpis/retentionCompliance} >= 95 ? 'Good' : ${viewModel>/kpis/retentionCompliance} >= 80 ? 'Critical' : 'Error'}"
+                  scale="%"/>
+              </TileContent>
+            </GenericTile>
+
+            <!-- Privacy Alerts KPI -->
+            <GenericTile header="Privacy Alerts" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent>
+                <NumericContent
+                  value="{viewModel>/kpis/privacyAlerts}"
+                  valueColor="{= ${viewModel>/kpis/privacyAlerts} === 0 ? 'Good' : 'Error'}"/>
+              </TileContent>
+            </GenericTile>
+
+            <!-- DSAR Pending KPI -->
+            <GenericTile header="DSAR Pending" subheader="Requests" frameType="OneByOne" class="sapUiSmallMargin">
+              <TileContent>
+                <NumericContent
+                  value="{viewModel>/kpis/dsarPending}"
+                  valueColor="{= ${viewModel>/kpis/dsarPending} === 0 ? 'Good' : 'Critical'}"/>
+              </TileContent>
+            </GenericTile>
+          </f:items>
+        </f:GridContainer>
+
+        <!-- Data Access Trends Chart -->
+        <Panel headerText="Data Access Trends" expandable="true" expanded="true" class="sapUiSmallMarginTop">
+          <content>
+            <viz:VizFrame id="accessTrendsChart" vizType="timeseries_line" width="100%" height="300px">
+              <viz:dataset>
+                <vizData:FlattenedDataset data="{viewModel>/accessTrends}">
+                  <vizData:dimensions>
+                    <vizData:DimensionDefinition name="Date" value="{viewModel>date}" dataType="date"/>
+                  </vizData:dimensions>
+                  <vizData:measures>
+                    <vizData:MeasureDefinition name="Total Accesses" value="{viewModel>accesses}"/>
+                    <vizData:MeasureDefinition name="Sensitive Accesses" value="{viewModel>sensitiveAccesses}"/>
+                  </vizData:measures>
+                </vizData:FlattenedDataset>
+              </viz:dataset>
+              <viz:feeds>
+                <viz:ui5.controls.common.feeds.FeedItem uid="timeAxis" type="Dimension" values="Date"/>
+                <viz:ui5.controls.common.feeds.FeedItem uid="valueAxis" type="Measure" values="Total Accesses,Sensitive Accesses"/>
+              </viz:feeds>
+            </viz:VizFrame>
+          </content>
+        </Panel>
+
+        <!-- Retention Compliance by Data Classification -->
+        <Panel headerText="Retention Compliance by Classification" expandable="true" expanded="true" class="sapUiSmallMarginTop">
+          <content>
+            <Table id="retentionTable"
+              items="{viewModel>/retentionStatus}"
+              noDataText="{i18n>noData}">
+              <columns>
+                <Column width="25%"><Text text="Data Classification"/></Column>
+                <Column width="20%" hAlign="Center"><Text text="Compliant"/></Column>
+                <Column width="20%" hAlign="Center"><Text text="Total"/></Column>
+                <Column width="35%"><Text text="Compliance Rate"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem>
+                  <cells>
+                    <Text text="{viewModel>classification}"/>
+                    <ObjectNumber number="{viewModel>compliant}" state="Success"/>
+                    <ObjectNumber number="{viewModel>total}"/>
+                    <ProgressIndicator
+                      percentValue="{viewModel>percentage}"
+                      displayValue="{viewModel>percentage}%"
+                      state="{= ${viewModel>percentage} >= 95 ? 'Success' : ${viewModel>percentage} >= 80 ? 'Warning' : 'Error'}"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </content>
+        </Panel>
+
+        <!-- Masking Effectiveness Breakdown -->
+        <Panel headerText="Masking Effectiveness Breakdown" expandable="true" expanded="true" class="sapUiSmallMarginTop">
+          <content>
+            <Table id="maskingTable"
+              items="{viewModel>/maskingBreakdown}"
+              noDataText="{i18n>noData}">
+              <columns>
+                <Column width="30%"><Text text="Field Category"/></Column>
+                <Column width="15%" hAlign="Center"><Text text="Masked"/></Column>
+                <Column width="15%" hAlign="Center"><Text text="Total"/></Column>
+                <Column width="40%"><Text text="Coverage"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem>
+                  <cells>
+                    <Text text="{viewModel>fieldCategory}"/>
+                    <ObjectNumber number="{viewModel>masked}" state="Success"/>
+                    <ObjectNumber number="{viewModel>total}"/>
+                    <ProgressIndicator
+                      percentValue="{viewModel>percentage}"
+                      displayValue="{viewModel>percentage}%"
+                      state="{= ${viewModel>percentage} >= 95 ? 'Success' : ${viewModel>percentage} >= 80 ? 'Warning' : 'Error'}"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </content>
+        </Panel>
+      </VBox>
+    </content>
+  </Page>
+</mvc:View>

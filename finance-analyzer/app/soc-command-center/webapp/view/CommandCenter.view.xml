@@ -1,0 +1,383 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:f="sap.f"
+  xmlns:l="sap.ui.layout"
+  xmlns:core="sap.ui.core"
+  xmlns:viz="sap.viz.ui5.controls"
+  xmlns:vizData="sap.viz.ui5.data"
+  controllerName="finsecure.ai.soc.commandcenter.controller.CommandCenter"
+  displayBlock="true">
+
+  <App id="commandCenterApp" class="socCommandCenter">
+    <Page
+      id="mainPage"
+      showHeader="true"
+      enableScrolling="true"
+      class="{= ${dashboard>/darkMode} ? 'soc-dark-mode' : ''}">
+
+      <!-- Header Toolbar -->
+      <customHeader>
+        <Bar>
+          <contentLeft>
+            <Title text="{i18n>appTitle}" level="H3" />
+            <Label text="{= ${dashboard>/currentRole} ? '(' + ${dashboard>/currentRole} + ')' : ''}" class="sapUiSmallMarginBegin" />
+          </contentLeft>
+          <contentMiddle>
+            <SegmentedButton id="viewSelector" selectionChange=".onViewChange">
+              <items>
+                <SegmentedButtonItem key="overview" text="{i18n>viewOverview}" icon="sap-icon://home" />
+                <SegmentedButtonItem key="landscape" text="{i18n>viewLandscape}" icon="sap-icon://connected" />
+                <SegmentedButtonItem key="geographic" text="{i18n>viewGeographic}" icon="sap-icon://map" />
+                <SegmentedButtonItem key="threatFeed" text="{i18n>viewThreatFeed}" icon="sap-icon://activity-items" />
+              </items>
+            </SegmentedButton>
+          </contentMiddle>
+          <contentRight>
+            <Button
+              id="btnNotifications"
+              icon="sap-icon://bell"
+              type="Transparent"
+              press=".onToggleNotifications"
+              tooltip="{i18n>tooltipNotifications}" />
+            <Switch
+              id="darkModeSwitch"
+              state="{dashboard>/darkMode}"
+              change=".onDarkModeToggle"
+              customTextOn="Dark"
+              customTextOff="Light"
+              tooltip="{i18n>tooltipDarkMode}" />
+            <Button
+              id="btnShare"
+              icon="sap-icon://share-2"
+              type="Transparent"
+              press=".onShareDashboard"
+              tooltip="{i18n>tooltipShare}" />
+            <Button
+              id="btnRefresh"
+              icon="sap-icon://refresh"
+              type="Transparent"
+              press=".onManualRefresh"
+              tooltip="{i18n>tooltipRefresh}" />
+          </contentRight>
+        </Bar>
+      </customHeader>
+
+      <content>
+        <!-- KPI Panel Section -->
+        <Panel
+          id="kpiPanel"
+          headerText="{i18n>kpiPanelTitle}"
+          expandable="false"
+          class="sapUiSmallMargin socKpiPanel">
+          <l:Grid defaultSpan="L2 M4 S6">
+            <!-- MTTD KPI -->
+            <f:Card class="socKpiCard">
+              <f:header>
+                <f:cards.Header
+                  title="{i18n>kpiMTTD}"
+                  subtitle="{i18n>kpiMTTDSubtitle}"
+                  number="{dashboard>/kpis/mttd}"
+                  numberUnit="min"
+                  statusText="{i18n>kpiTarget}: &lt;15m" />
+              </f:header>
+            </f:Card>
+
+            <!-- MTTR KPI -->
+            <f:Card class="socKpiCard">
+              <f:header>
+                <f:cards.Header
+                  title="{i18n>kpiMTTR}"
+                  subtitle="{i18n>kpiMTTRSubtitle}"
+                  number="{dashboard>/kpis/mttr}"
+                  numberUnit="min"
+                  statusText="{i18n>kpiTarget}: &lt;4h" />
+              </f:header>
+            </f:Card>
+
+            <!-- Alert Volume 7d -->
+            <f:Card class="socKpiCard">
+              <f:header>
+                <f:cards.Header
+                  title="{i18n>kpiAlertVolume7d}"
+                  subtitle="{i18n>kpiLast7Days}"
+                  number="{dashboard>/kpis/alertVolume7d}" />
+              </f:header>
+            </f:Card>
+
+            <!-- Alert Volume 30d -->
+            <f:Card class="socKpiCard">
+              <f:header>
+                <f:cards.Header
+                  title="{i18n>kpiAlertVolume30d}"
+                  subtitle="{i18n>kpiLast30Days}"
+                  number="{dashboard>/kpis/alertVolume30d}" />
+              </f:header>
+            </f:Card>
+
+            <!-- False Positive Rate -->
+            <f:Card class="socKpiCard">
+              <f:header>
+                <f:cards.Header
+                  title="{i18n>kpiFalsePositiveRate}"
+                  subtitle="{i18n>kpiFPRSubtitle}"
+                  number="{dashboard>/kpis/falsePositiveRate}"
+                  numberUnit="%" />
+              </f:header>
+            </f:Card>
+
+            <!-- Compliance Coverage -->
+            <f:Card class="socKpiCard">
+              <f:header>
+                <f:cards.Header
+                  title="{i18n>kpiComplianceCoverage}"
+                  subtitle="{i18n>kpiComplianceSubtitle}"
+                  number="{dashboard>/kpis/complianceCoverage}"
+                  numberUnit="%" />
+              </f:header>
+            </f:Card>
+          </l:Grid>
+        </Panel>
+
+        <!-- Role-Specific Content Section -->
+        <Panel
+          id="roleSpecificPanel"
+          headerText="{i18n>roleViewTitle}"
+          expandable="true"
+          expanded="true"
+          class="sapUiSmallMargin">
+
+          <!-- SOC Analyst View -->
+          <VBox id="analystView" visible="{= ${dashboard>/currentRole} === 'SecurityAnalyst'}">
+            <Toolbar>
+              <Title text="{i18n>analystViewTitle}" level="H4" />
+            </Toolbar>
+            <l:Grid defaultSpan="L6 M12 S12">
+              <!-- Alert Queue -->
+              <List
+                id="alertQueueList"
+                headerText="{i18n>alertQueue}"
+                items="{analyst>/Alerts}"
+                growing="true"
+                growingThreshold="20">
+                <ObjectListItem
+                  title="{analyst>title}"
+                  number="{analyst>riskScore}"
+                  numberUnit="Risk"
+                  numberState="{= ${analyst>riskScore} >= 70 ? 'Error' : ${analyst>riskScore} >= 40 ? 'Warning' : 'Success'}"
+                  type="Active"
+                  press=".onAlertPress">
+                  <attributes>
+                    <ObjectAttribute text="{analyst>category}" />
+                    <ObjectAttribute text="{analyst>createdAt}" />
+                  </attributes>
+                  <firstStatus>
+                    <ObjectStatus text="{analyst>severity}" state="{= ${analyst>severity} === 'critical' ? 'Error' : ${analyst>severity} === 'high' ? 'Warning' : 'None'}" />
+                  </firstStatus>
+                </ObjectListItem>
+              </List>
+
+              <!-- Investigation List -->
+              <List
+                id="investigationList"
+                headerText="{i18n>investigations}"
+                items="{analyst>/Investigations}"
+                growing="true"
+                growingThreshold="10">
+                <ObjectListItem
+                  title="{analyst>title}"
+                  intro="{analyst>status}"
+                  type="Active"
+                  press=".onInvestigationPress">
+                  <attributes>
+                    <ObjectAttribute text="{analyst>assignedTo}" />
+                    <ObjectAttribute text="{analyst>createdAt}" />
+                  </attributes>
+                </ObjectListItem>
+              </List>
+            </l:Grid>
+          </VBox>
+
+          <!-- IAM Admin View -->
+          <VBox id="iamAdminView" visible="{= ${dashboard>/currentRole} === 'IAMAdmin'}">
+            <Toolbar>
+              <Title text="{i18n>iamAdminViewTitle}" level="H4" />
+            </Toolbar>
+            <l:Grid defaultSpan="L6 M12 S12">
+              <List
+                id="accessViolationsList"
+                headerText="{i18n>accessViolations}"
+                items="{iam>/Alerts}"
+                growing="true"
+                growingThreshold="20">
+                <StandardListItem
+                  title="{iam>title}"
+                  description="{iam>description}"
+                  info="{iam>severity}"
+                  infoState="{= ${iam>severity} === 'critical' ? 'Error' : 'Warning'}"
+                  type="Active"
+                  press=".onAlertPress" />
+              </List>
+              <List
+                id="accessReviewsList"
+                headerText="{i18n>accessReviews}"
+                items="{iam>/AccessReviewCampaigns}"
+                growing="true"
+                growingThreshold="10">
+                <ObjectListItem
+                  title="{iam>name}"
+                  intro="{iam>status}"
+                  type="Active"
+                  press=".onAccessReviewPress">
+                  <attributes>
+                    <ObjectAttribute text="{iam>dueDate}" />
+                  </attributes>
+                </ObjectListItem>
+              </List>
+            </l:Grid>
+          </VBox>
+
+          <!-- Compliance Officer View -->
+          <VBox id="complianceView" visible="{= ${dashboard>/currentRole} === 'Auditor'}">
+            <Toolbar>
+              <Title text="{i18n>complianceViewTitle}" level="H4" />
+            </Toolbar>
+            <l:Grid defaultSpan="L6 M12 S12">
+              <List
+                id="controlStatusList"
+                headerText="{i18n>controlStatus}"
+                items="{path: 'auditor>/ComplianceControls'}"
+                growing="true"
+                growingThreshold="20">
+                <ObjectListItem
+                  title="{auditor>controlName}"
+                  number="{auditor>compliancePercentage}"
+                  numberUnit="%"
+                  type="Active"
+                  press=".onControlPress">
+                  <attributes>
+                    <ObjectAttribute text="{auditor>framework}" />
+                  </attributes>
+                  <firstStatus>
+                    <ObjectStatus text="{auditor>status}" state="{= ${auditor>status} === 'passing' ? 'Success' : 'Error'}" />
+                  </firstStatus>
+                </ObjectListItem>
+              </List>
+              <List
+                id="evidenceGapsList"
+                headerText="{i18n>evidenceGaps}"
+                noDataText="{i18n>noEvidenceGaps}">
+                <StandardListItem
+                  title="{i18n>noEvidenceGapsMessage}"
+                  icon="sap-icon://accept" />
+              </List>
+            </l:Grid>
+          </VBox>
+
+          <!-- CISO Executive View -->
+          <VBox id="executiveView" visible="{= ${dashboard>/currentRole} === 'Executive'}">
+            <Toolbar>
+              <Title text="{i18n>executiveViewTitle}" level="H4" />
+            </Toolbar>
+            <l:Grid defaultSpan="L4 M6 S12">
+              <f:Card class="socKpiCard">
+                <f:header>
+                  <f:cards.Header
+                    title="{i18n>riskPostureScore}"
+                    number="{dashboard>/kpis/riskPostureScore}"
+                    numberUnit="/100" />
+                </f:header>
+              </f:Card>
+              <f:Card class="socKpiCard">
+                <f:header>
+                  <f:cards.Header
+                    title="{i18n>trendSummary}"
+                    subtitle="{i18n>last30Days}" />
+                </f:header>
+              </f:Card>
+              <f:Card class="socKpiCard">
+                <f:header>
+                  <f:cards.Header
+                    title="{i18n>complianceOverview}"
+                    number="{dashboard>/kpis/complianceCoverage}"
+                    numberUnit="%" />
+                </f:header>
+              </f:Card>
+            </l:Grid>
+          </VBox>
+
+        </Panel>
+
+        <!-- Alert Volume Trend Chart -->
+        <Panel
+          id="alertTrendPanel"
+          headerText="{i18n>alertVolumeTrends}"
+          expandable="true"
+          expanded="true"
+          class="sapUiSmallMargin">
+          <viz:VizFrame
+            id="alertTrendChart"
+            vizType="timeseries_line"
+            width="100%"
+            height="300px"
+            uiConfig="{applicationSet:'fiori'}">
+            <viz:dataset>
+              <vizData:FlattenedDataset
+                data="{dashboard>/alertTrends}">
+                <vizData:dimensions>
+                  <vizData:DimensionDefinition
+                    name="Date"
+                    value="{dashboard>date}"
+                    dataType="date" />
+                </vizData:dimensions>
+                <vizData:measures>
+                  <vizData:MeasureDefinition
+                    name="Alerts"
+                    value="{dashboard>count}" />
+                </vizData:measures>
+              </vizData:FlattenedDataset>
+            </viz:dataset>
+          </viz:VizFrame>
+        </Panel>
+
+        <!-- Real-Time Threat Feed Preview -->
+        <Panel
+          id="threatFeedPreview"
+          headerText="{i18n>realtimeThreatFeed}"
+          expandable="true"
+          expanded="true"
+          class="sapUiSmallMargin">
+          <headerToolbar>
+            <Toolbar>
+              <Title text="{i18n>realtimeThreatFeed}" level="H4" />
+              <ToolbarSpacer />
+              <Label text="{i18n>autoRefresh60s}" class="socAutoRefreshLabel" />
+              <Button text="{i18n>viewAll}" press=".onNavigateToThreatFeed" type="Transparent" />
+            </Toolbar>
+          </headerToolbar>
+          <List
+            id="threatFeedPreviewList"
+            items="{path: 'dashboard>/threatFeed', length: 10}"
+            noDataText="{i18n>noThreatEvents}">
+            <FeedListItem
+              sender="{dashboard>source}"
+              text="{dashboard>description}"
+              timestamp="{dashboard>timestamp}"
+              type="Active"
+              press=".onThreatEventPress" />
+          </List>
+        </Panel>
+      </content>
+
+      <!-- Footer -->
+      <footer>
+        <Toolbar>
+          <ToolbarSpacer />
+          <Label text="{i18n>lastUpdated}: {dashboard>/lastUpdated}" class="socFooterLabel" />
+          <Label text="|" />
+          <Label text="{i18n>connectedSystems}: {dashboard>/connectedSystemsCount}" />
+        </Toolbar>
+      </footer>
+    </Page>
+  </App>
+</mvc:View>

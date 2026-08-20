@@ -1,0 +1,37 @@
+{
+  "[development]": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "impl": "@cap-js/sqlite",
+        "credentials": {
+          "url": "db.sqlite"
+        }
+      },
+      "auth": {
+        "kind": "mocked"
+      },
+      "messaging": {
+        "kind": "file-based-messaging"
+      }
+    }
+  },
+  "[production]": {
+    "requires": {
+      "db": {
+        "kind": "hana",
+        "impl": "@sap/cds-hana",
+        "deploy-format": "hdbtable"
+      },
+      "auth": {
+        "kind": "xsuaa"
+      },
+      "messaging": {
+        "kind": "enterprise-messaging"
+      },
+      "multitenancy": true,
+      "toggles": true,
+      "extensibility": true
+    }
+  }
+}

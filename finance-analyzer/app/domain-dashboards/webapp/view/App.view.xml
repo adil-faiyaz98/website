@@ -1,0 +1,8 @@
+<mvc:View
+  controllerName="finsecure.ai.domaindashboards.controller.App"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  displayBlock="true">
+  <App id="appContainer" busy="{appView>/busy}" busyIndicatorDelay="{appView>/delay}">
+  </App>
+</mvc:View>

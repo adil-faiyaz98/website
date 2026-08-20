@@ -1,0 +1,9 @@
+node_modules/
+dist/
+gen/
+coverage/
+*.sqlite
+*.log
+.env
+default-env.json
+mta_archives/

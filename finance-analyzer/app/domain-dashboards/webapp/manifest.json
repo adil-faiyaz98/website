@@ -1,0 +1,242 @@
+{
+  "_version": "1.59.0",
+  "sap.app": {
+    "id": "finsecure.ai.domaindashboards",
+    "type": "application",
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "dataSources": {
+      "analystService": {
+        "uri": "/analyst/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      },
+      "adminService": {
+        "uri": "/admin/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      },
+      "auditorService": {
+        "uri": "/auditor/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      },
+      "executiveService": {
+        "uri": "/executive/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      },
+      "iamService": {
+        "uri": "/iam/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ui.layout": {},
+        "sap.f": {},
+        "sap.uxap": {},
+        "sap.ui.table": {},
+        "sap.viz": {},
+        "sap.suite.ui.microchart": {},
+        "sap.ui.comp": {}
+      }
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "finsecure.ai.domaindashboards.i18n.i18n"
+        }
+      },
+      "analyst": {
+        "dataSource": "analystService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "admin": {
+        "dataSource": "adminService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "auditor": {
+        "dataSource": "auditorService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "executive": {
+        "dataSource": "executiveService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "iam": {
+        "dataSource": "iamService",
+        "type": "sap.ui.model.odata.v4.ODataModel",
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      }
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "finsecure.ai.domaindashboards.view",
+        "controlId": "appContainer",
+        "controlAggregation": "pages",
+        "async": true
+      },
+      "routes": [
+        {
+          "name": "home",
+          "pattern": "",
+          "target": "home"
+        },
+        {
+          "name": "sodViolations",
+          "pattern": "sod-violations",
+          "target": "sodViolations"
+        },
+        {
+          "name": "vendorMonitoring",
+          "pattern": "vendor-monitoring",
+          "target": "vendorMonitoring"
+        },
+        {
+          "name": "behavioralProfiles",
+          "pattern": "behavioral-profiles",
+          "target": "behavioralProfiles"
+        },
+        {
+          "name": "iamHeatmap",
+          "pattern": "iam-heatmap",
+          "target": "iamHeatmap"
+        },
+        {
+          "name": "complianceDashboard",
+          "pattern": "compliance",
+          "target": "complianceDashboard"
+        },
+        {
+          "name": "p2pCompliance",
+          "pattern": "p2p-compliance",
+          "target": "p2pCompliance"
+        },
+        {
+          "name": "insiderThreat",
+          "pattern": "insider-threat",
+          "target": "insiderThreat"
+        },
+        {
+          "name": "vulnerabilityManagement",
+          "pattern": "vulnerability-management",
+          "target": "vulnerabilityManagement"
+        },
+        {
+          "name": "eventProcessingHealth",
+          "pattern": "event-processing-health",
+          "target": "eventProcessingHealth"
+        },
+        {
+          "name": "privacyImpact",
+          "pattern": "privacy-impact",
+          "target": "privacyImpact"
+        }
+      ],
+      "targets": {
+        "home": {
+          "viewName": "Home",
+          "viewLevel": 1
+        },
+        "sodViolations": {
+          "viewName": "SoDViolations",
+          "viewLevel": 2
+        },
+        "vendorMonitoring": {
+          "viewName": "VendorMonitoring",
+          "viewLevel": 2
+        },
+        "behavioralProfiles": {
+          "viewName": "BehavioralProfiles",
+          "viewLevel": 2
+        },
+        "iamHeatmap": {
+          "viewName": "IAMHeatmap",
+          "viewLevel": 2
+        },
+        "complianceDashboard": {
+          "viewName": "ComplianceDashboard",
+          "viewLevel": 2
+        },
+        "p2pCompliance": {
+          "viewName": "P2PCompliance",
+          "viewLevel": 2
+        },
+        "insiderThreat": {
+          "viewName": "InsiderThreat",
+          "viewLevel": 2
+        },
+        "vulnerabilityManagement": {
+          "viewName": "VulnerabilityManagement",
+          "viewLevel": 2
+        },
+        "eventProcessingHealth": {
+          "viewName": "EventProcessingHealth",
+          "viewLevel": 2
+        },
+        "privacyImpact": {
+          "viewName": "PrivacyImpact",
+          "viewLevel": 2
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "finsecure.ai.domaindashboards.view.App",
+      "type": "XML",
+      "id": "app"
+    }
+  }
+}

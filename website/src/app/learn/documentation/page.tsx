@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GlassCard } from "@/components/ui";
+import { SapIcon } from "@/components";
 
 export const metadata: Metadata = {
   title: "Documentation | SDA Migration WorkBench",
@@ -31,6 +32,7 @@ interface DocCategory {
   title: string;
   description: string;
   icon: string;
+  featured?: boolean;
   links: DocLink[];
 }
 
@@ -39,27 +41,56 @@ const categories: DocCategory[] = [
     title: "Getting Started",
     description:
       "New to SDA Migration WorkBench? Start here with setup guides and introductory tutorials.",
-    icon: "🚀",
+    icon: "journey-arrive",
     links: [
       {
         title: "Quick Start Guide",
         description: "Set up your first migration project in under 10 minutes",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Platform Overview",
         description: "Understand the core concepts and architecture",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Installation & Setup",
         description: "System requirements and environment configuration",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Your First Migration",
         description: "Step-by-step walkthrough of a basic migration",
-        href: "/docs",
+        href: "/learn/documentation",
+      },
+    ],
+  },
+  {
+    title: "Quebec Tax Calculator",
+    description:
+      "Complete documentation for R&D tax credit automation - CRIC, SR&ED, CDAE-IA, and C3i programs.",
+    icon: "money-bills",
+    featured: true,
+    links: [
+      {
+        title: "Tax Programs Overview",
+        description: "Understanding CRIC, SR&ED, CDAE-IA, and C3i eligibility",
+        href: "/learn/documentation/quebec-tax-calculator",
+      },
+      {
+        title: "Critical Deadlines",
+        description: "Filing deadlines and consequences of missing them",
+        href: "/learn/documentation/quebec-tax-calculator#deadlines",
+      },
+      {
+        title: "Industry Analysis",
+        description: "How different industries underutilize tax credits",
+        href: "/learn/documentation/quebec-tax-calculator#industries",
+      },
+      {
+        title: "Calculator Guide",
+        description: "Step-by-step guide to using the tax calculator",
+        href: "/learn/documentation/quebec-tax-calculator#calculator",
       },
     ],
   },
@@ -67,27 +98,27 @@ const categories: DocCategory[] = [
     title: "API Reference",
     description:
       "Complete reference documentation for the Migration WorkBench REST APIs and SDKs.",
-    icon: "📡",
+    icon: "it-host",
     links: [
       {
         title: "REST API Overview",
         description: "Authentication, endpoints, and response formats",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Migration API",
         description: "Programmatically create and manage migration jobs",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Assessment API",
         description: "Run landscape assessments and retrieve complexity scores",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Webhooks & Events",
         description: "Subscribe to real-time migration lifecycle events",
-        href: "/docs",
+        href: "/learn/documentation",
       },
     ],
   },
@@ -95,27 +126,27 @@ const categories: DocCategory[] = [
     title: "Migration Guides",
     description:
       "Platform-specific guides for migrating from SAP PI/PO to your target platform.",
-    icon: "📋",
+    icon: "workflow-tasks",
     links: [
       {
         title: "Migrate to Dell Boomi",
         description: "Complete guide for Dell Boomi migration scenarios",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Migrate to Informatica",
         description: "End-to-end Informatica IICS migration walkthrough",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Migrate to MuleSoft",
         description: "MuleSoft Anypoint migration patterns and best practices",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Interface Mapping Strategies",
         description: "Techniques for mapping PI/PO interfaces to modern formats",
-        href: "/docs",
+        href: "/learn/documentation",
       },
     ],
   },
@@ -123,27 +154,27 @@ const categories: DocCategory[] = [
     title: "Configuration",
     description:
       "Detailed configuration options for customizing migration behavior and environment settings.",
-    icon: "⚙️",
+    icon: "action-settings",
     links: [
       {
         title: "Environment Configuration",
         description: "Configure connections to source and target systems",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Transformation Rules",
         description: "Define custom mapping and transformation logic",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Security & Authentication",
         description: "Set up SSO, OAuth, and certificate-based auth",
-        href: "/docs",
+        href: "/learn/documentation",
       },
       {
         title: "Performance Tuning",
         description: "Optimize batch sizes, parallelism, and memory usage",
-        href: "/docs",
+        href: "/learn/documentation",
       },
     ],
   },
@@ -173,15 +204,28 @@ export default function DocumentationPage() {
           {categories.map((category) => (
             <GlassCard
               key={category.title}
-              className="p-8"
+              className={`p-8 ${category.featured ? "border-green-500/30 bg-green-500/5" : ""}`}
               interactive
               as="article"
             >
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl" role="img" aria-hidden="true">
-                  {category.icon}
-                </span>
-                <h2 className="text-h3 text-text-primary">{category.title}</h2>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  category.featured 
+                    ? "bg-green-500/10" 
+                    : "bg-accent-primary/10"
+                }`}>
+                  <SapIcon 
+                    name={category.icon} 
+                    size={28} 
+                    className={category.featured ? "text-green-400" : "text-accent-primary"} 
+                  />
+                </div>
+                <div>
+                  <h2 className="text-h3 text-text-primary">{category.title}</h2>
+                  {category.featured && (
+                    <span className="text-xs text-green-400 font-medium">New</span>
+                  )}
+                </div>
               </div>
               <p className="text-body text-text-secondary mb-6">
                 {category.description}
@@ -191,9 +235,11 @@ export default function DocumentationPage() {
                   <li key={link.title}>
                     <Link
                       href={link.href}
-                      className="group block p-3 rounded-lg hover:bg-white/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:rounded-lg"
+                      className={`group block p-3 rounded-lg hover:bg-white/5 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-primary focus-visible:rounded-lg`}
                     >
-                      <span className="text-text-primary font-medium group-hover:text-accent-primary transition-colors duration-200">
+                      <span className={`font-medium group-hover:text-accent-primary transition-colors duration-200 ${
+                        category.featured ? "text-green-300" : "text-text-primary"
+                      }`}>
                         {link.title}
                       </span>
                       <span className="block text-sm text-text-muted mt-0.5">

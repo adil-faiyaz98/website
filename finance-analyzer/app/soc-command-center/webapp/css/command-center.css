@@ -1,0 +1,254 @@
+/* ==========================================================================
+   SOC Command Center - Core Styles
+   Custom styles for the unified security operations dashboard.
+   ========================================================================== */
+
+/* CSS Custom Properties for theming */
+:root {
+  --soc-primary: #0a6ed1;
+  --soc-success: #2b7c2b;
+  --soc-warning: #e6a400;
+  --soc-danger: #cc1919;
+  --soc-orange: #e87500;
+  --soc-bg-primary: #ffffff;
+  --soc-bg-secondary: #f5f6f7;
+  --soc-text-primary: #32363a;
+  --soc-text-secondary: #6a6d70;
+  --soc-border: #e5e5e5;
+  --soc-card-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  --soc-map-bg: #f5f6f7;
+  --soc-map-land: #d4e6f1;
+  --soc-map-border: #a9cce3;
+  --soc-map-grid: #e0e0e0;
+  --soc-map-text: #6a6d70;
+}
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+
+.socCommandCenter {
+  font-family: "72", "72full", Arial, Helvetica, sans-serif;
+}
+
+.socCommandCenter .sapMPage {
+  background-color: var(--soc-bg-secondary);
+}
+
+/* ==========================================================================
+   KPI Panel
+   ========================================================================== */
+
+.socKpiPanel {
+  background-color: var(--soc-bg-primary);
+  border-radius: 8px;
+  box-shadow: var(--soc-card-shadow);
+}
+
+.socKpiCard {
+  min-height: 100px;
+  border-radius: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.socKpiCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* ==========================================================================
+   System Landscape Nodes
+   ========================================================================== */
+
+.socSystemNode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  margin: 0.5rem;
+  background-color: var(--soc-bg-primary);
+  border: 2px solid var(--soc-border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 160px;
+  text-align: center;
+}
+
+.socSystemNode:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.socSystemNode:focus {
+  outline: 2px solid var(--soc-primary);
+  outline-offset: 2px;
+}
+
+.socSystemNodeName {
+  font-weight: bold;
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.socSystemNodeType {
+  color: var(--soc-text-secondary);
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   Legend
+   ========================================================================== */
+
+.socLegend {
+  padding: 0.75rem 1rem;
+  background-color: var(--soc-bg-primary);
+  border-radius: 6px;
+  border: 1px solid var(--soc-border);
+}
+
+/* ==========================================================================
+   Geographic Map
+   ========================================================================== */
+
+.socMapPanel {
+  min-height: 450px;
+}
+
+.socMapWrapper {
+  width: 100%;
+  padding: 1rem;
+}
+
+.socMapSvg {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  border-radius: 8px;
+}
+
+.soc-map-marker {
+  cursor: pointer;
+  transition: r 0.2s ease, fill-opacity 0.2s ease;
+}
+
+.soc-map-marker:hover {
+  fill-opacity: 1;
+}
+
+/* ==========================================================================
+   Threat Feed
+   ========================================================================== */
+
+.socThreatFeedItem {
+  border-bottom: 1px solid var(--soc-border);
+  transition: background-color 0.15s ease;
+}
+
+.socThreatFeedItem:hover {
+  background-color: var(--soc-bg-secondary);
+}
+
+.socThreatEventContent {
+  flex: 1;
+}
+
+.socEventDescription {
+  color: var(--soc-text-secondary);
+  font-size: 0.8125rem;
+  margin-top: 0.25rem;
+}
+
+.socAutoRefreshToolbar {
+  background-color: var(--soc-bg-primary);
+  border-bottom: 1px solid var(--soc-border);
+  padding: 0.5rem 1rem;
+}
+
+.socAutoRefreshLabel {
+  color: var(--soc-text-secondary);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.socMutedText {
+  color: var(--soc-text-secondary) !important;
+  font-size: 0.8125rem;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.socFooterLabel {
+  color: var(--soc-text-secondary);
+  font-size: 0.75rem;
+}
+
+/* ==========================================================================
+   Critical Alert Flash Animation
+   ========================================================================== */
+
+@keyframes criticalFlash {
+  0% { background-color: transparent; }
+  25% { background-color: rgba(204, 25, 25, 0.1); }
+  50% { background-color: transparent; }
+  75% { background-color: rgba(204, 25, 25, 0.1); }
+  100% { background-color: transparent; }
+}
+
+.soc-critical-flash {
+  animation: criticalFlash 1s ease-in-out;
+}
+
+/* ==========================================================================
+   Responsive Adjustments
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .socSystemNode {
+    min-width: 140px;
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .socLegend {
+    flex-wrap: wrap;
+  }
+
+  .socMapPanel {
+    min-height: 300px;
+  }
+}
+
+/* ==========================================================================
+   Accessibility
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .socKpiCard:hover {
+    transform: none;
+  }
+
+  .socSystemNode:hover {
+    transform: none;
+  }
+
+  .soc-critical-flash {
+    animation: none;
+    border: 3px solid var(--soc-danger);
+  }
+}
+
+/* High contrast mode */
+@media (forced-colors: active) {
+  .socSystemNode {
+    border: 2px solid ButtonText;
+  }
+
+  .socKpiCard {
+    border: 1px solid ButtonText;
+  }
+}

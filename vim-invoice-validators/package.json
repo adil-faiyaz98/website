@@ -1,0 +1,37 @@
+{
+  "name": "vim-invoice-validators",
+  "version": "1.0.0",
+  "description": "Invoice field validators library for VIM integration with SAP ECC",
+  "main": "srv/lib/index.js",
+  "repository": {
+    "type": "git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "@sap/cds": "^8"
+  },
+  "devDependencies": {
+    "@sap/cds-dk": "^8",
+    "jest": "^29"
+  },
+  "cds": {
+    "requires": {
+      "vim_ecc_integration": {
+        "kind": "odata-v2",
+        "model": "srv/external/vim_ecc_integration",
+        "[production]": {
+          "credentials": {
+            "destination": "VIM_ECC_INTEGRATION"
+          }
+        }
+      }
+    }
+  }
+}

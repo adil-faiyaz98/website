@@ -1,0 +1,8 @@
+ID;tenantId;ruleName;ruleType;activity1;activity2;severity;isActive;lookbackDays;createdAt;modifiedAt
+sod-r-001;a1b2c3d4-e5f6-7890-abcd-ef1234567890;Vendor Create + Payment Execute;PREDEFINED;FK01-Create Vendor;F110-Payment Run;CRITICAL;true;90;2024-01-20T10:00:00Z;2024-01-20T10:00:00Z
+sod-r-002;a1b2c3d4-e5f6-7890-abcd-ef1234567890;PO Create + Goods Receipt;PREDEFINED;ME21N-Create PO;MIGO-Goods Receipt;HIGH;true;90;2024-01-20T10:00:00Z;2024-01-20T10:00:00Z
+sod-r-003;a1b2c3d4-e5f6-7890-abcd-ef1234567890;User Admin + Role Assignment;PREDEFINED;SU01-User Maintenance;PFCG-Role Maintenance;CRITICAL;true;180;2024-01-20T10:00:00Z;2024-01-20T10:00:00Z
+sod-r-004;b2c3d4e5-f6a7-8901-bcde-f12345678901;Invoice Post + Payment Execute;PREDEFINED;MIRO-Invoice Post;F110-Payment Run;HIGH;true;90;2024-02-20T10:00:00Z;2024-02-20T10:00:00Z
+sod-r-005;b2c3d4e5-f6a7-8901-bcde-f12345678901;Vendor Bank Change + Payment;CUSTOM;XK01-Change Vendor Bank;F110-Payment Run;CRITICAL;true;120;2024-03-01T10:00:00Z;2024-03-01T10:00:00Z
+sod-r-006;c3d4e5f6-a7b8-9012-cdef-123456789012;Journal Entry + GL Close;PREDEFINED;FB01-Journal Entry;FAGLB03-GL Close;HIGH;true;90;2024-05-01T10:00:00Z;2024-05-01T10:00:00Z
+sod-r-007;a1b2c3d4-e5f6-7890-abcd-ef1234567890;Transport Import + Auth Change;CUSTOM;STMS-Transport Import;SU01-Auth Change;CRITICAL;true;180;2024-04-15T10:00:00Z;2024-04-15T10:00:00Z

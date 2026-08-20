@@ -1,0 +1,414 @@
+<mvc:View
+  controllerName="finsecure.ai.riskIntelligence.controller.RiskDashboard"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:layout="sap.ui.layout"
+  xmlns:f="sap.f"
+  xmlns:mc="sap.suite.ui.microchart"
+  xmlns:viz="sap.viz.ui5.controls"
+  xmlns:vizData="sap.viz.ui5.data"
+  xmlns:vizFeeds="sap.viz.ui5.controls.common.feeds">
+
+  <Page
+    id="riskDashboardPage"
+    title="{i18n>dashboardTitle}"
+    showHeader="true">
+
+    <!-- Header Toolbar with auto-refresh controls -->
+    <customHeader>
+      <Bar>
+        <contentLeft>
+          <Title text="{i18n>dashboardTitle}" level="H2"/>
+        </contentLeft>
+        <contentRight>
+          <Label text="{dashboard>/lastUpdatedText}" class="sapUiSmallMarginEnd"/>
+          <Switch
+            id="autoRefreshSwitch"
+            state="{dashboard>/autoRefreshEnabled}"
+            customTextOn="On"
+            customTextOff="Off"
+            change="onAutoRefreshToggle"
+            tooltip="{i18n>autoRefreshLabel}"/>
+          <StepInput
+            id="refreshIntervalInput"
+            value="{dashboard>/refreshIntervalSeconds}"
+            min="10"
+            max="60"
+            step="5"
+            width="6rem"
+            enabled="{dashboard>/autoRefreshEnabled}"
+            change="onRefreshIntervalChange"
+            description="s"/>
+          <Button
+            icon="sap-icon://refresh"
+            press="onManualRefresh"
+            tooltip="Refresh Now"/>
+        </contentRight>
+      </Bar>
+    </customHeader>
+
+    <content>
+      <VBox class="sapUiSmallMargin">
+
+        <!-- Filter Bar -->
+        <Panel
+          id="filterPanel"
+          expandable="true"
+          expanded="true"
+          headerText="Filters"
+          class="sapUiSmallMarginBottom">
+          <HBox wrap="Wrap" class="sapUiSmallMargin" alignItems="End">
+            <!-- Date Range Filter -->
+            <VBox class="sapUiSmallMarginEnd">
+              <Label text="{i18n>filterDateRange}" labelFor="dateRangeSelect"/>
+              <Select
+                id="dateRangeSelect"
+                selectedKey="{dashboard>/filters/dateRangeDays}"
+                change="onFilterChange">
+                <core:Item key="1" text="{i18n>dateRange1Day}"/>
+                <core:Item key="7" text="{i18n>dateRange7Days}"/>
+                <core:Item key="30" text="{i18n>dateRange30Days}"/>
+                <core:Item key="90" text="{i18n>dateRange90Days}"/>
+                <core:Item key="180" text="{i18n>dateRange6Months}"/>
+                <core:Item key="365" text="{i18n>dateRange12Months}"/>
+              </Select>
+            </VBox>
+
+            <!-- Risk Category Filter -->
+            <VBox class="sapUiSmallMarginEnd">
+              <Label text="{i18n>filterRiskCategory}" labelFor="riskCategorySelect"/>
+              <MultiComboBox
+                id="riskCategorySelect"
+                placeholder="{i18n>filterRiskCategory}"
+                selectionChange="onFilterChange"
+                width="14rem">
+                <core:Item key="ANOMALY" text="{i18n>riskCatAnomaly}"/>
+                <core:Item key="SOD_VIOLATION" text="{i18n>riskCatSoD}"/>
+                <core:Item key="FRAUD_PATTERN" text="{i18n>riskCatFraud}"/>
+                <core:Item key="IAM_VIOLATION" text="{i18n>riskCatIAM}"/>
+                <core:Item key="PRIVILEGE_ESCALATION" text="{i18n>riskCatPrivEsc}"/>
+                <core:Item key="INSIDER_THREAT" text="{i18n>riskCatInsider}"/>
+                <core:Item key="COMPLIANCE_BREACH" text="{i18n>riskCatCompliance}"/>
+                <core:Item key="VULNERABILITY" text="{i18n>riskCatVulnerability}"/>
+              </MultiComboBox>
+            </VBox>
+
+            <!-- User Filter -->
+            <VBox class="sapUiSmallMarginEnd">
+              <Label text="{i18n>filterUser}" labelFor="userInput"/>
+              <Input
+                id="userInput"
+                placeholder="{i18n>filterUser}"
+                value="{dashboard>/filters/userId}"
+                submit="onFilterChange"
+                width="10rem"/>
+            </VBox>
+
+            <!-- Business Unit Filter -->
+            <VBox class="sapUiSmallMarginEnd">
+              <Label text="{i18n>filterBusinessUnit}" labelFor="businessUnitInput"/>
+              <Input
+                id="businessUnitInput"
+                placeholder="{i18n>filterBusinessUnit}"
+                value="{dashboard>/filters/businessUnit}"
+                submit="onFilterChange"
+                width="10rem"/>
+            </VBox>
+
+            <!-- Severity Filter -->
+            <VBox class="sapUiSmallMarginEnd">
+              <Label text="{i18n>filterSeverity}" labelFor="severitySelect"/>
+              <MultiComboBox
+                id="severitySelect"
+                placeholder="{i18n>filterSeverity}"
+                selectionChange="onFilterChange"
+                width="12rem">
+                <core:Item key="CRITICAL" text="{i18n>severityCritical}"/>
+                <core:Item key="HIGH" text="{i18n>severityHigh}"/>
+                <core:Item key="MEDIUM" text="{i18n>severityMedium}"/>
+                <core:Item key="LOW" text="{i18n>severityLow}"/>
+              </MultiComboBox>
+            </VBox>
+
+            <!-- Filter Action Buttons -->
+            <VBox>
+              <Label text=" "/>
+              <HBox>
+                <Button text="{i18n>filterApply}" type="Emphasized" press="onFilterApply" class="sapUiTinyMarginEnd"/>
+                <Button text="{i18n>filterReset}" press="onFilterReset"/>
+              </HBox>
+            </VBox>
+          </HBox>
+        </Panel>
+
+        <!-- KPI Summary Cards Row -->
+        <layout:Grid
+          id="kpiGrid"
+          defaultSpan="XL2 L4 M6 S12"
+          class="sapUiSmallMarginBottom">
+
+          <!-- Risk Posture Score Card -->
+          <f:Card
+            id="riskPostureCard"
+            class="sapUiSmallMargin">
+            <f:header>
+              <f:headers.Default
+                title="{i18n>riskPostureTitle}"
+                subtitle="{dashboard>/riskPosture/subtitle}"
+                statusText="{dashboard>/riskPosture/trend}"/>
+            </f:header>
+            <f:content>
+              <VBox alignItems="Center" justifyContent="Center" class="sapUiSmallMargin"
+                visible="{= !${dashboard>/componentErrors/riskPosture} }">
+                <mc:RadialMicroChart
+                  percentage="{dashboard>/riskPosture/score}"
+                  valueColor="{
+                    path: 'dashboard>/riskPosture/score',
+                    formatter: '.formatter.riskPostureColor'
+                  }"
+                  size="L"
+                  press="onRiskPostureDrillDown"/>
+                <ObjectStatus
+                  text="Score: {dashboard>/riskPosture/score}/100"
+                  state="{
+                    path: 'dashboard>/riskPosture/score',
+                    formatter: '.formatter.riskScoreState'
+                  }"/>
+              </VBox>
+              <!-- Error State for Risk Posture -->
+              <VBox alignItems="Center" justifyContent="Center" class="sapUiSmallMargin"
+                visible="{= !!${dashboard>/componentErrors/riskPosture} }">
+                <core:Icon src="sap-icon://error" color="Negative" size="2rem" class="sapUiSmallMarginBottom"/>
+                <Text text="{i18n>errorComponentUnavailable}" class="sapUiTinyMarginBottom"/>
+                <Text text="{dashboard>/componentErrors/riskPosture}" wrapping="true"/>
+                <Button text="{i18n>errorRetry}" press="onRetryRiskPosture" type="Transparent" class="sapUiSmallMarginTop"/>
+              </VBox>
+            </f:content>
+          </f:Card>
+
+          <!-- Active Alerts Card -->
+          <f:Card
+            id="alertsCard"
+            class="sapUiSmallMargin">
+            <f:header>
+              <f:headers.Default
+                title="{i18n>alertsTitle}"
+                subtitle="{dashboard>/alerts/total} {i18n>alertsTotal}"/>
+            </f:header>
+            <f:content>
+              <VBox class="sapUiSmallMargin"
+                visible="{= !${dashboard>/componentErrors/alerts} }">
+                <ObjectStatus text="{i18n>alertsByCritical}: {dashboard>/alerts/critical}" state="Error" inverted="true" class="sapUiTinyMarginBottom"/>
+                <ObjectStatus text="{i18n>alertsByHigh}: {dashboard>/alerts/high}" state="Warning" inverted="true" class="sapUiTinyMarginBottom"/>
+                <ObjectStatus text="{i18n>alertsByMedium}: {dashboard>/alerts/medium}" state="None" inverted="true" class="sapUiTinyMarginBottom"/>
+                <ObjectStatus text="{i18n>alertsByLow}: {dashboard>/alerts/low}" state="Success" inverted="true"/>
+                <Link text="View All Alerts" press="onAlertsDrillDown" class="sapUiSmallMarginTop"/>
+              </VBox>
+              <!-- Error State for Alerts -->
+              <VBox alignItems="Center" justifyContent="Center" class="sapUiSmallMargin"
+                visible="{= !!${dashboard>/componentErrors/alerts} }">
+                <core:Icon src="sap-icon://error" color="Negative" size="2rem" class="sapUiSmallMarginBottom"/>
+                <Text text="{i18n>errorComponentUnavailable}" class="sapUiTinyMarginBottom"/>
+                <Text text="{dashboard>/componentErrors/alerts}" wrapping="true"/>
+                <Button text="{i18n>errorRetry}" press="onRetryAlerts" type="Transparent" class="sapUiSmallMarginTop"/>
+              </VBox>
+            </f:content>
+          </f:Card>
+
+          <!-- SoD Violations Card -->
+          <f:Card
+            id="sodCard"
+            class="sapUiSmallMargin">
+            <f:header>
+              <f:headers.Default
+                title="{i18n>sodTitle}"
+                subtitle="{dashboard>/sod/activeCount} {i18n>sodActiveCount}"/>
+            </f:header>
+            <f:content>
+              <VBox class="sapUiSmallMargin" alignItems="Center"
+                visible="{= !${dashboard>/componentErrors/sod} }">
+                <mc:BulletMicroChart
+                  size="Wide"
+                  targetValue="{dashboard>/sod/previousCount}"
+                  actualValueLabel="{dashboard>/sod/activeCount}"
+                  targetValueLabel="{dashboard>/sod/previousCount}"
+                  minValue="0"
+                  maxValue="{dashboard>/sod/maxValue}"
+                  press="onSoDDrillDown">
+                  <mc:actual>
+                    <mc:BulletMicroChartData value="{dashboard>/sod/activeCount}" color="Error"/>
+                  </mc:actual>
+                </mc:BulletMicroChart>
+                <Link text="View SoD Violations" press="onSoDDrillDown" class="sapUiSmallMarginTop"/>
+              </VBox>
+              <!-- Error State for SoD -->
+              <VBox alignItems="Center" justifyContent="Center" class="sapUiSmallMargin"
+                visible="{= !!${dashboard>/componentErrors/sod} }">
+                <core:Icon src="sap-icon://error" color="Negative" size="2rem" class="sapUiSmallMarginBottom"/>
+                <Text text="{i18n>errorComponentUnavailable}" class="sapUiTinyMarginBottom"/>
+                <Text text="{dashboard>/componentErrors/sod}" wrapping="true"/>
+                <Button text="{i18n>errorRetry}" press="onRetrySoD" type="Transparent" class="sapUiSmallMarginTop"/>
+              </VBox>
+            </f:content>
+          </f:Card>
+
+          <!-- Fraud Detections Card -->
+          <f:Card
+            id="fraudCard"
+            class="sapUiSmallMargin">
+            <f:header>
+              <f:headers.Default
+                title="{i18n>fraudTitle}"
+                subtitle="{dashboard>/fraud/activeCount} {i18n>fraudActiveCount}"/>
+            </f:header>
+            <f:content>
+              <VBox class="sapUiSmallMargin" alignItems="Center"
+                visible="{= !${dashboard>/componentErrors/fraud} }">
+                <ObjectNumber
+                  number="{dashboard>/fraud/activeCount}"
+                  unit="detections"
+                  state="Warning"
+                  emphasized="true"/>
+                <ObjectStatus
+                  text="{dashboard>/fraud/patternsCount} {i18n>fraudPatternsIdentified}"
+                  state="None"
+                  class="sapUiSmallMarginTop"/>
+                <Link text="View Fraud Detections" press="onFraudDrillDown" class="sapUiSmallMarginTop"/>
+              </VBox>
+              <!-- Error State for Fraud -->
+              <VBox alignItems="Center" justifyContent="Center" class="sapUiSmallMargin"
+                visible="{= !!${dashboard>/componentErrors/fraud} }">
+                <core:Icon src="sap-icon://error" color="Negative" size="2rem" class="sapUiSmallMarginBottom"/>
+                <Text text="{i18n>errorComponentUnavailable}" class="sapUiTinyMarginBottom"/>
+                <Text text="{dashboard>/componentErrors/fraud}" wrapping="true"/>
+                <Button text="{i18n>errorRetry}" press="onRetryFraud" type="Transparent" class="sapUiSmallMarginTop"/>
+              </VBox>
+            </f:content>
+          </f:Card>
+
+          <!-- Compliance Status Card -->
+          <f:Card
+            id="complianceCard"
+            class="sapUiSmallMargin">
+            <f:header>
+              <f:headers.Default
+                title="{i18n>complianceTitle}"
+                subtitle="{dashboard>/compliance/passRate} {i18n>compliancePassRate}"/>
+            </f:header>
+            <f:content>
+              <VBox class="sapUiSmallMargin" alignItems="Center"
+                visible="{= !${dashboard>/componentErrors/compliance} }">
+                <mc:HarveyBallMicroChart
+                  total="{dashboard>/compliance/totalControls}"
+                  totalLabel="{dashboard>/compliance/totalControls}"
+                  size="L"
+                  press="onComplianceDrillDown">
+                  <mc:items>
+                    <mc:HarveyBallMicroChartItem
+                      fraction="{dashboard>/compliance/passingControls}"
+                      fractionLabel="{dashboard>/compliance/passingControls}"
+                      color="Good"/>
+                  </mc:items>
+                </mc:HarveyBallMicroChart>
+                <ObjectStatus
+                  text="{dashboard>/compliance/failingControls} {i18n>complianceControlsFailing}"
+                  state="{dashboard>/compliance/state}"
+                  class="sapUiSmallMarginTop"/>
+              </VBox>
+              <!-- Error State for Compliance -->
+              <VBox alignItems="Center" justifyContent="Center" class="sapUiSmallMargin"
+                visible="{= !!${dashboard>/componentErrors/compliance} }">
+                <core:Icon src="sap-icon://error" color="Negative" size="2rem" class="sapUiSmallMarginBottom"/>
+                <Text text="{i18n>errorComponentUnavailable}" class="sapUiTinyMarginBottom"/>
+                <Text text="{dashboard>/componentErrors/compliance}" wrapping="true"/>
+                <Button text="{i18n>errorRetry}" press="onRetryCompliance" type="Transparent" class="sapUiSmallMarginTop"/>
+              </VBox>
+            </f:content>
+          </f:Card>
+
+          <!-- Anomaly Trends Mini Card -->
+          <f:Card
+            id="anomalyTrendsMiniCard"
+            class="sapUiSmallMargin">
+            <f:header>
+              <f:headers.Default
+                title="{i18n>anomalyTrendsTitle}"
+                subtitle="{dashboard>/trends/granularityLabel}"/>
+            </f:header>
+            <f:content>
+              <VBox class="sapUiSmallMargin" alignItems="Center"
+                visible="{= !${dashboard>/componentErrors/trends} }">
+                <mc:LineMicroChart
+                  id="trendSparkline"
+                  size="Wide"
+                  press="onTrendsDrillDown">
+                  <mc:points>
+                  </mc:points>
+                </mc:LineMicroChart>
+                <Link text="View Trend Details" press="onTrendsDrillDown" class="sapUiSmallMarginTop"/>
+              </VBox>
+              <!-- Error State for Trends Mini -->
+              <VBox alignItems="Center" justifyContent="Center" class="sapUiSmallMargin"
+                visible="{= !!${dashboard>/componentErrors/trends} }">
+                <core:Icon src="sap-icon://error" color="Negative" size="2rem" class="sapUiSmallMarginBottom"/>
+                <Text text="{i18n>errorComponentUnavailable}" class="sapUiTinyMarginBottom"/>
+                <Text text="{dashboard>/componentErrors/trends}" wrapping="true"/>
+                <Button text="{i18n>errorRetry}" press="onRetryTrends" type="Transparent" class="sapUiSmallMarginTop"/>
+              </VBox>
+            </f:content>
+          </f:Card>
+        </layout:Grid>
+
+        <!-- Time-Series Trend Chart (Full Width) -->
+        <Panel
+          id="trendChartPanel"
+          headerText="{i18n>anomalyTrendsTitle} - {dashboard>/trends/granularityLabel}"
+          expandable="true"
+          expanded="true"
+          class="sapUiSmallMarginBottom">
+          <VBox visible="{= !${dashboard>/componentErrors/trends} }">
+            <viz:VizFrame
+              id="trendVizFrame"
+              uiConfig="{applicationSet:'fiori'}"
+              height="350px"
+              width="100%"
+              vizType="timeseries_line">
+              <viz:dataset>
+                <vizData:FlattenedDataset>
+                  <vizData:dimensions>
+                    <vizData:DimensionDefinition
+                      name="Date"
+                      value="{trends>date}"
+                      dataType="date"/>
+                  </vizData:dimensions>
+                  <vizData:measures>
+                    <vizData:MeasureDefinition name="Anomalies" value="{trends>anomalyCount}"/>
+                    <vizData:MeasureDefinition name="Alerts" value="{trends>alertCount}"/>
+                    <vizData:MeasureDefinition name="Fraud" value="{trends>fraudCount}"/>
+                  </vizData:measures>
+                  <vizData:data>
+                    <vizData:Data path="trends>/data"/>
+                  </vizData:data>
+                </vizData:FlattenedDataset>
+              </viz:dataset>
+              <viz:feeds>
+                <vizFeeds:FeedItem id="timeAxis" uid="timeAxis" type="Dimension" values="Date"/>
+                <vizFeeds:FeedItem id="valueAxis" uid="valueAxis" type="Measure" values="Anomalies,Alerts,Fraud"/>
+              </viz:feeds>
+            </viz:VizFrame>
+          </VBox>
+          <!-- Error State for Trend Chart -->
+          <VBox alignItems="Center" justifyContent="Center" class="sapUiMediumMargin"
+            visible="{= !!${dashboard>/componentErrors/trends} }">
+            <core:Icon src="sap-icon://error" color="Negative" size="2.5rem" class="sapUiSmallMarginBottom"/>
+            <Text text="{i18n>errorComponentUnavailable}" class="sapUiTinyMarginBottom"/>
+            <Text text="{dashboard>/componentErrors/trends}" wrapping="true"/>
+            <Button text="{i18n>errorRetry}" press="onRetryTrends" type="Transparent" class="sapUiSmallMarginTop"/>
+          </VBox>
+        </Panel>
+
+      </VBox>
+    </content>
+  </Page>
+</mvc:View>

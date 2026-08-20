@@ -1,0 +1,99 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:l="sap.ui.layout"
+  xmlns:f="sap.f"
+  xmlns:core="sap.ui.core"
+  controllerName="finsecure.ai.soc.commandcenter.controller.LandscapeView"
+  displayBlock="true">
+
+  <Page
+    id="landscapePage"
+    title="{i18n>landscapeViewTitle}"
+    showNavButton="true"
+    navButtonPress=".onNavBack"
+    class="{= ${dashboard>/darkMode} ? 'soc-dark-mode' : ''}">
+
+    <headerContent>
+      <Button icon="sap-icon://refresh" press=".onRefreshLandscape" tooltip="{i18n>tooltipRefresh}" />
+    </headerContent>
+
+    <content>
+      <!-- System Landscape Legend -->
+      <Panel id="legendPanel" class="sapUiSmallMargin">
+        <HBox alignItems="Center" justifyContent="Center" class="socLegend">
+          <HBox class="sapUiSmallMarginEnd">
+            <core:Icon src="sap-icon://circle-task-2" color="#2b7c2b" class="sapUiTinyMarginEnd" />
+            <Label text="{i18n>statusGreen}" />
+          </HBox>
+          <HBox class="sapUiSmallMarginEnd">
+            <core:Icon src="sap-icon://circle-task-2" color="#e6a400" class="sapUiTinyMarginEnd" />
+            <Label text="{i18n>statusYellow}" />
+          </HBox>
+          <HBox class="sapUiSmallMarginEnd">
+            <core:Icon src="sap-icon://circle-task-2" color="#e87500" class="sapUiTinyMarginEnd" />
+            <Label text="{i18n>statusOrange}" />
+          </HBox>
+          <HBox class="sapUiSmallMarginEnd">
+            <core:Icon src="sap-icon://circle-task-2" color="#cc1919" class="sapUiTinyMarginEnd" />
+            <Label text="{i18n>statusRed}" />
+          </HBox>
+        </HBox>
+      </Panel>
+
+      <!-- System Nodes Grid -->
+      <Panel
+        id="systemNodesPanel"
+        headerText="{i18n>connectedSystems}"
+        class="sapUiSmallMargin">
+        <l:Grid defaultSpan="L3 M4 S6" id="systemGrid">
+          <!-- System nodes rendered dynamically by controller -->
+        </l:Grid>
+      </Panel>
+
+      <!-- System Detail Panel (shown on node selection) -->
+      <Panel
+        id="systemDetailPanel"
+        headerText="{i18n>systemDetails}"
+        visible="{dashboard>/selectedSystem/visible}"
+        class="sapUiSmallMargin">
+        <VBox class="sapUiSmallMargin">
+          <ObjectHeader
+            title="{dashboard>/selectedSystem/name}"
+            number="{dashboard>/selectedSystem/activeAlerts}"
+            numberUnit="{i18n>activeAlerts}">
+            <statuses>
+              <ObjectStatus
+                text="{dashboard>/selectedSystem/status}"
+                state="{= ${dashboard>/selectedSystem/status} === 'Green' ? 'Success' : ${dashboard>/selectedSystem/status} === 'Yellow' ? 'Warning' : 'Error'}" />
+              <ObjectStatus
+                text="{dashboard>/selectedSystem/connectivity}"
+                state="{= ${dashboard>/selectedSystem/connectivity} === 'Connected' ? 'Success' : 'Error'}" />
+            </statuses>
+            <attributes>
+              <ObjectAttribute title="{i18n>systemType}" text="{dashboard>/selectedSystem/type}" />
+              <ObjectAttribute title="{i18n>systemVersion}" text="{dashboard>/selectedSystem/version}" />
+              <ObjectAttribute title="{i18n>lastEventReceived}" text="{dashboard>/selectedSystem/lastEvent}" />
+              <ObjectAttribute title="{i18n>region}" text="{dashboard>/selectedSystem/region}" />
+            </attributes>
+          </ObjectHeader>
+
+          <!-- Active Alerts for Selected System -->
+          <List
+            id="systemAlertsList"
+            headerText="{i18n>systemAlerts}"
+            items="{dashboard>/selectedSystem/alerts}"
+            noDataText="{i18n>noActiveAlerts}">
+            <StandardListItem
+              title="{dashboard>title}"
+              description="{dashboard>description}"
+              info="{dashboard>severity}"
+              infoState="{= ${dashboard>severity} === 'critical' ? 'Error' : ${dashboard>severity} === 'high' ? 'Warning' : 'None'}"
+              type="Active"
+              press=".onSystemAlertPress" />
+          </List>
+        </VBox>
+      </Panel>
+    </content>
+  </Page>
+</mvc:View>

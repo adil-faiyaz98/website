@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { jobPostings, benefits } from "@/data/careers";
 import { GlassCard } from "@/components/ui";
+import { SapIcon } from "@/components";
 
 export const metadata: Metadata = {
   title: "Careers | SDA Migration WorkBench",
@@ -150,13 +151,13 @@ export default function CareersPage() {
                 className="p-6 text-center"
                 interactive={true}
               >
-                <div className="text-3xl mb-4" aria-hidden="true">
-                  {benefit.icon === "Globe" && "🌍"}
-                  {benefit.icon === "GraduationCap" && "🎓"}
-                  {benefit.icon === "Heart" && "❤️"}
-                  {benefit.icon === "Briefcase" && "💼"}
-                  {benefit.icon === "Calendar" && "📅"}
-                  {benefit.icon === "Users" && "👥"}
+                <div className="w-12 h-12 rounded-xl bg-accent-primary/10 flex items-center justify-center mb-4" aria-hidden="true">
+                  {benefit.icon === "Globe" && <SapIcon name="globe" size={28} className="text-accent-primary" />}
+                  {benefit.icon === "GraduationCap" && <SapIcon name="learning-assistant" size={28} className="text-accent-primary" />}
+                  {benefit.icon === "Heart" && <SapIcon name="heart" size={28} className="text-accent-primary" />}
+                  {benefit.icon === "Briefcase" && <SapIcon name="suitcase" size={28} className="text-accent-primary" />}
+                  {benefit.icon === "Calendar" && <SapIcon name="calendar" size={28} className="text-accent-primary" />}
+                  {benefit.icon === "Users" && <SapIcon name="group" size={28} className="text-accent-primary" />}
                 </div>
                 <h3 className="text-lg font-semibold text-text-primary mb-2">
                   {benefit.title}

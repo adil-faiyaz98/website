@@ -1,0 +1,51 @@
+{
+  "vendor": {
+    "exactMatch": 1.0,
+    "highConfidence": 0.85,
+    "mediumConfidence": 0.70,
+    "lowConfidence": 0.50,
+    "minAcceptable": 0.50
+  },
+  "purchaseOrder": {
+    "exactMatch": 1.0,
+    "highConfidence": 0.90,
+    "mediumConfidence": 0.75,
+    "lowConfidence": 0.60,
+    "minAcceptable": 0.60
+  },
+  "taxCode": {
+    "exactMatch": 1.0,
+    "highConfidence": 0.95,
+    "mediumConfidence": 0.80,
+    "lowConfidence": 0.65,
+    "minAcceptable": 0.65
+  },
+  "glAccount": {
+    "exactMatch": 1.0,
+    "highConfidence": 0.90,
+    "mediumConfidence": 0.75,
+    "lowConfidence": 0.60,
+    "minAcceptable": 0.60
+  },
+  "costCenter": {
+    "exactMatch": 1.0,
+    "highConfidence": 0.85,
+    "mediumConfidence": 0.70,
+    "lowConfidence": 0.55,
+    "minAcceptable": 0.55
+  },
+  "stringMatching": {
+    "levenshtein": {
+      "maxDistance": 3,
+      "weight": 0.4
+    },
+    "tokenMatch": {
+      "minTokenOverlap": 0.6,
+      "weight": 0.3
+    },
+    "prefixMatch": {
+      "minLength": 3,
+      "weight": 0.3
+    }
+  }
+}

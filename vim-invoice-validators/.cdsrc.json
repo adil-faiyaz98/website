@@ -1,0 +1,17 @@
+{
+  "build": {
+    "target": "."
+  },
+  "odata": {
+    "version": "v4"
+  },
+  "log": {
+    "levels": {
+      "cds": "info",
+      "db": "info"
+    }
+  },
+  "features": {
+    "fetch_csrf": true
+  }
+}

@@ -1,0 +1,32 @@
+specVersion: "3.0"
+metadata:
+  name: soc-command-center
+type: application
+framework:
+  name: SAPUI5
+  version: "1.120.0"
+  libraries:
+    - name: sap.m
+    - name: sap.ui.core
+    - name: sap.ui.layout
+    - name: sap.f
+    - name: sap.uxap
+    - name: sap.viz
+    - name: sap.ui.table
+    - name: sap.suite.ui.commons
+server:
+  customMiddleware:
+    - name: fiori-tools-proxy
+      afterMiddleware: compression
+      configuration:
+        backend:
+          - path: /analyst
+            url: http://localhost:4004
+          - path: /admin
+            url: http://localhost:4004
+          - path: /executive
+            url: http://localhost:4004
+          - path: /iam
+            url: http://localhost:4004
+          - path: /auditor
+            url: http://localhost:4004

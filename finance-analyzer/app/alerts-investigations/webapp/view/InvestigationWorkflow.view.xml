@@ -1,0 +1,229 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:uxap="sap.uxap"
+  xmlns:core="sap.ui.core"
+  xmlns:layout="sap.ui.layout"
+  xmlns:suite="sap.suite.ui.commons"
+  controllerName="finsecure.ai.alertsinvestigations.controller.InvestigationWorkflow">
+
+  <Page
+    id="investigationPage"
+    title="{i18n>investigationTitle}"
+    showNavButton="true"
+    navButtonPress=".onNavBack">
+
+    <headerContent>
+      <ObjectStatus
+        id="investigationStatusBadge"
+        text="{
+          path: 'status',
+          formatter: '.formatter.statusLabel'
+        }"
+        state="{
+          path: 'status',
+          formatter: '.formatter.statusState'
+        }" />
+    </headerContent>
+
+    <content>
+      <!-- Process Flow: State Machine Visualization -->
+      <Panel id="workflowStatePanel" headerText="{i18n>sectionWorkflowState}" class="sapUiSmallMargin">
+        <content>
+          <suite:ProcessFlow
+            id="investigationProcessFlow"
+            foldedCorners="true"
+            scrollable="true"
+            wheelZoomable="false">
+            <suite:nodes>
+              <suite:ProcessFlowNode
+                id="nodeOpen"
+                laneId="0"
+                nodeId="OPEN"
+                title="Open"
+                state="{workflowState>/openState}"
+                stateText="Open"
+                focused="{= ${status} === 'OPEN'}" />
+              <suite:ProcessFlowNode
+                id="nodeInProgress"
+                laneId="1"
+                nodeId="IN_PROGRESS"
+                title="In Progress"
+                state="{workflowState>/inProgressState}"
+                stateText="In Progress"
+                focused="{= ${status} === 'IN_PROGRESS'}" />
+              <suite:ProcessFlowNode
+                id="nodeEscalated"
+                laneId="2"
+                nodeId="ESCALATED"
+                title="Escalated"
+                state="{workflowState>/escalatedState}"
+                stateText="Escalated"
+                focused="{= ${status} === 'ESCALATED'}" />
+              <suite:ProcessFlowNode
+                id="nodeResolved"
+                laneId="3"
+                nodeId="RESOLVED"
+                title="Resolved"
+                state="{workflowState>/resolvedState}"
+                stateText="Resolved"
+                focused="{= ${status} === 'RESOLVED_TRUE_POSITIVE' || ${status} === 'RESOLVED_FALSE_POSITIVE'}" />
+            </suite:nodes>
+            <suite:lanes>
+              <suite:ProcessFlowLaneHeader id="lane0" laneId="0" text="Created" iconSrc="sap-icon://inbox" />
+              <suite:ProcessFlowLaneHeader id="lane1" laneId="1" text="Active" iconSrc="sap-icon://activity-individual" />
+              <suite:ProcessFlowLaneHeader id="lane2" laneId="2" text="Escalated" iconSrc="sap-icon://warning2" />
+              <suite:ProcessFlowLaneHeader id="lane3" laneId="3" text="Resolved" iconSrc="sap-icon://accept" />
+            </suite:lanes>
+          </suite:ProcessFlow>
+
+          <!-- State Transition Buttons -->
+          <Toolbar id="stateTransitionToolbar" class="sapUiSmallMarginTop">
+            <ToolbarSpacer />
+            <Button
+              id="btnStartInvestigation"
+              text="{i18n>transitionToInProgress}"
+              type="Emphasized"
+              icon="sap-icon://begin"
+              press=".onTransitionToInProgress"
+              visible="{= ${status} === 'OPEN'}" />
+            <Button
+              id="btnEscalate"
+              text="{i18n>transitionToEscalated}"
+              type="Reject"
+              icon="sap-icon://warning2"
+              press=".onTransitionToEscalated"
+              visible="{= ${status} === 'OPEN' || ${status} === 'IN_PROGRESS'}" />
+            <Button
+              id="btnDeescalate"
+              text="{i18n>transitionBackToInProgress}"
+              type="Default"
+              icon="sap-icon://undo"
+              press=".onTransitionToInProgress"
+              visible="{= ${status} === 'ESCALATED'}" />
+            <Button
+              id="btnResolve"
+              text="{i18n>transitionToResolved}"
+              type="Accept"
+              icon="sap-icon://accept"
+              press=".onOpenResolutionDialog"
+              visible="{= ${status} === 'IN_PROGRESS' || ${status} === 'ESCALATED'}" />
+          </Toolbar>
+        </content>
+      </Panel>
+
+      <!-- Investigation Details -->
+      <Panel id="investigationDetailsPanel" headerText="Investigation Details" class="sapUiSmallMargin">
+        <content>
+          <layout:Grid defaultSpan="L4 M6 S12" id="invDetailGrid">
+            <layout:content>
+              <VBox id="invAnalystBox">
+                <Label text="Assigned Analyst" />
+                <Text id="invAnalyst" text="{assignedAnalyst}" />
+              </VBox>
+              <VBox id="invStartedBox">
+                <Label text="Started At" />
+                <Text id="invStarted" text="{startedAt}" />
+              </VBox>
+              <VBox id="invElapsedBox">
+                <Label text="Elapsed Time" />
+                <Text id="invElapsed" text="{
+                  path: 'elapsedTimeMs',
+                  formatter: '.formatElapsedTime'
+                }" />
+              </VBox>
+            </layout:content>
+          </layout:Grid>
+        </content>
+      </Panel>
+
+      <!-- AI Investigation Brief -->
+      <Panel id="aiBriefPanel" headerText="AI Investigation Brief" class="sapUiSmallMargin" visible="{= !!${aiInvestBrief}}">
+        <content>
+          <FormattedText id="aiBriefText" htmlText="{aiInvestBrief}" class="sapUiSmallMargin" />
+        </content>
+      </Panel>
+
+      <!-- Notes Timeline -->
+      <Panel id="notesPanel" headerText="{i18n>sectionNotes}" class="sapUiSmallMargin">
+        <headerToolbar>
+          <Toolbar id="notesToolbar">
+            <Title id="notesTitle" text="{i18n>sectionNotes}" level="H4" />
+            <ToolbarSpacer />
+            <Button
+              id="btnAddNote"
+              text="{i18n>addNote}"
+              icon="sap-icon://add"
+              press=".onOpenAddNoteDialog"
+              visible="{= ${status} !== 'RESOLVED_TRUE_POSITIVE' &amp;&amp; ${status} !== 'RESOLVED_FALSE_POSITIVE'}" />
+          </Toolbar>
+        </headerToolbar>
+        <content>
+          <List
+            id="notesTimeline"
+            items="{
+              path: 'notes',
+              parameters: { $orderby: 'createdAt desc' }
+            }"
+            noDataText="No notes yet">
+            <FeedListItem
+              sender="{author}"
+              text="{content}"
+              timestamp="{createdAt}"
+              icon="sap-icon://employee" />
+          </List>
+        </content>
+      </Panel>
+
+      <!-- Evidence Items -->
+      <Panel id="evidencePanel" headerText="{i18n>sectionEvidence}" class="sapUiSmallMargin">
+        <headerToolbar>
+          <Toolbar id="evidenceToolbar">
+            <Title id="evidenceTitle" text="{i18n>sectionEvidence}" level="H4" />
+            <ToolbarSpacer />
+            <Button
+              id="btnAddEvidence"
+              text="{i18n>addEvidence}"
+              icon="sap-icon://add"
+              press=".onOpenAddEvidenceDialog"
+              visible="{= ${status} !== 'RESOLVED_TRUE_POSITIVE' &amp;&amp; ${status} !== 'RESOLVED_FALSE_POSITIVE'}" />
+          </Toolbar>
+        </headerToolbar>
+        <content>
+          <Table
+            id="evidenceTable"
+            items="{
+              path: 'evidence',
+              parameters: { $orderby: 'createdAt desc' }
+            }"
+            noDataText="No evidence items yet">
+            <columns>
+              <Column id="evTypeCol" width="10rem">
+                <Text text="{i18n>evidenceType}" />
+              </Column>
+              <Column id="evRefCol" width="15rem">
+                <Text text="{i18n>evidenceReference}" />
+              </Column>
+              <Column id="evContentCol">
+                <Text text="{i18n>evidenceContent}" />
+              </Column>
+              <Column id="evDateCol" width="10rem">
+                <Text text="Date" />
+              </Column>
+            </columns>
+            <items>
+              <ColumnListItem>
+                <cells>
+                  <Text text="{evidenceType}" />
+                  <Link text="{reference}" press=".onEvidenceReferencePress" />
+                  <Text text="{content}" maxLines="2" />
+                  <Text text="{createdAt}" />
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </Panel>
+    </content>
+  </Page>
+</mvc:View>

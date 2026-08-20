@@ -1,0 +1,7 @@
+ID;investigation_ID;author;content;createdAt;modifiedAt
+note-001;inv-001;ANALYST1;Initial review: Confirmed vendor V10003 was created same day as payment. No purchase order exists for this vendor. Bank account cross-reference shows personal account belonging to J. Smith family member.;2024-07-08T15:30:00Z;2024-07-08T15:30:00Z
+note-002;inv-001;ANALYST1;HR confirmed JSMITH01 submitted resignation effective 2024-07-22. Manager unaware of any legitimate business with Sunshine Consulting LLC.;2024-07-08T16:00:00Z;2024-07-08T16:00:00Z
+note-003;inv-002;ANALYST1;Vendor V20001 CFO contacted at 17:30. They confirmed no bank change was requested. Suspect phishing attack on vendor or internal collusion. Payment blocked.;2024-07-07T18:00:00Z;2024-07-07T18:00:00Z
+note-004;inv-002;ANALYST1;Escalated to fraud team. LCHEN04 interview scheduled for 2024-07-09. All payments to V20001 frozen pending investigation.;2024-07-08T08:00:00Z;2024-07-08T08:00:00Z
+note-005;inv-003;ANALYST1;VPN logs show ADMIN01 login from IP 85.214.132.117 (Germany) - ADMIN01 is based in Toronto. Possible credential compromise. Account locked pending forensics.;2024-07-08T01:00:00Z;2024-07-08T01:00:00Z
+note-006;inv-003;ANALYST1;SAP_ALL revoked from JSMITH01. SVCACCT locked. Audit log review of all ADMIN01 activity for past 30 days initiated.;2024-07-08T02:00:00Z;2024-07-08T02:00:00Z

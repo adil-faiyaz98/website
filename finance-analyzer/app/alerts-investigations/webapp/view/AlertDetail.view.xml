@@ -1,0 +1,350 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:uxap="sap.uxap"
+  xmlns:core="sap.ui.core"
+  xmlns:layout="sap.ui.layout"
+  xmlns:f="sap.f"
+  controllerName="finsecure.ai.alertsinvestigations.controller.AlertDetail">
+
+  <uxap:ObjectPageLayout
+    id="alertObjectPage"
+    showTitleInHeaderContent="true"
+    upperCaseAnchorBar="false">
+
+    <!-- Header Title -->
+    <uxap:headerTitle>
+      <uxap:ObjectPageDynamicHeaderTitle>
+        <uxap:heading>
+          <Title id="alertTitle" text="{title}" />
+        </uxap:heading>
+        <uxap:expandedContent>
+          <HBox>
+            <ObjectStatus
+              id="alertPriorityStatus"
+              text="{priority}"
+              state="{
+                path: 'priority',
+                formatter: '.formatter.priorityState'
+              }"
+              icon="{
+                path: 'priority',
+                formatter: '.formatter.priorityIcon'
+              }"
+              class="sapUiSmallMarginEnd" />
+            <ObjectStatus
+              id="alertStatusBadge"
+              text="{
+                path: 'status',
+                formatter: '.formatter.statusLabel'
+              }"
+              state="{
+                path: 'status',
+                formatter: '.formatter.statusState'
+              }"
+              class="sapUiSmallMarginEnd" />
+            <ObjectStatus
+              id="alertSlaStatus"
+              text="{
+                path: 'slaDeadline',
+                formatter: '.formatter.slaCountdown'
+              }"
+              state="{
+                path: 'slaDeadline',
+                formatter: '.formatter.slaStatus'
+              }" />
+          </HBox>
+        </uxap:expandedContent>
+        <uxap:actions>
+          <Button
+            id="btnStartInvestigation"
+            text="Start Investigation"
+            type="Emphasized"
+            press=".onStartInvestigation"
+            visible="{= ${status} === 'OPEN'}" />
+          <Button
+            id="btnViewInvestigation"
+            text="View Investigation"
+            press=".onViewInvestigation"
+            visible="{= !!${investigation_ID}}" />
+          <Button
+            id="btnBack"
+            icon="sap-icon://nav-back"
+            press=".onNavBack"
+            tooltip="Back" />
+        </uxap:actions>
+      </uxap:ObjectPageDynamicHeaderTitle>
+    </uxap:headerTitle>
+
+    <!-- Header Content -->
+    <uxap:headerContent>
+      <HBox>
+        <VBox class="sapUiSmallMarginEnd">
+          <ObjectAttribute title="{i18n>riskScore}" text="{riskScore}/100" />
+          <ObjectAttribute title="{i18n>riskCategory}" text="{riskCategory}" />
+          <ObjectAttribute title="{i18n>filterAnalyst}" text="{assignedAnalyst}" />
+        </VBox>
+        <VBox>
+          <ObjectAttribute title="Financial Exposure" text="{financialExposure}" />
+          <ObjectAttribute title="{i18n>aiConfidence}" text="{aiConfidenceScore}%" />
+          <ObjectAttribute title="Created" text="{createdAt}" />
+        </VBox>
+      </HBox>
+    </uxap:headerContent>
+
+    <uxap:sections>
+      <!-- Section 1: Triggering Transaction -->
+      <uxap:ObjectPageSection
+        id="sectionTriggeringTx"
+        title="{i18n>sectionTriggeringTransaction}">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection id="subSectionTriggeringTx" title="">
+            <uxap:blocks>
+              <layout:VerticalLayout id="triggeringTxLayout" width="100%">
+                <Panel id="triggeringTxPanel" headerText="{i18n>sectionTriggeringTransaction}">
+                  <content>
+                    <layout:Grid defaultSpan="L6 M6 S12" id="txGrid">
+                      <layout:content>
+                        <VBox id="txDocNumBox">
+                          <Label text="{i18n>txDocumentNumber}" />
+                          <Text id="txDocNum" text="{triggeringTransaction>/documentNumber}" />
+                        </VBox>
+                        <VBox id="txAmountBox">
+                          <Label text="{i18n>txAmount}" />
+                          <ObjectNumber
+                            id="txAmount"
+                            number="{triggeringTransaction>/amount}"
+                            unit="{triggeringTransaction>/currency}" />
+                        </VBox>
+                        <VBox id="txDateBox">
+                          <Label text="{i18n>txDate}" />
+                          <Text id="txDate" text="{triggeringTransaction>/postingDate}" />
+                        </VBox>
+                        <VBox id="txUserBox">
+                          <Label text="{i18n>txUser}" />
+                          <Text id="txUser" text="{triggeringTransaction>/userId}" />
+                        </VBox>
+                        <VBox id="txDebitBox">
+                          <Label text="{i18n>txDebitAccount}" />
+                          <Text id="txDebit" text="{triggeringTransaction>/debitAccount}" />
+                        </VBox>
+                        <VBox id="txCreditBox">
+                          <Label text="{i18n>txCreditAccount}" />
+                          <Text id="txCredit" text="{triggeringTransaction>/creditAccount}" />
+                        </VBox>
+                        <VBox id="txDocTypeBox">
+                          <Label text="{i18n>txDocumentType}" />
+                          <Text id="txDocType" text="{triggeringTransaction>/documentType}" />
+                        </VBox>
+                        <VBox id="txCompanyBox">
+                          <Label text="{i18n>txCompanyCode}" />
+                          <Text id="txCompany" text="{triggeringTransaction>/companyCode}" />
+                        </VBox>
+                      </layout:content>
+                    </layout:Grid>
+                  </content>
+                </Panel>
+              </layout:VerticalLayout>
+            </uxap:blocks>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+
+      <!-- Section 2: Risk Score Rationale -->
+      <uxap:ObjectPageSection
+        id="sectionRiskRationale"
+        title="{i18n>sectionRiskRationale}">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection id="subSectionRiskRationale" title="">
+            <uxap:blocks>
+              <layout:VerticalLayout id="riskRationaleLayout" width="100%">
+                <!-- Overall Score -->
+                <Panel id="overallScorePanel" headerText="Overall Risk Assessment">
+                  <content>
+                    <HBox justifyContent="SpaceBetween" class="sapUiSmallMargin">
+                      <VBox alignItems="Center" id="riskScoreDisplay">
+                        <ObjectNumber
+                          id="riskScoreNum"
+                          number="{riskScore}"
+                          unit="/100"
+                          state="{
+                            path: 'riskScore',
+                            formatter: '.formatter.riskScoreState'
+                          }" />
+                        <Label text="Overall Risk Score" />
+                      </VBox>
+                      <VBox id="aiTriageBox">
+                        <Label text="{i18n>aiRecommendation}" />
+                        <Text id="aiTriageText" text="{aiTriageRec}" />
+                        <ObjectStatus
+                          id="aiConfStatus"
+                          text="AI Confidence: {aiConfidenceScore}%"
+                          state="{
+                            path: 'aiConfidenceScore',
+                            formatter: '.formatter.riskScoreState'
+                          }" />
+                      </VBox>
+                    </HBox>
+                  </content>
+                </Panel>
+
+                <!-- Risk Indicators Breakdown -->
+                <Panel id="indicatorsPanel" headerText="{i18n>riskIndicators}">
+                  <content>
+                    <Table
+                      id="indicatorsTable"
+                      items="{riskIndicatorsModel>/indicators}"
+                      noDataText="No risk indicators available">
+                      <columns>
+                        <Column id="indNameCol">
+                          <Text text="Indicator" />
+                        </Column>
+                        <Column id="indWeightCol" width="6rem" hAlign="Center">
+                          <Text text="{i18n>indicatorWeight}" />
+                        </Column>
+                        <Column id="indScoreCol" width="6rem" hAlign="Center">
+                          <Text text="Score" />
+                        </Column>
+                        <Column id="indDescCol">
+                          <Text text="Description" />
+                        </Column>
+                      </columns>
+                      <items>
+                        <ColumnListItem>
+                          <cells>
+                            <Text text="{riskIndicatorsModel>name}" />
+                            <ObjectNumber
+                              number="{riskIndicatorsModel>weight}"
+                              unit="%" />
+                            <ObjectNumber
+                              number="{riskIndicatorsModel>score}"
+                              state="{
+                                path: 'riskIndicatorsModel>score',
+                                formatter: '.formatter.riskScoreState'
+                              }" />
+                            <Text text="{riskIndicatorsModel>description}" />
+                          </cells>
+                        </ColumnListItem>
+                      </items>
+                    </Table>
+                  </content>
+                </Panel>
+
+                <!-- AI Summary -->
+                <Panel id="aiSummaryPanel" headerText="AI Analysis Summary" visible="{= !!${aiSummary}}">
+                  <content>
+                    <FormattedText id="aiSummaryText" htmlText="{aiSummary}" class="sapUiSmallMargin" />
+                  </content>
+                </Panel>
+              </layout:VerticalLayout>
+            </uxap:blocks>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+
+      <!-- Section 3: Related Historical Alerts (max 50, last 12 months) -->
+      <uxap:ObjectPageSection
+        id="sectionHistoricalAlerts"
+        title="{i18n>sectionHistoricalAlerts}">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection id="subSectionHistorical" title="">
+            <uxap:blocks>
+              <layout:VerticalLayout id="historicalLayout" width="100%">
+                <Toolbar id="historicalToolbar">
+                  <Title id="historicalTitle" text="{i18n>sectionHistoricalAlerts}" level="H4" />
+                  <ToolbarSpacer />
+                  <Label id="historicalInfo" text="{i18n>maxHistoricalAlerts}" />
+                </Toolbar>
+                <Table
+                  id="historicalAlertsTable"
+                  items="{historicalAlerts>/alerts}"
+                  growing="true"
+                  growingThreshold="50"
+                  noDataText="{i18n>noHistoricalAlerts}">
+                  <columns>
+                    <Column id="histPriorityCol" width="5rem">
+                      <Text text="Priority" />
+                    </Column>
+                    <Column id="histTitleCol">
+                      <Text text="Alert" />
+                    </Column>
+                    <Column id="histScoreCol" width="6rem">
+                      <Text text="Score" />
+                    </Column>
+                    <Column id="histCategoryCol" width="10rem">
+                      <Text text="Category" />
+                    </Column>
+                    <Column id="histStatusCol" width="8rem">
+                      <Text text="Status" />
+                    </Column>
+                    <Column id="histDateCol" width="10rem">
+                      <Text text="Date" />
+                    </Column>
+                  </columns>
+                  <items>
+                    <ColumnListItem type="Navigation" press=".onHistoricalAlertPress">
+                      <cells>
+                        <ObjectStatus
+                          text="{historicalAlerts>priority}"
+                          state="{
+                            path: 'historicalAlerts>priority',
+                            formatter: '.formatter.priorityState'
+                          }" />
+                        <Text text="{historicalAlerts>title}" maxLines="1" />
+                        <ObjectNumber
+                          number="{historicalAlerts>riskScore}"
+                          state="{
+                            path: 'historicalAlerts>riskScore',
+                            formatter: '.formatter.riskScoreState'
+                          }" />
+                        <Text text="{historicalAlerts>riskCategory}" />
+                        <ObjectStatus
+                          text="{
+                            path: 'historicalAlerts>status',
+                            formatter: '.formatter.statusLabel'
+                          }"
+                          state="{
+                            path: 'historicalAlerts>status',
+                            formatter: '.formatter.statusState'
+                          }" />
+                        <Text text="{historicalAlerts>createdAt}" />
+                      </cells>
+                    </ColumnListItem>
+                  </items>
+                </Table>
+              </layout:VerticalLayout>
+            </uxap:blocks>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+
+      <!-- Section 4: Recommended Investigation Steps -->
+      <uxap:ObjectPageSection
+        id="sectionRecommendedSteps"
+        title="{i18n>sectionRecommendedSteps}">
+        <uxap:subSections>
+          <uxap:ObjectPageSubSection id="subSectionSteps" title="">
+            <uxap:blocks>
+              <layout:VerticalLayout id="stepsLayout" width="100%">
+                <List
+                  id="recommendedStepsList"
+                  items="{recommendedActions>/steps}"
+                  noDataText="No recommended steps available">
+                  <StandardListItem
+                    title="{recommendedActions>title}"
+                    description="{recommendedActions>description}"
+                    icon="{recommendedActions>icon}"
+                    info="{recommendedActions>priority}"
+                    infoState="{
+                      path: 'recommendedActions>priority',
+                      formatter: '.formatter.priorityState'
+                    }" />
+                </List>
+              </layout:VerticalLayout>
+            </uxap:blocks>
+          </uxap:ObjectPageSubSection>
+        </uxap:subSections>
+      </uxap:ObjectPageSection>
+    </uxap:sections>
+  </uxap:ObjectPageLayout>
+</mvc:View>

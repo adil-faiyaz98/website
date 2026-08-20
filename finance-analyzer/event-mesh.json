@@ -1,0 +1,28 @@
+{
+  "emname": "finsecure-ai-em",
+  "namespace": "finsecure/ai",
+  "version": "1.1.0",
+  "options": {
+    "management": true,
+    "messagingrest": true,
+    "messaging": true
+  },
+  "rules": {
+    "topicRules": {
+      "publishFilter": [
+        "${namespace}/*"
+      ],
+      "subscribeFilter": [
+        "${namespace}/*"
+      ]
+    },
+    "queueRules": {
+      "publishFilter": [
+        "${namespace}/*"
+      ],
+      "subscribeFilter": [
+        "${namespace}/*"
+      ]
+    }
+  }
+}

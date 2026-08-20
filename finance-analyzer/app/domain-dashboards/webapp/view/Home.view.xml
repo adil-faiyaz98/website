@@ -1,0 +1,105 @@
+<mvc:View
+  controllerName="finsecure.ai.domaindashboards.controller.Home"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:f="sap.f"
+  xmlns:core="sap.ui.core">
+  <Page id="homePage" title="{i18n>homeTitle}">
+    <content>
+      <f:GridContainer id="dashboardGrid">
+        <f:items>
+          <GenericTile
+            header="{i18n>tileSoDViolations}"
+            subheader="{i18n>tileSoDViolationsDesc}"
+            press=".onNavToSoDViolations"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://locked"/>
+            </TileContent>
+          </GenericTile>
+          <GenericTile
+            header="{i18n>tileVendorMonitoring}"
+            subheader="{i18n>tileVendorMonitoringDesc}"
+            press=".onNavToVendorMonitoring"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://supplier"/>
+            </TileContent>
+          </GenericTile>
+          <GenericTile
+            header="{i18n>tileBehavioralProfiles}"
+            subheader="{i18n>tileBehavioralProfilesDesc}"
+            press=".onNavToBehavioralProfiles"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://person-placeholder"/>
+            </TileContent>
+          </GenericTile>
+          <GenericTile
+            header="{i18n>tileIAMHeatmap}"
+            subheader="{i18n>tileIAMHeatmapDesc}"
+            press=".onNavToIAMHeatmap"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://key-user-settings"/>
+            </TileContent>
+          </GenericTile>
+          <GenericTile
+            header="{i18n>tileCompliance}"
+            subheader="{i18n>tileComplianceDesc}"
+            press=".onNavToCompliance"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://quality-issue"/>
+            </TileContent>
+          </GenericTile>
+          <GenericTile
+            header="{i18n>tileP2PCompliance}"
+            subheader="{i18n>tileP2PComplianceDesc}"
+            press=".onNavToP2PCompliance"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://shipping-status"/>
+            </TileContent>
+          </GenericTile>
+          <GenericTile
+            header="{i18n>tileInsiderThreat}"
+            subheader="{i18n>tileInsiderThreatDesc}"
+            press=".onNavToInsiderThreat"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://warning"/>
+            </TileContent>
+          </GenericTile>
+          <GenericTile
+            header="{i18n>tileVulnerability}"
+            subheader="{i18n>tileVulnerabilityDesc}"
+            press=".onNavToVulnerability"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://shield"/>
+            </TileContent>
+          </GenericTile>
+          <GenericTile
+            header="{i18n>tileEventHealth}"
+            subheader="{i18n>tileEventHealthDesc}"
+            press=".onNavToEventHealth"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://monitor-payments"/>
+            </TileContent>
+          </GenericTile>
+          <GenericTile
+            header="{i18n>tilePrivacy}"
+            subheader="{i18n>tilePrivacyDesc}"
+            press=".onNavToPrivacy"
+            frameType="TwoByOne">
+            <TileContent>
+              <ImageContent src="sap-icon://private"/>
+            </TileContent>
+          </GenericTile>
+        </f:items>
+      </f:GridContainer>
+    </content>
+  </Page>
+</mvc:View>

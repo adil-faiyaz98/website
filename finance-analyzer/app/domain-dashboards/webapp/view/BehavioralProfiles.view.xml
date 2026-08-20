@@ -1,0 +1,127 @@
+<mvc:View
+  controllerName="finsecure.ai.domaindashboards.controller.BehavioralProfiles"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:layout="sap.ui.layout"
+  xmlns:micro="sap.suite.ui.microchart">
+  <Page id="profilesPage" title="{i18n>profilesTitle}" showNavButton="true" navButtonPress=".onNavBack">
+    <headerContent>
+      <Button icon="sap-icon://refresh" press=".onRefresh" tooltip="{i18n>refresh}"/>
+    </headerContent>
+    <content>
+      <VBox class="sapUiSmallMargin">
+        <!-- Filter Bar -->
+        <Toolbar>
+          <SearchField id="profileSearch" placeholder="Search by User ID..." search=".onSearch" width="300px"/>
+          <ToolbarSpacer/>
+          <Select id="profileStatusSelect" change=".onStatusFilter" forceSelection="false">
+            <core:Item key="" text="All Statuses"/>
+            <core:Item key="LEARNING" text="Learning"/>
+            <core:Item key="ACTIVE" text="Active"/>
+          </Select>
+        </Toolbar>
+
+        <!-- Split layout: Table + Detail -->
+        <layout:Splitter height="600px">
+          <layout:contentAreas>
+            <!-- Profiles List -->
+            <Table id="profilesTable"
+              items="{
+                path: 'analyst>/BehavioralProfiles',
+                parameters: {
+                  $orderby: 'lastUpdated desc',
+                  $expand: 'dimensions'
+                }
+              }"
+              mode="SingleSelectMaster"
+              selectionChange=".onProfileSelect"
+              growing="true"
+              growingThreshold="30"
+              noDataText="{i18n>noData}">
+              <columns>
+                <Column width="20%"><Text text="{i18n>profileUserId}"/></Column>
+                <Column width="15%"><Text text="{i18n>profileStatus}"/></Column>
+                <Column width="15%" hAlign="Center"><Text text="{i18n>profileDaysCovered}"/></Column>
+                <Column width="25%"><Text text="{i18n>profileLastUpdated}"/></Column>
+                <Column width="25%"><Text text="{i18n>profileDeviationTrend}"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem type="Active">
+                  <cells>
+                    <Text text="{analyst>userId}"/>
+                    <ObjectStatus
+                      text="{analyst>status}"
+                      state="{= ${analyst>status} === 'ACTIVE' ? 'Success' : 'Information'}"/>
+                    <ObjectNumber number="{analyst>daysCovered}" unit="days"/>
+                    <Text text="{
+                      path: 'analyst>lastUpdated',
+                      type: 'sap.ui.model.type.DateTime',
+                      formatOptions: { style: 'medium' }
+                    }"/>
+                    <!-- Sparkline for deviation trend -->
+                    <micro:LineMicroChart size="M" color="Critical">
+                      <micro:points>
+                        <micro:LineMicroChartPoint x="0" y="2"/>
+                        <micro:LineMicroChartPoint x="1" y="5"/>
+                        <micro:LineMicroChartPoint x="2" y="3"/>
+                        <micro:LineMicroChartPoint x="3" y="7"/>
+                        <micro:LineMicroChartPoint x="4" y="4"/>
+                      </micro:points>
+                    </micro:LineMicroChart>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+
+            <!-- Profile Detail Panel -->
+            <Panel id="profileDetailPanel"
+              headerText="Profile Dimensions"
+              visible="{= !!${viewModel>/selectedProfile}}"
+              class="sapUiSmallMargin">
+              <content>
+                <VBox class="sapUiSmallMargin">
+                  <ObjectHeader
+                    title="{viewModel>/selectedProfile/userId}"
+                    number="{viewModel>/selectedProfile/daysCovered}"
+                    numberUnit="days covered">
+                    <statuses>
+                      <ObjectStatus text="{viewModel>/selectedProfile/status}"
+                        state="{= ${viewModel>/selectedProfile/status} === 'ACTIVE' ? 'Success' : 'Information'}"/>
+                    </statuses>
+                  </ObjectHeader>
+
+                  <layout:form.SimpleForm editable="false" layout="ResponsiveGridLayout" columnsL="2" columnsM="1">
+                    <core:Title text="Posting Behavior"/>
+                    <Label text="Posting Frequency Mean"/>
+                    <Text text="{viewModel>/selectedProfile/dimensions/postingFreqMean}"/>
+                    <Label text="Posting Frequency StdDev"/>
+                    <Text text="{viewModel>/selectedProfile/dimensions/postingFreqStdDev}"/>
+
+                    <core:Title text="Amount Patterns"/>
+                    <Label text="Amount Mean"/>
+                    <Text text="{viewModel>/selectedProfile/dimensions/amountMean}"/>
+                    <Label text="Amount StdDev"/>
+                    <Text text="{viewModel>/selectedProfile/dimensions/amountStdDev}"/>
+                    <Label text="Amount P90"/>
+                    <Text text="{viewModel>/selectedProfile/dimensions/amountP90}"/>
+                    <Label text="Amount P99"/>
+                    <Text text="{viewModel>/selectedProfile/dimensions/amountP99}"/>
+
+                    <core:Title text="Data Access"/>
+                    <Label text="Mean Per Day"/>
+                    <Text text="{viewModel>/selectedProfile/dimensions/dataAccessMeanPerDay}"/>
+                    <Label text="StdDev"/>
+                    <Text text="{viewModel>/selectedProfile/dimensions/dataAccessStdDev}"/>
+                    <Label text="P90"/>
+                    <Text text="{viewModel>/selectedProfile/dimensions/dataAccessP90}"/>
+                  </layout:form.SimpleForm>
+                </VBox>
+              </content>
+            </Panel>
+          </layout:contentAreas>
+        </layout:Splitter>
+      </VBox>
+    </content>
+  </Page>
+</mvc:View>

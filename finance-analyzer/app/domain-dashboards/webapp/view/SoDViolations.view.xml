@@ -1,0 +1,132 @@
+<mvc:View
+  controllerName="finsecure.ai.domaindashboards.controller.SoDViolations"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:viz="sap.viz.ui5.controls"
+  xmlns:vizData="sap.viz.ui5.data"
+  xmlns:layout="sap.ui.layout"
+  xmlns:table="sap.ui.table">
+  <Page id="sodPage" title="{i18n>sodTitle}" showNavButton="true" navButtonPress=".onNavBack">
+    <headerContent>
+      <Button icon="sap-icon://refresh" press=".onRefresh" tooltip="{i18n>refresh}"/>
+    </headerContent>
+    <content>
+      <IconTabBar id="sodIconTabBar" selectedKey="list">
+        <items>
+          <!-- Violations List Tab -->
+          <IconTabFilter key="list" text="Violations" icon="sap-icon://list" count="{viewModel>/totalCount}">
+            <content>
+              <VBox class="sapUiSmallMargin">
+                <!-- Search and Filter Bar -->
+                <Toolbar>
+                  <SearchField id="sodSearch" placeholder="Search by User ID..." search=".onSearch" width="300px"/>
+                  <ToolbarSpacer/>
+                  <Select id="severitySelect" change=".onSeverityFilter" forceSelection="false">
+                    <core:Item key="" text="All Severities"/>
+                    <core:Item key="CRITICAL" text="Critical"/>
+                    <core:Item key="HIGH" text="High"/>
+                    <core:Item key="MEDIUM" text="Medium"/>
+                  </Select>
+                  <Text text="{i18n>sodPageSize}" class="sapUiSmallMarginBegin"/>
+                </Toolbar>
+
+                <!-- SoD Violations Table (max 50 per page) -->
+                <Table id="sodTable"
+                  items="{
+                    path: 'analyst>/SoDViolations',
+                    parameters: {
+                      $top: 50,
+                      $orderby: 'createdAt desc',
+                      $expand: 'rule'
+                    }
+                  }"
+                  growing="true"
+                  growingThreshold="50"
+                  growingScrollToLoad="false"
+                  noDataText="{i18n>noData}">
+                  <headerToolbar>
+                    <OverflowToolbar>
+                      <Title text="{i18n>sodTitle}" level="H3"/>
+                      <ToolbarSpacer/>
+                      <!-- Pagination Controls -->
+                      <Button icon="sap-icon://navigation-left-arrow" press=".onPrevPage"
+                        enabled="{viewModel>/hasPrevPage}" tooltip="Previous Page"/>
+                      <Text text="Page {viewModel>/currentPage}"/>
+                      <Button icon="sap-icon://navigation-right-arrow" press=".onNextPage"
+                        enabled="{viewModel>/hasNextPage}" tooltip="Next Page"/>
+                    </OverflowToolbar>
+                  </headerToolbar>
+                  <columns>
+                    <Column width="10%"><Text text="{i18n>sodUser}"/></Column>
+                    <Column width="25%"><Text text="{i18n>sodConflictingActions}"/></Column>
+                    <Column width="15%"><Text text="{i18n>sodActivity1Time}"/></Column>
+                    <Column width="15%"><Text text="{i18n>sodActivity2Time}"/></Column>
+                    <Column width="10%"><Text text="{i18n>sodSeverity}"/></Column>
+                    <Column width="10%"><Text text="{i18n>sodStatus}"/></Column>
+                  </columns>
+                  <items>
+                    <ColumnListItem type="Navigation">
+                      <cells>
+                        <Text text="{analyst>userId}"/>
+                        <VBox>
+                          <Text text="{analyst>activity1Obj}" class="sapUiTinyMarginBottom"/>
+                          <Text text="{analyst>activity2Obj}" class="sapMTextBreakWord"/>
+                        </VBox>
+                        <Text text="{
+                          path: 'analyst>activity1Time',
+                          type: 'sap.ui.model.type.DateTime',
+                          formatOptions: { style: 'medium' }
+                        }"/>
+                        <Text text="{
+                          path: 'analyst>activity2Time',
+                          type: 'sap.ui.model.type.DateTime',
+                          formatOptions: { style: 'medium' }
+                        }"/>
+                        <ObjectStatus
+                          text="{analyst>severity}"
+                          state="{
+                            path: 'analyst>severity',
+                            formatter: '.formatter.severityState'
+                          }"
+                          icon="{
+                            path: 'analyst>severity',
+                            formatter: '.formatter.severityIcon'
+                          }"/>
+                        <ObjectStatus text="{analyst>status}" inverted="true"/>
+                      </cells>
+                    </ColumnListItem>
+                  </items>
+                </Table>
+              </VBox>
+            </content>
+          </IconTabFilter>
+
+          <!-- Time-Series Chart Tab -->
+          <IconTabFilter key="timeSeries" text="Daily Trends" icon="sap-icon://line-chart">
+            <content>
+              <VBox class="sapUiSmallMargin" height="500px">
+                <viz:VizFrame id="sodTimeSeriesChart" vizType="timeseries_line" width="100%" height="400px">
+                  <viz:dataset>
+                    <vizData:FlattenedDataset data="{viewModel>/dailyCounts}">
+                      <vizData:dimensions>
+                        <vizData:DimensionDefinition name="Date" value="{viewModel>date}" dataType="date"/>
+                      </vizData:dimensions>
+                      <vizData:measures>
+                        <vizData:MeasureDefinition name="Violations" value="{viewModel>count}"/>
+                      </vizData:measures>
+                    </vizData:FlattenedDataset>
+                  </viz:dataset>
+                  <viz:feeds>
+                    <viz:ui5.controls.common.feeds.FeedItem uid="timeAxis" type="Dimension" values="Date"/>
+                    <viz:ui5.controls.common.feeds.FeedItem uid="valueAxis" type="Measure" values="Violations"/>
+                  </viz:feeds>
+                </viz:VizFrame>
+              </VBox>
+            </content>
+          </IconTabFilter>
+        </items>
+      </IconTabBar>
+    </content>
+  </Page>
+</mvc:View>

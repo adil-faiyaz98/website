@@ -1,0 +1,107 @@
+<mvc:View
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:l="sap.ui.layout"
+  xmlns:core="sap.ui.core"
+  controllerName="finsecure.ai.soc.commandcenter.controller.ThreatFeed"
+  displayBlock="true">
+
+  <Page
+    id="threatFeedPage"
+    title="{i18n>threatFeedTitle}"
+    showNavButton="true"
+    navButtonPress=".onNavBack"
+    class="{= ${dashboard>/darkMode} ? 'soc-dark-mode' : ''}">
+
+    <headerContent>
+      <Label text="{i18n>showing}" class="sapUiSmallMarginEnd" />
+      <ObjectNumber number="{dashboard>/threatFeedCount}" unit="{i18n>events}" />
+      <ToolbarSpacer />
+      <SearchField
+        id="threatSearchField"
+        placeholder="{i18n>searchEvents}"
+        search=".onSearchThreatFeed"
+        width="300px" />
+      <Select id="severityFilter" change=".onSeverityFilterChange">
+        <core:Item key="all" text="{i18n>allSeverities}" />
+        <core:Item key="critical" text="{i18n>critical}" />
+        <core:Item key="high" text="{i18n>high}" />
+        <core:Item key="medium" text="{i18n>medium}" />
+        <core:Item key="low" text="{i18n>low}" />
+      </Select>
+      <Select id="categoryFilter" change=".onCategoryFilterChange">
+        <core:Item key="all" text="{i18n>allCategories}" />
+        <core:Item key="fraud" text="{i18n>fraud}" />
+        <core:Item key="iam" text="{i18n>iamViolation}" />
+        <core:Item key="sod" text="{i18n>sodViolation}" />
+        <core:Item key="compliance" text="{i18n>complianceBreach}" />
+        <core:Item key="vulnerability" text="{i18n>vulnerability}" />
+        <core:Item key="privilege" text="{i18n>privilegeEscalation}" />
+        <core:Item key="insider" text="{i18n>insiderThreat}" />
+      </Select>
+      <Button icon="sap-icon://refresh" press=".onRefreshFeed" tooltip="{i18n>tooltipRefresh}" />
+    </headerContent>
+
+    <content>
+      <!-- Auto-refresh indicator -->
+      <Toolbar class="socAutoRefreshToolbar">
+        <core:Icon src="sap-icon://synchronize" color="#0a6ed1" />
+        <Label text="{i18n>autoRefreshActive}" class="sapUiTinyMarginBegin" />
+        <Label text="({i18n>interval60s})" class="sapUiTinyMarginBegin socMutedText" />
+        <ToolbarSpacer />
+        <Label text="{i18n>lastRefreshed}: {dashboard>/threatFeedLastRefreshed}" />
+      </Toolbar>
+
+      <!-- Threat Feed Timeline -->
+      <List
+        id="threatFeedList"
+        items="{path: 'dashboard>/threatFeed', length: 100}"
+        noDataText="{i18n>noThreatEvents}"
+        growing="true"
+        growingThreshold="25"
+        growingScrollToLoad="true">
+        <CustomListItem type="Active" press=".onThreatEventPress" class="socThreatFeedItem">
+          <HBox alignItems="Center" class="sapUiSmallMargin">
+            <!-- Severity Icon -->
+            <core:Icon
+              src="{= ${dashboard>severity} === 'critical' ? 'sap-icon://alert' : ${dashboard>severity} === 'high' ? 'sap-icon://warning2' : 'sap-icon://notification'}"
+              color="{= ${dashboard>severity} === 'critical' ? '#cc1919' : ${dashboard>severity} === 'high' ? '#e87500' : ${dashboard>severity} === 'medium' ? '#e6a400' : '#0a6ed1'}"
+              size="1.5rem"
+              class="sapUiSmallMarginEnd" />
+
+            <!-- Event Content -->
+            <VBox class="socThreatEventContent" width="100%">
+              <HBox justifyContent="SpaceBetween" width="100%">
+                <Title text="{dashboard>title}" level="H5" />
+                <Label text="{dashboard>relativeTime}" class="socMutedText" />
+              </HBox>
+              <Text text="{dashboard>description}" class="socEventDescription" />
+              <HBox class="sapUiTinyMarginTop">
+                <ObjectStatus
+                  text="{dashboard>category}"
+                  inverted="true"
+                  class="sapUiTinyMarginEnd" />
+                <ObjectStatus
+                  text="{dashboard>severity}"
+                  state="{= ${dashboard>severity} === 'critical' ? 'Error' : ${dashboard>severity} === 'high' ? 'Warning' : 'None'}"
+                  inverted="true"
+                  class="sapUiTinyMarginEnd" />
+                <Label text="{dashboard>sourceSystem}" class="socMutedText" />
+              </HBox>
+            </VBox>
+
+            <!-- Navigation Arrow -->
+            <core:Icon src="sap-icon://slim-arrow-right" class="sapUiSmallMarginBegin" />
+          </HBox>
+        </CustomListItem>
+      </List>
+    </content>
+
+    <footer>
+      <Toolbar>
+        <ToolbarSpacer />
+        <Label text="{i18n>displayingLatest100}" class="socMutedText" />
+      </Toolbar>
+    </footer>
+  </Page>
+</mvc:View>

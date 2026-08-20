@@ -1,0 +1,16 @@
+{
+  "name": "risk-intelligence",
+  "version": "1.0.0",
+  "description": "Risk Intelligence Dashboard - Fiori Elements Overview Page",
+  "private": true,
+  "devDependencies": {
+    "@ui5/cli": "^3",
+    "@sap/ux-specification": "latest"
+  },
+  "scripts": {
+    "start": "ui5 serve --config=ui5.yaml --open index.html",
+    "build": "ui5 build --config=ui5.yaml --clean-dest",
+    "deploy": "fiori deploy --config ui5-deploy.yaml"
+  },
+  "sapux": true
+}
