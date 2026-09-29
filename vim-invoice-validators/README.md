@@ -234,6 +234,69 @@ interface ValidationResult {
 }
 ```
 
+## Deterministic Tax Determination
+
+`srv/lib/tax-determination-engine.js` determines tax code, tax jurisdiction and tax amount per invoice line. It never guesses: a line either ends with `status: 'DETERMINED'` or with an `errorCode` and goes to exception handling. `determineInvoiceTax().success` is `true` only when every line is `DETERMINED`; failed lines are listed in `result.exceptions`.
+
+### Principles
+
+- PO invoices: tax data comes from the PO (`getPODetail1`). Invoice-supplied tax codes/jurisdictions are not used.
+- Non-PO invoices: an exact SAP vendor ID is required. Supplier names are never fuzzy-matched.
+- Tax amount comes only from `calculateTaxFromNet` (fallback `calculateTaxFromNetStd`) per line. No local rate tables, no estimation. Header tax = sum of lines; the invoice tax amount is only used for reconciliation.
+- No system default tax code (the former `I1` default is removed). Ambiguous admin rules (equal specificity and priority, different results) are rejected.
+
+### BAPI / Table Derivation and Validation Matrix
+
+| Source | Used for | Fields |
+|---|---|---|
+| `getPODetail1` | PO derivation | `POHEADER` (`COMP_CODE`, `VENDOR`, `CURRENCY`, `DELETE_IND`), `POITEM` (`TAX_CODE`, `TAXJURCODE`, `PLANT`, `MATL_GROUP`, `DELETE_IND`), `POACCOUNT` (`TAX_CODE`, `TAXJURCODE`, `GL_ACCOUNT`), `POADDRDELIVERY` (`TAXJURCODE`, `REGION`, `POSTL_COD1`, `COUNTRY`) |
+| `getVendorDetail` | Vendor existence, sender country for rules | Vendor general data |
+| `getCompanyCodeDetail` | Company code existence, country | Company code data |
+| `getTaxCodes` / `s4hana.TaxKeys` | Tax code validation | Exists for country, `MWART = 'V'` (input tax), `XINACT` not set |
+| `getTaxJurisdictions` / `s4hana.TaxJurisdiction` | Jurisdiction validation; whether the company country uses jurisdictions | `TXJCD` |
+| `calculateTaxFromNet` / `calculateTaxFromNetStd` | Tax amount | `E_FWSTE` (tax), `E_FWNAV` + `E_FWNVV` (non-deductible), `T_MWDAT` (condition details) |
+
+### PO Line Derivation Order
+
+1. PO header must exist, not be deleted, and belong to the invoice company code (`PO_NOT_FOUND`, `PO_DELETED`, `PO_COMPANY_CODE_MISMATCH`).
+2. Every PO invoice line must carry a PO line number (`PO_LINE_REQUIRED`); the line must exist and not be deleted (`PO_LINE_NOT_FOUND`, `PO_LINE_DELETED`).
+3. Tax code: `POITEM.TAX_CODE`, else `POACCOUNT.TAX_CODE`. Different codes between them or across account assignments → `PO_TAX_CODE_CONFLICT`.
+4. Jurisdiction: `POACCOUNT.TAXJURCODE` → `POITEM.TAXJURCODE` → `POADDRDELIVERY.TAXJURCODE`. Different jurisdictions across account assignments → `PO_JURISDICTION_SPLIT`.
+5. No tax code on the PO → admin rule (`TaxDeterminationRules`) on company code, PO vendor, delivery country/region/postal code, G/L account, material group. No match → `PO_TAX_CODE_MISSING`; tie → `AMBIGUOUS_TAX_RULE`.
+
+### Non-PO Line Derivation Order
+
+1. Exact vendor ID required (`VENDOR_REQUIRED`, `VENDOR_NOT_FOUND`).
+2. Exempt vendor (`VendorTaxProfile.isTaxExempt`, valid dates): requires `exemptionCertNumber` and `defaultTaxCode` (`EXEMPTION_CERTIFICATE_MISSING`, `EXEMPT_TAX_CODE_NOT_CONFIGURED`).
+3. Admin rule on company code, vendor, G/L account, expense type (or derived from G/L), material group; receiver country/region/postal code come from the company code address, never from the vendor or invoice. Tie → `AMBIGUOUS_TAX_RULE`.
+4. Otherwise `VendorTaxProfile.defaultTaxCode` / `defaultTaxJurisdiction`.
+5. Otherwise `NO_TAX_RULE`.
+
+Tax code and jurisdiction are set on every Non-PO line; the header values are an aggregate (`allLinesSameTax`, `allLinesSameJurisdiction`, `uniqueTaxCodes`, `uniqueTaxJurisdictions`).
+
+### Final Validation (all lines)
+
+- Tax code validated against `getTaxCodes` / `s4hana.TaxKeys` → `INVALID_TAX_CODE`.
+- Jurisdiction requirement cannot be determined (company country / `getTaxJurisdictions` unavailable) → `JURISDICTION_REQUIREMENT_UNKNOWN`.
+- Company country uses jurisdictions but none derived → `TAX_JURISDICTION_MISSING`; derived jurisdiction not found → `INVALID_TAX_JURISDICTION`; jurisdiction derived for a non-jurisdiction country → `UNEXPECTED_TAX_JURISDICTION`.
+- Currency must be known (invoice or PO) → `CURRENCY_MISSING`.
+- BAPI calculation failure or missing `E_FWSTE` → `TAX_CALCULATION_FAILED`.
+
+### Admin Configuration Required to Close Gaps
+
+| Gap | Configuration |
+|---|---|
+| PO line without `TAX_CODE` | Maintain tax code on the PO in ECC (preferred), or a `TaxDeterminationRules` entry for company code + vendor/material group/G/L account |
+| PO account assignments with different jurisdictions | Split the invoice line per account assignment, or correct the PO |
+| PO without jurisdiction in a jurisdiction country | Maintain `TAXJURCODE` on the PO delivery address / account assignment, or a rule with `taxJurisdiction` |
+| Non-PO vendor with a single ship-to location | `VendorTaxProfile` per vendor + company code with `defaultTaxCode` and `defaultTaxJurisdiction` |
+| Non-PO vendor with expense-dependent tax | `TaxDeterminationRules` per company code + vendor + G/L account (or expense type) |
+| Exempt vendors | `VendorTaxProfile.isTaxExempt`, `exemptionCertNumber`, `exemptionValidFrom`/`exemptionValidTo`, `defaultTaxCode` (exempt code) |
+| Rule ties | Give overlapping rules distinct `priority` or more specific criteria |
+| Tax code / jurisdiction master data | Keep `s4hana.TaxKeys` and `s4hana.TaxJurisdiction` replicated when BAPIs are unavailable |
+
+Non-PO vendors whose goods or services are consumed at several locations cannot be determined without per-line location data; configure line-level G/L/location rules or route them to exception handling.
+
 ## Testing
 
 ```bash

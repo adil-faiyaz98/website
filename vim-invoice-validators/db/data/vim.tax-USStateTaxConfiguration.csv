@@ -1,0 +1,52 @@
+ID;stateCode;stateName;stateTaxRate;hasLocalTax;maxLocalTaxRate;avgCombinedRate;defaultInputTaxCode;defaultJurisdiction;hasSalesTax;hasUseTax;taxHolidays;effectiveFrom;effectiveTo;isActive;notes
+1;AL;Alabama;0.0400;true;0.0750;0.0924;V1;AL000000;true;true;true;2024-01-01;;true;State rate 4%, avg local 5.24%
+2;AK;Alaska;0.0000;true;0.0762;0.0182;V0;AK000000;false;true;false;2024-01-01;;true;No state tax but local jurisdictions can levy up to 7.62%
+3;AZ;Arizona;0.0560;true;0.0580;0.0842;V1;AZ000000;true;true;false;2024-01-01;;true;State rate 5.6%, avg combined 8.42%
+4;AR;Arkansas;0.0650;true;0.0625;0.0951;V1;AR000000;true;true;true;2024-01-01;;true;State rate 6.5%, avg combined 9.51%
+5;CA;California;0.0725;true;0.0350;0.0868;V1;CA000000;true;true;false;2024-01-01;;true;State rate 7.25%, highest combined can reach 10.75%
+6;CO;Colorado;0.0290;true;0.0832;0.0781;V1;CO000000;true;true;false;2024-01-01;;true;State rate 2.9%, significant local variation
+7;CT;Connecticut;0.0635;false;0.0000;0.0635;V1;CT000000;true;true;false;2024-01-01;;true;Flat state rate 6.35%, no local taxes
+8;DE;Delaware;0.0000;false;0.0000;0.0000;V0;DE000000;false;true;false;2024-01-01;;true;No sales tax - use tax only
+9;FL;Florida;0.0600;true;0.0250;0.0701;V1;FL000000;true;true;true;2024-01-01;;true;State rate 6%, discretionary surtax up to 2.5%
+10;GA;Georgia;0.0400;true;0.0500;0.0735;V1;GA000000;true;true;true;2024-01-01;;true;State rate 4%, local options up to 5%
+11;HI;Hawaii;0.0400;true;0.0050;0.0444;V1;HI000000;true;true;false;2024-01-01;;true;General excise tax 4%, county surcharge up to 0.5%
+12;ID;Idaho;0.0600;true;0.0300;0.0602;V1;ID000000;true;true;false;2024-01-01;;true;State rate 6%, limited local (resort cities)
+13;IL;Illinois;0.0625;true;0.0475;0.0882;V1;IL000000;true;true;true;2024-01-01;;true;State rate 6.25%, home rule municipalities add more
+14;IN;Indiana;0.0700;false;0.0000;0.0700;V1;IN000000;true;true;false;2024-01-01;;true;Flat state rate 7%, no local sales tax
+15;IA;Iowa;0.0600;true;0.0100;0.0694;V1;IA000000;true;true;true;2024-01-01;;true;State rate 6%, optional 1% local
+16;KS;Kansas;0.0650;true;0.0415;0.0871;V1;KS000000;true;true;true;2024-01-01;;true;State rate 6.5%, local can add up to 4.15%
+17;KY;Kentucky;0.0600;false;0.0000;0.0600;V1;KY000000;true;true;false;2024-01-01;;true;Flat state rate 6%, no local sales tax
+18;LA;Louisiana;0.0445;true;0.0726;0.0555;V1;LA000000;true;true;true;2024-01-01;;true;State rate 4.45%, complex local structure
+19;ME;Maine;0.0550;false;0.0000;0.0550;V1;ME000000;true;true;false;2024-01-01;;true;Flat state rate 5.5%, no local sales tax
+20;MD;Maryland;0.0600;false;0.0000;0.0600;V1;MD000000;true;true;true;2024-01-01;;true;Flat state rate 6%, no local sales tax
+21;MA;Massachusetts;0.0625;false;0.0000;0.0625;V1;MA000000;true;true;true;2024-01-01;;true;Flat state rate 6.25%, no local sales tax
+22;MI;Michigan;0.0600;false;0.0000;0.0600;V1;MI000000;true;true;false;2024-01-01;;true;Flat state rate 6%, no local sales tax
+23;MN;Minnesota;0.0688;true;0.0200;0.0785;V1;MN000000;true;true;false;2024-01-01;;true;State rate 6.875%, local up to 2%
+24;MS;Mississippi;0.0700;true;0.0100;0.0707;V1;MS000000;true;true;true;2024-01-01;;true;State rate 7%, limited local options
+25;MO;Missouri;0.0423;true;0.0613;0.0825;V1;MO000000;true;true;true;2024-01-01;;true;State rate 4.225%, significant local taxes
+26;MT;Montana;0.0000;true;0.0300;0.0000;V0;MT000000;false;false;false;2024-01-01;;true;No general sales tax, some resort taxes
+27;NE;Nebraska;0.0550;true;0.0250;0.0694;V1;NE000000;true;true;false;2024-01-01;;true;State rate 5.5%, local up to 2.5%
+28;NV;Nevada;0.0685;true;0.0153;0.0837;V1;NV000000;true;true;false;2024-01-01;;true;State rate 6.85%, local adds more
+29;NH;New Hampshire;0.0000;false;0.0000;0.0000;V0;NH000000;false;true;false;2024-01-01;;true;No sales tax - use tax only for business
+30;NJ;New Jersey;0.0663;true;0.0000;0.0663;V1;NJ000000;true;true;false;2024-01-01;;true;State rate 6.625%, Urban Enterprise Zones at 3.3125%
+31;NM;New Mexico;0.0500;true;0.0494;0.0724;V1;NM000000;true;true;false;2024-01-01;;true;Gross receipts tax 5%, local increments
+32;NY;New York;0.0400;true;0.0500;0.0852;V1;NY000000;true;true;false;2024-01-01;;true;State rate 4%, NYC combined reaches 8.875%
+33;NC;North Carolina;0.0475;true;0.0275;0.0698;V1;NC000000;true;true;true;2024-01-01;;true;State rate 4.75%, county taxes up to 2.75%
+34;ND;North Dakota;0.0500;true;0.0350;0.0701;V1;ND000000;true;true;false;2024-01-01;;true;State rate 5%, local up to 3.5%
+35;OH;Ohio;0.0575;true;0.0225;0.0723;V1;OH000000;true;true;true;2024-01-01;;true;State rate 5.75%, county transit taxes
+36;OK;Oklahoma;0.0450;true;0.0700;0.0895;V1;OK000000;true;true;true;2024-01-01;;true;State rate 4.5%, high local variation
+37;OR;Oregon;0.0000;false;0.0000;0.0000;V0;OR000000;false;false;false;2024-01-01;;true;No sales tax
+38;PA;Pennsylvania;0.0600;true;0.0200;0.0634;V1;PA000000;true;true;false;2024-01-01;;true;State rate 6%, Philadelphia adds 2%
+39;RI;Rhode Island;0.0700;false;0.0000;0.0700;V1;RI000000;true;true;false;2024-01-01;;true;Flat state rate 7%, no local sales tax
+40;SC;South Carolina;0.0600;true;0.0300;0.0746;V1;SC000000;true;true;true;2024-01-01;;true;State rate 6%, local option up to 3%
+41;SD;South Dakota;0.0450;true;0.0450;0.0640;V1;SD000000;true;true;false;2024-01-01;;true;State rate 4.5%, municipal up to 4.5%
+42;TN;Tennessee;0.0700;true;0.0275;0.0955;V1;TN000000;true;true;true;2024-01-01;;true;State rate 7%, local adds up to 2.75%
+43;TX;Texas;0.0625;true;0.0200;0.0819;V1;TX000000;true;true;true;2024-01-01;;true;State rate 6.25%, local up to 2%
+44;UT;Utah;0.0485;true;0.0295;0.0719;V1;UT000000;true;true;false;2024-01-01;;true;State combined rate 4.85%, local additional
+45;VT;Vermont;0.0600;true;0.0100;0.0624;V1;VT000000;true;true;false;2024-01-01;;true;State rate 6%, local option 1%
+46;VA;Virginia;0.0530;true;0.0170;0.0575;V1;VA000000;true;true;true;2024-01-01;;true;State rate 5.3% (4.3% state + 1% local minimum)
+47;WA;Washington;0.0650;true;0.0400;0.0929;V1;WA000000;true;true;false;2024-01-01;;true;State rate 6.5%, local up to 4%
+48;WV;West Virginia;0.0600;true;0.0100;0.0655;V1;WV000000;true;true;false;2024-01-01;;true;State rate 6%, municipal up to 1%
+49;WI;Wisconsin;0.0500;true;0.0060;0.0543;V1;WI000000;true;true;false;2024-01-01;;true;State rate 5%, county stadium tax 0.5%
+50;WY;Wyoming;0.0400;true;0.0200;0.0536;V1;WY000000;true;true;false;2024-01-01;;true;State rate 4%, county up to 2%
+51;DC;District of Columbia;0.0600;false;0.0000;0.0600;V1;DC000000;true;true;false;2024-01-01;;true;Flat rate 6%, no additional local

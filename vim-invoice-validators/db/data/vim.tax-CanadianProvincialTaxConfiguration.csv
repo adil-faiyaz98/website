@@ -1,0 +1,14 @@
+ID;provinceCode;provinceName;taxSystem;gstRate;pstRate;hstRate;qstRate;combinedRate;defaultInputTaxCode;gstTaxCode;pstTaxCode;hstTaxCode;qstTaxCode;defaultJurisdiction;pstExemptCategories;effectiveFrom;effectiveTo;isActive;notes
+1;ON;Ontario;HST;0.0500;0.0000;0.1300;0.0000;0.1300;C1;G1;;H1;;CA-ON;BASIC_GROCERIES,PRESCRIPTION_DRUGS,MEDICAL_DEVICES;2024-01-01;;true;HST province - 13% harmonized (5% federal + 8% provincial)
+2;BC;British Columbia;GST_PST;0.0500;0.0700;0.0000;0.0000;0.1200;C2;G1;P1;;;CA-BC;BASIC_GROCERIES,PRESCRIPTION_DRUGS,CHILDREN_CLOTHING;2024-01-01;;true;GST+PST - 5% federal + 7% provincial PST
+3;AB;Alberta;GST_ONLY;0.0500;0.0000;0.0000;0.0000;0.0500;G1;G1;;;;CA-AB;BASIC_GROCERIES,PRESCRIPTION_DRUGS;2024-01-01;;true;GST only province - no provincial sales tax
+4;SK;Saskatchewan;GST_PST;0.0500;0.0600;0.0000;0.0000;0.1100;C2;G1;P1;;;CA-SK;BASIC_GROCERIES,PRESCRIPTION_DRUGS;2024-01-01;;true;GST+PST - 5% federal + 6% provincial PST
+5;MB;Manitoba;GST_PST;0.0500;0.0700;0.0000;0.0000;0.1200;C2;G1;P1;;;CA-MB;BASIC_GROCERIES,PRESCRIPTION_DRUGS,CHILDREN_CLOTHING;2024-01-01;;true;GST+RST - 5% federal + 7% retail sales tax
+6;QC;Quebec;GST_QST;0.0500;0.0000;0.0000;0.0998;0.1499;C3;G1;;;Q1;CA-QC;BASIC_GROCERIES,PRESCRIPTION_DRUGS,BOOKS;2024-01-01;;true;GST+QST - 5% federal + 9.975% QST (calculated on price including GST pre-2013, now on base)
+7;NB;New Brunswick;HST;0.0500;0.0000;0.1500;0.0000;0.1500;C1;G1;;H2;;CA-NB;BASIC_GROCERIES,PRESCRIPTION_DRUGS;2024-01-01;;true;HST province - 15% harmonized (5% federal + 10% provincial)
+8;NS;Nova Scotia;HST;0.0500;0.0000;0.1500;0.0000;0.1500;C1;G1;;H2;;CA-NS;BASIC_GROCERIES,PRESCRIPTION_DRUGS;2024-01-01;;true;HST province - 15% harmonized (5% federal + 10% provincial)
+9;PE;Prince Edward Island;HST;0.0500;0.0000;0.1500;0.0000;0.1500;C1;G1;;H2;;CA-PE;BASIC_GROCERIES,PRESCRIPTION_DRUGS;2024-01-01;;true;HST province - 15% harmonized (5% federal + 10% provincial)
+10;NL;Newfoundland and Labrador;HST;0.0500;0.0000;0.1500;0.0000;0.1500;C1;G1;;H2;;CA-NL;BASIC_GROCERIES,PRESCRIPTION_DRUGS;2024-01-01;;true;HST province - 15% harmonized (5% federal + 10% provincial)
+11;YT;Yukon;GST_ONLY;0.0500;0.0000;0.0000;0.0000;0.0500;G1;G1;;;;CA-YT;BASIC_GROCERIES,PRESCRIPTION_DRUGS;2024-01-01;;true;GST only territory - no territorial sales tax
+12;NT;Northwest Territories;GST_ONLY;0.0500;0.0000;0.0000;0.0000;0.0500;G1;G1;;;;CA-NT;BASIC_GROCERIES,PRESCRIPTION_DRUGS;2024-01-01;;true;GST only territory - no territorial sales tax
+13;NU;Nunavut;GST_ONLY;0.0500;0.0000;0.0000;0.0000;0.0500;G1;G1;;;;CA-NU;BASIC_GROCERIES,PRESCRIPTION_DRUGS;2024-01-01;;true;GST only territory - no territorial sales tax

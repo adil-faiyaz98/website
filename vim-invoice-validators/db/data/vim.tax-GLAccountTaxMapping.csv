@@ -1,0 +1,41 @@
+ID;glAccount;glAccountName;companyCode;defaultTaxCode;taxCategory;isCapitalExpense;isTaxable;alwaysExempt;requiresJurisdiction;effectiveFrom;effectiveTo;isActive
+1;5000100;Raw Materials - Direct;1000;V1;GOODS;false;true;false;true;2024-01-01;;true
+2;5000110;Raw Materials - Indirect;1000;V1;GOODS;false;true;false;true;2024-01-01;;true
+3;5100100;Merchandise Inventory;1000;V1;GOODS;false;true;false;true;2024-01-01;;true
+4;6100100;Office Supplies;1000;V1;EXPENSE;false;true;false;false;2024-01-01;;true
+5;6100110;Office Equipment - Small;1000;V1;EXPENSE;false;true;false;false;2024-01-01;;true
+6;6200100;Travel - Airfare;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+7;6200110;Travel - Lodging;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+8;6200120;Travel - Car Rental;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+9;6200200;Meals - Business;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+10;6200210;Entertainment;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+11;6300100;Software Licenses;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+12;6300110;SaaS Subscriptions;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+13;6400100;Legal Fees;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+14;6400110;Accounting Fees;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+15;6400120;Consulting Fees;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+16;6500100;Utilities - Electric;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+17;6500110;Utilities - Gas;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+18;6510100;Telephone;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+19;6510110;Internet Services;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+20;6520100;Shipping - Domestic;1000;V1;SERVICES;false;true;false;true;2024-01-01;;true
+21;6520110;Shipping - International;1000;V1;SERVICES;false;true;false;true;2024-01-01;;true
+22;6530100;Fuel and Energy;1000;V1;GOODS;false;true;false;false;2024-01-01;;true
+23;6600100;Rent - Building;1000;V0;SERVICES;false;false;true;false;2024-01-01;;true
+24;6600110;Lease - Equipment;1000;V0;SERVICES;false;false;true;false;2024-01-01;;true
+25;6700100;Insurance Premiums;1000;V0;SERVICES;false;false;true;false;2024-01-01;;true
+26;6750100;Healthcare Services;1000;V0;SERVICES;false;false;true;false;2024-01-01;;true
+27;6800100;Maintenance - Building;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+28;6800110;Maintenance - Equipment;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+29;6900100;Advertising;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+30;6900110;Marketing Materials;1000;V1;GOODS;false;true;false;false;2024-01-01;;true
+31;6950100;Training - Internal;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+32;6950110;Conferences - External;1000;V1;SERVICES;false;true;false;false;2024-01-01;;true
+33;6960100;Books and Publications;1000;V1;GOODS;false;true;false;false;2024-01-01;;true
+34;1700100;Machinery;1000;V1;CAPITAL;true;true;false;true;2024-01-01;;true
+35;1700110;Vehicles;1000;V1;CAPITAL;true;true;false;true;2024-01-01;;true
+36;1800100;Computer Equipment;1000;V1;CAPITAL;true;true;false;false;2024-01-01;;true
+37;1800110;Server Equipment;1000;V1;CAPITAL;true;true;false;false;2024-01-01;;true
+38;2100100;Accounts Payable - Trade;1000;V1;GOODS;false;true;false;true;2024-01-01;;true
+39;4000100;Sales Revenue;1000;A1;GOODS;false;true;false;true;2024-01-01;;true
+40;4100100;Service Revenue;1000;A1;SERVICES;false;true;false;true;2024-01-01;;true

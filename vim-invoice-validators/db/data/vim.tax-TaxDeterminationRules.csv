@@ -1,0 +1,31 @@
+ID;ruleName;ruleDescription;ruleType;priority;companyCode;vendorId;vendorCountry;vendorRegion;vendorTaxId;shipFromCountry;shipFromRegion;shipToCountry;shipToRegion;materialGroup;productCategory;expenseType;glAccount;costCenter;invoiceType;documentType;amountFrom;amountTo;currency;determinedTaxCode;determinedJurisdiction;determinedTaxRate;taxExemptReason;validFrom;validTo;isActive;requiresApproval;createdBy;approvedBy;approvalDate;lastMatchedAt;matchCount
+1;Exempt Vendor Rule;Tax exempt vendor with valid certificate;EXEMPT;10;;;;;;;;;;;;;;;;;;V0;;0.0000;VENDOR_EXEMPT_CERTIFICATE;2024-01-01;;true;false;SYSTEM;;;0
+2;Foreign Vendor Reverse Charge;Reverse charge for foreign B2B services;REVERSE_CHARGE;20;;;;;EU;;;US;;;;;;;;;;RC1;;0.0000;REVERSE_CHARGE_MECHANISM;2024-01-01;;true;false;SYSTEM;;;0
+3;Intercompany No Tax;Intercompany transactions are tax exempt;EXEMPT;5;;;;;;;;;;;;;INTERCOMPANY;;;;;;V0;;0.0000;INTERCOMPANY_EXEMPT;2024-01-01;;true;false;SYSTEM;;;0
+4;Small Invoice Exempt;Invoices under $25 exempt from tax calculation;EXEMPT;100;;;;;;;;;;;;;;;RE;;0.00;25.00;USD;V0;;0.0000;DE_MINIMIS;2024-01-01;;true;false;SYSTEM;;;0
+5;California Services;Services delivered to California;PO_BASED;50;;;;;US;CA;US;CA;;;;;;;;;;V1;CA000000;0.0725;;2024-01-01;;true;false;SYSTEM;;;0
+6;New York Services;Services delivered to New York;PO_BASED;50;;;;;US;NY;US;NY;;;;;;;;;;V1;NY000000;0.0400;;2024-01-01;;true;false;SYSTEM;;;0
+7;Texas Services;Services delivered to Texas;PO_BASED;50;;;;;US;TX;US;TX;;;;;;;;;;V1;TX000000;0.0625;;2024-01-01;;true;false;SYSTEM;;;0
+8;Oregon No Tax;Oregon has no sales tax;PO_BASED;30;;;;;US;OR;US;OR;;;;;;;;;;V0;OR000000;0.0000;NO_SALES_TAX_STATE;2024-01-01;;true;false;SYSTEM;;;0
+9;Montana No Tax;Montana has no sales tax;PO_BASED;30;;;;;US;MT;US;MT;;;;;;;;;;V0;MT000000;0.0000;NO_SALES_TAX_STATE;2024-01-01;;true;false;SYSTEM;;;0
+10;Delaware No Tax;Delaware has no sales tax;PO_BASED;30;;;;;US;DE;US;DE;;;;;;;;;;V0;DE000000;0.0000;NO_SALES_TAX_STATE;2024-01-01;;true;false;SYSTEM;;;0
+11;New Hampshire No Tax;New Hampshire has no sales tax;PO_BASED;30;;;;;US;NH;US;NH;;;;;;;;;;V0;NH000000;0.0000;NO_SALES_TAX_STATE;2024-01-01;;true;false;SYSTEM;;;0
+12;Alaska Limited Tax;Alaska has no state tax but local possible;PO_BASED;30;;;;;US;AK;US;AK;;;;;;;;;;V0;AK000000;0.0000;NO_STATE_TAX;2024-01-01;;true;false;SYSTEM;;;0
+13;Ontario HST;Goods/Services to Ontario;PO_BASED;50;;;;;CA;ON;CA;ON;;;;;;;;;;H1;CA-ON;0.1300;;2024-01-01;;true;false;SYSTEM;;;0
+14;British Columbia GST+PST;Goods/Services to BC;PO_BASED;50;;;;;CA;BC;CA;BC;;;;;;;;;;C2;CA-BC;0.1200;;2024-01-01;;true;false;SYSTEM;;;0
+15;Alberta GST Only;Goods/Services to Alberta;PO_BASED;50;;;;;CA;AB;CA;AB;;;;;;;;;;G1;CA-AB;0.0500;;2024-01-01;;true;false;SYSTEM;;;0
+16;Quebec GST+QST;Goods/Services to Quebec;PO_BASED;50;;;;;CA;QC;CA;QC;;;;;;;;;;C3;CA-QC;0.1499;;2024-01-01;;true;false;SYSTEM;;;0
+17;Atlantic HST 15%;Goods/Services to Atlantic provinces;PO_BASED;50;;;;;CA;NB;CA;NB;;;;;;;;;;H2;CA-NB;0.1500;;2024-01-01;;true;false;SYSTEM;;;0
+18;Non-PO Professional Services;Professional services without PO;NON_PO;60;;;;;;;;;PROFESSIONAL_SVC;;6400100;;;;USD;V1;;0.0700;;2024-01-01;;true;false;SYSTEM;;;0
+19;Non-PO IT Equipment;IT equipment purchase without PO;NON_PO;60;;;;;;;;;IT_EQUIPMENT;;1800100;;;;USD;V1;;0.0700;;2024-01-01;;true;false;SYSTEM;;;0
+20;Non-PO Travel Expense;Travel expenses without PO;NON_PO;60;;;;;;;;;TRAVEL;;6200100;;;;USD;V1;;0.0700;;2024-01-01;;true;false;SYSTEM;;;0
+21;Resale Exempt;Goods purchased for resale;EXEMPT;40;;;;;;;;;;;RESALE;;;;;;;;;V0;;0.0000;RESALE_CERTIFICATE;2024-01-01;;true;true;SYSTEM;;;0
+22;Manufacturing Exempt;Raw materials for manufacturing;EXEMPT;40;;;;;;;;;RAW_MATERIALS;MANUFACTURING;;;;;;;;;V0;;0.0000;MANUFACTURING_EXEMPT;2024-01-01;;true;true;SYSTEM;;;0
+23;Government Entity;Sales to government entities;EXEMPT;25;;;;;;;;;;;;;;;GOVT;;;;;V0;;0.0000;GOVERNMENT_EXEMPT;2024-01-01;;true;false;SYSTEM;;;0
+24;Non-Profit Exempt;Sales to qualified non-profits;EXEMPT;25;;;;;;;;;;;;;;;NONPROFIT;;;;;V0;;0.0000;NONPROFIT_EXEMPT;2024-01-01;;true;true;SYSTEM;;;0
+25;Cross-Border US to CA;Cross-border from US to Canada;CROSS_BORDER;35;;;;;US;;CA;;;;;;;;;;;C1;CA-IMPORT;0.0500;;2024-01-01;;true;false;SYSTEM;;;0
+26;Cross-Border CA to US;Cross-border from Canada to US;CROSS_BORDER;35;;;;;CA;;US;;;;;;;;;;;V1;US-IMPORT;0.0000;;2024-01-01;;true;false;SYSTEM;;;0
+27;High Value Review;High value invoices require review;PO_BASED;200;;;;;;;;;;;;;;;;100000.00;;USD;V1;;0.0700;;2024-01-01;;true;true;SYSTEM;;;0
+28;Medical Equipment Exempt;Medical equipment purchases;EXEMPT;45;;;;;;;;;MEDICAL;;1800150;;;;USD;V0;;0.0000;MEDICAL_EXEMPT;2024-01-01;;true;false;SYSTEM;;;0
+29;Food Service Tax;Restaurant and catering services;NON_PO;70;;;;;;;;;MEALS;;6200200;;;;USD;V1;;0.0700;;2024-01-01;;true;false;SYSTEM;;;0
+30;Software SaaS Services;Cloud software subscriptions;NON_PO;65;;;;;;;;;SOFTWARE;;6300110;;;;USD;V1;;0.0700;;2024-01-01;;true;false;SYSTEM;;;0

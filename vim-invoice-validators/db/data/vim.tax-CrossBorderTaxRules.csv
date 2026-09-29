@@ -1,0 +1,31 @@
+ID;ruleName;originCountry;destinationCountry;taxTreatment;importDutyApplicable;vatApplicable;determinedTaxCode;determinedRate;jurisdictionCode;reverseChargeApplicable;reverseChargeTaxCode;hasTaxTreaty;treatyRate;priority;validFrom;validTo;isActive
+1;US to Canada Import;US;CA;STANDARD;true;true;C1;0.0500;CA-IMPORT;false;;true;;10;2024-01-01;;true
+2;Canada to US Import;CA;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;10;2024-01-01;;true
+3;US to Mexico Import;US;MX;STANDARD;true;true;M1;0.1600;MX-IMPORT;false;;true;;20;2024-01-01;;true
+4;Mexico to US Import;MX;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;20;2024-01-01;;true
+5;US to UK Import;US;GB;REVERSE_CHARGE;false;true;R1;0.2000;GB-IMPORT;true;RC1;true;;30;2024-01-01;;true
+6;UK to US Import;GB;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;30;2024-01-01;;true
+7;US to Germany Import;US;DE;REVERSE_CHARGE;false;true;R1;0.1900;DE-IMPORT;true;RC1;true;;30;2024-01-01;;true
+8;Germany to US Import;DE;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;30;2024-01-01;;true
+9;US to France Import;US;FR;REVERSE_CHARGE;false;true;R1;0.2000;FR-IMPORT;true;RC1;true;;30;2024-01-01;;true
+10;France to US Import;FR;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;30;2024-01-01;;true
+11;US to Japan Import;US;JP;STANDARD;true;true;J1;0.1000;JP-IMPORT;false;;true;;40;2024-01-01;;true
+12;Japan to US Import;JP;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;40;2024-01-01;;true
+13;US to China Import;US;CN;STANDARD;true;true;CN1;0.1300;CN-IMPORT;false;;false;;40;2024-01-01;;true
+14;China to US Import;CN;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;false;;40;2024-01-01;;true
+15;US to Australia Import;US;AU;STANDARD;true;true;AU1;0.1000;AU-IMPORT;false;;true;;40;2024-01-01;;true
+16;Australia to US Import;AU;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;40;2024-01-01;;true
+17;US to India Import;US;IN;STANDARD;true;true;IN1;0.1800;IN-IMPORT;false;;true;;40;2024-01-01;;true
+18;India to US Import;IN;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;40;2024-01-01;;true
+19;Canada to UK Import;CA;GB;REVERSE_CHARGE;false;true;R1;0.2000;GB-IMPORT;true;RC1;true;;50;2024-01-01;;true
+20;UK to Canada Import;GB;CA;STANDARD;true;true;C1;0.0500;CA-IMPORT;false;;true;;50;2024-01-01;;true
+21;Intra-EU B2B Default;EU;EU;REVERSE_CHARGE;false;true;R0;0.0000;EU-INTRA;true;RC1;true;;5;2024-01-01;;true
+22;EU to US Export;EU;US;ZERO_RATED;false;false;E0;0.0000;US-IMPORT;false;;true;;25;2024-01-01;;true
+23;US to EU Import;US;EU;REVERSE_CHARGE;false;true;R1;0.2000;EU-IMPORT;true;RC1;true;;25;2024-01-01;;true
+24;US Domestic Default;US;US;STANDARD;false;true;V1;0.0700;US-DOM;false;;false;;100;2024-01-01;;true
+25;Canada Domestic Default;CA;CA;STANDARD;false;true;C1;0.0500;CA-DOM;false;;false;;100;2024-01-01;;true
+26;US to Singapore Import;US;SG;STANDARD;true;true;SG1;0.0900;SG-IMPORT;false;;true;;40;2024-01-01;;true
+27;Singapore to US Import;SG;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;40;2024-01-01;;true
+28;US to Ireland Import;US;IE;REVERSE_CHARGE;false;true;R1;0.2300;IE-IMPORT;true;RC1;true;;30;2024-01-01;;true
+29;Ireland to US Import;IE;US;STANDARD;true;true;V1;0.0000;US-IMPORT;false;;true;;30;2024-01-01;;true
+30;US to Netherlands Import;US;NL;REVERSE_CHARGE;false;true;R1;0.2100;NL-IMPORT;true;RC1;true;;30;2024-01-01;;true

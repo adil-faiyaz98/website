@@ -1,0 +1,41 @@
+ID;categoryCode;categoryName;description;companyCode;countryKey;region;defaultTaxCode;taxRate;jurisdictionCode;partiallyDeductible;deductiblePercent;exemptionAllowed;maxExemptAmount;linkedGLAccounts;priority;validFrom;validTo;isActive
+1;TRAVEL;Travel Expenses;Air, rail, car rental, lodging for business travel;;US;;V1;0.0700;;false;100.00;false;;6200100,6200110,6200120;10;2024-01-01;;true
+2;TRAVEL;Travel Expenses;Air, rail, car rental, lodging for business travel;;CA;;C1;0.0500;;false;100.00;false;;6200100,6200110,6200120;10;2024-01-01;;true
+3;MEALS;Business Meals;Meals and entertainment for business purposes;;US;;V1;0.0700;;true;50.00;false;;6200200,6200210;20;2024-01-01;;true
+4;MEALS;Business Meals;Meals and entertainment for business purposes;;CA;;C1;0.0500;;true;50.00;false;;6200200,6200210;20;2024-01-01;;true
+5;SUPPLIES;Office Supplies;General office supplies and consumables;;US;;V1;0.0700;;false;100.00;false;;6100100,6100110;30;2024-01-01;;true
+6;SUPPLIES;Office Supplies;General office supplies and consumables;;CA;;C1;0.0500;;false;100.00;false;;6100100,6100110;30;2024-01-01;;true
+7;IT_EQUIPMENT;IT Equipment;Computers, servers, networking equipment;;US;;V1;0.0700;;false;100.00;false;;1800100,1800110;40;2024-01-01;;true
+8;IT_EQUIPMENT;IT Equipment;Computers, servers, networking equipment;;CA;;C1;0.0500;;false;100.00;false;;1800100,1800110;40;2024-01-01;;true
+9;SOFTWARE;Software Licenses;Software subscriptions and licenses;;US;;V1;0.0700;;false;100.00;true;5000.00;6300100,6300110;50;2024-01-01;;true
+10;SOFTWARE;Software Licenses;Software subscriptions and licenses;;CA;;C1;0.0500;;false;100.00;true;5000.00;6300100,6300110;50;2024-01-01;;true
+11;PROFESSIONAL_SVC;Professional Services;Legal, accounting, consulting services;;US;;V1;0.0700;;false;100.00;false;;6400100,6400110,6400120;60;2024-01-01;;true
+12;PROFESSIONAL_SVC;Professional Services;Legal, accounting, consulting services;;CA;;C1;0.0500;;false;100.00;false;;6400100,6400110,6400120;60;2024-01-01;;true
+13;UTILITIES;Utilities;Electric, gas, water, internet services;;US;;V1;0.0700;;false;100.00;true;;6500100,6500110;70;2024-01-01;;true
+14;UTILITIES;Utilities;Electric, gas, water, internet services;;CA;;C1;0.0500;;false;100.00;true;;6500100,6500110;70;2024-01-01;;true
+15;RENT;Rent and Lease;Building rent, equipment lease payments;;US;;V0;0.0000;;false;100.00;true;;6600100,6600110;80;2024-01-01;;true
+16;RENT;Rent and Lease;Building rent, equipment lease payments;;CA;;E1;0.0000;;false;100.00;true;;6600100,6600110;80;2024-01-01;;true
+17;INSURANCE;Insurance Premiums;Business insurance premiums;;US;;V0;0.0000;;false;100.00;true;;6700100;90;2024-01-01;;true
+18;INSURANCE;Insurance Premiums;Business insurance premiums;;CA;;E1;0.0000;;false;100.00;true;;6700100;90;2024-01-01;;true
+19;MAINTENANCE;Maintenance and Repairs;Building and equipment maintenance;;US;;V1;0.0700;;false;100.00;false;;6800100,6800110;100;2024-01-01;;true
+20;MAINTENANCE;Maintenance and Repairs;Building and equipment maintenance;;CA;;C1;0.0500;;false;100.00;false;;6800100,6800110;100;2024-01-01;;true
+21;MARKETING;Marketing and Advertising;Advertising, promotions, marketing materials;;US;;V1;0.0700;;false;100.00;false;;6900100,6900110;110;2024-01-01;;true
+22;MARKETING;Marketing and Advertising;Advertising, promotions, marketing materials;;CA;;C1;0.0500;;false;100.00;false;;6900100,6900110;110;2024-01-01;;true
+23;TRAINING;Training and Development;Employee training, conferences, seminars;;US;;V1;0.0700;;false;100.00;true;10000.00;6950100,6950110;120;2024-01-01;;true
+24;TRAINING;Training and Development;Employee training, conferences, seminars;;CA;;C1;0.0500;;false;100.00;true;10000.00;6950100,6950110;120;2024-01-01;;true
+25;TELECOM;Telecommunications;Phone, mobile, communication services;;US;;V1;0.0700;;false;100.00;false;;6510100,6510110;130;2024-01-01;;true
+26;TELECOM;Telecommunications;Phone, mobile, communication services;;CA;;C1;0.0500;;false;100.00;false;;6510100,6510110;130;2024-01-01;;true
+27;SHIPPING;Shipping and Freight;Courier, freight, logistics services;;US;;V1;0.0700;;false;100.00;false;;6520100,6520110;140;2024-01-01;;true
+28;SHIPPING;Shipping and Freight;Courier, freight, logistics services;;CA;;C1;0.0500;;false;100.00;false;;6520100,6520110;140;2024-01-01;;true
+29;RAW_MATERIALS;Raw Materials;Manufacturing raw materials and components;;US;;V1;0.0700;;false;100.00;false;;5000100,5000110;150;2024-01-01;;true
+30;RAW_MATERIALS;Raw Materials;Manufacturing raw materials and components;;CA;;C1;0.0500;;false;100.00;false;;5000100,5000110;150;2024-01-01;;true
+31;CAPITAL_EQUIP;Capital Equipment;Major equipment purchases over threshold;;US;;V1;0.0700;;false;100.00;false;;1700100,1700110;160;2024-01-01;;true
+32;CAPITAL_EQUIP;Capital Equipment;Major equipment purchases over threshold;;CA;;C1;0.0500;;false;100.00;false;;1700100,1700110;160;2024-01-01;;true
+33;FUEL;Fuel and Energy;Vehicle fuel, energy for operations;;US;;V1;0.0700;;false;100.00;false;;6530100;170;2024-01-01;;true
+34;FUEL;Fuel and Energy;Vehicle fuel, energy for operations;;CA;;C1;0.0500;;false;100.00;false;;6530100;170;2024-01-01;;true
+35;HEALTHCARE;Healthcare Services;Medical services, health-related expenses;;US;;V0;0.0000;;false;100.00;true;;6750100;180;2024-01-01;;true
+36;HEALTHCARE;Healthcare Services;Medical services, health-related expenses;;CA;;E1;0.0000;;false;100.00;true;;6750100;180;2024-01-01;;true
+37;EDUCATION;Educational Materials;Books, educational supplies, publications;;US;;V1;0.0700;;false;100.00;true;;6960100;190;2024-01-01;;true
+38;EDUCATION;Educational Materials;Books, educational supplies, publications;;CA;;E1;0.0000;;false;100.00;true;;6960100;190;2024-01-01;;true
+39;FOOD_GROCERY;Food and Groceries;Basic groceries for business use;;US;;V1;0.0700;;false;100.00;true;;6205100;200;2024-01-01;;true
+40;FOOD_GROCERY;Food and Groceries;Basic groceries for business use;;CA;;E1;0.0000;;false;100.00;true;;6205100;200;2024-01-01;;true

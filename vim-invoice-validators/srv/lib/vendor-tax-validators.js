@@ -61,22 +61,6 @@ const VENDOR_FIELD_WEIGHTS = {
 // ============================================================================
 
 /**
- * Default tax code mapping by country.
- * Used when exact derivation is not possible.
- * @type {Object.<string, {standard: string, reduced: string, exempt: string}>}
- */
-const COUNTRY_TAX_CODE_DEFAULTS = {
-  'US': { standard: 'V1', reduced: 'V2', exempt: 'V0' },
-  'DE': { standard: 'V1', reduced: 'V2', exempt: 'V0' },
-  'GB': { standard: 'V1', reduced: 'V2', exempt: 'V0' },
-  'FR': { standard: 'V1', reduced: 'V2', exempt: 'V0' },
-  'IN': { standard: 'V1', reduced: 'V2', exempt: 'V0' },
-  'CA': { standard: 'V1', reduced: 'V2', exempt: 'V0' },
-  'AU': { standard: 'V1', reduced: 'V2', exempt: 'V0' },
-  'JP': { standard: 'V1', reduced: 'V2', exempt: 'V0' }
-};
-
-/**
  * Tax-exempt expense types.
  */
 const TAX_EXEMPT_EXPENSE_TYPES = [
@@ -435,7 +419,18 @@ async function deriveTaxJurisdiction(params) {
     
     // Sort possible matches by score
     possibleMatches.sort((a, b) => b.score - a.score);
-    
+
+    const topMatches = possibleMatches.filter(m => m.score === bestScore);
+    if (bestMatch && new Set(topMatches.map(m => m.jurisdiction)).size > 1) {
+      return {
+        taxJurisdiction: null,
+        confidence: 0,
+        source: 'AMBIGUOUS_JURISDICTION',
+        errorCode: 'AMBIGUOUS_JURISDICTION',
+        possibleJurisdictions: possibleMatches.slice(0, 5).map(m => m.jurisdiction)
+      };
+    }
+
     if (bestMatch) {
       return {
         taxJurisdiction: bestMatch,
@@ -444,12 +439,13 @@ async function deriveTaxJurisdiction(params) {
         possibleJurisdictions: possibleMatches.slice(0, 5).map(m => m.jurisdiction)
       };
     }
-    
-    // No specific match - return first jurisdiction as default
+
+    // No specific match - never default to an arbitrary jurisdiction
     return {
-      taxJurisdiction: jurisdictions[0].TXJCD,
-      confidence: 0.50,
-      source: 'DEFAULT_FIRST_JURISDICTION',
+      taxJurisdiction: null,
+      confidence: 0,
+      source: 'NO_JURISDICTION_MATCH',
+      errorCode: 'NO_JURISDICTION_MATCH',
       possibleJurisdictions: jurisdictions.slice(0, 5).map(j => j.TXJCD)
     };
     
@@ -480,16 +476,14 @@ async function deriveTaxJurisdiction(params) {
  */
 
 /**
- * Derive tax code for an invoice.
- * 
- * SAP Tax Determination Logic:
+ * Derive tax code for an invoice (fail-closed).
+ *
  * - For PO invoices: Use tax code from PO item (100% confidence)
- * - For Non-PO invoices:
- *   1. Vendor country + Plant country → Domestic/Import/Export classification
- *   2. Material tax classification (if available)
- *   3. Account assignment category
- *   4. Expense type → Tax code mapping
- * 
+ * - For Non-PO invoices: no tax code is selected here. SAP tax codes for the
+ *   vendor country are ranked (domestic/import, expense type) and returned as
+ *   possibleCodes for review; taxCode is null with errorCode NO_TAX_DETERMINATION.
+ *   Use the tax determination engine for configured Non-PO determination.
+ *
  * @param {Object} params
  * @param {string} params.companyCode - Company code
  * @param {string} params.vendorCountry - Vendor's country
@@ -524,39 +518,36 @@ async function deriveTaxCode(params) {
     };
   }
   
-  // For non-PO: Need to derive tax code
+  if (!vendorCountry) {
+    return {
+      taxCode: null,
+      confidence: 0,
+      source: 'NO_VENDOR_COUNTRY',
+      errorCode: 'VENDOR_COUNTRY_REQUIRED',
+      taxDescription: null,
+      possibleCodes: [],
+      isPO: false
+    };
+  }
+
+  // For non-PO: rank candidate tax codes for review only
   try {
     const ecc = await getEccService();
-    
+
     // Fetch available tax codes for the vendor's country
     const taxCodes = await ecc.getTaxCodes({
-      country: vendorCountry || 'US',
+      country: vendorCountry,
       language: 'E'
     });
-    
+
     if (!taxCodes || taxCodes.length === 0) {
-      // Use default mapping
-      const countryDefaults = COUNTRY_TAX_CODE_DEFAULTS[vendorCountry] || 
-                             COUNTRY_TAX_CODE_DEFAULTS['US'];
-      
-      // Check if expense type is tax-exempt
-      if (expenseType && TAX_EXEMPT_EXPENSE_TYPES.includes(expenseType)) {
-        return {
-          taxCode: countryDefaults.exempt,
-          confidence: 0.75,
-          source: 'EXPENSE_TYPE_EXEMPT',
-          taxDescription: 'Tax Exempt',
-          possibleCodes: [countryDefaults.exempt, countryDefaults.standard],
-          isPO: false
-        };
-      }
-      
       return {
-        taxCode: countryDefaults.standard,
-        confidence: 0.70,
-        source: 'COUNTRY_DEFAULT',
-        taxDescription: 'Standard Rate',
-        possibleCodes: [countryDefaults.standard, countryDefaults.reduced, countryDefaults.exempt],
+        taxCode: null,
+        confidence: 0,
+        source: 'NO_TAX_CODES_FOR_COUNTRY',
+        errorCode: 'NO_TAX_DETERMINATION',
+        taxDescription: null,
+        possibleCodes: [],
         isPO: false
       };
     }
@@ -610,41 +601,27 @@ async function deriveTaxCode(params) {
     }
 
     
-    // Sort by score descending
-    scoredCodes.sort((a, b) => b.score - a.score);
-    
-    if (scoredCodes.length > 0) {
-      const best = scoredCodes[0];
-      
-      // Non-PO tax code derivation has inherent uncertainty
-      // Multiple codes can have the same tax rate
-      const confidence = Math.min(0.85, best.score);
-      
-      return {
-        taxCode: best.code,
-        confidence,
-        source: 'TAX_CODE_ANALYSIS',
-        taxDescription: best.description,
-        possibleCodes: scoredCodes.slice(0, 5).map(c => c.code),
-        isPO: false,
-        scoredCodes: scoredCodes.slice(0, 5)
-      };
-    }
-    
+    // Sort by score descending (tie-break on code for deterministic order)
+    scoredCodes.sort((a, b) => b.score - a.score || String(a.code).localeCompare(String(b.code)));
+
+    // Keyword ranking is a review aid only - it never selects the tax code
     return {
-      taxCode: 'V1',
-      confidence: 0.50,
-      source: 'FALLBACK_DEFAULT',
-      taxDescription: 'Default Tax Code',
-      possibleCodes: ['V1', 'V0'],
-      isPO: false
+      taxCode: null,
+      confidence: 0,
+      source: 'TAX_CODE_ANALYSIS',
+      errorCode: 'NO_TAX_DETERMINATION',
+      taxDescription: null,
+      possibleCodes: scoredCodes.slice(0, 5).map(c => c.code),
+      isPO: false,
+      scoredCodes: scoredCodes.slice(0, 5)
     };
-    
+
   } catch (error) {
     return {
       taxCode: null,
       confidence: 0,
       source: 'ERROR',
+      errorCode: 'EXCEPTION',
       taxDescription: null,
       possibleCodes: [],
       isPO: false,
@@ -756,18 +733,17 @@ async function calculateTaxAmount(params) {
     };
     
   } catch (error) {
-    // Fallback: Simple rate-based calculation
-    const normalizedNet = normalizeAmount(netAmount);
-    const defaultRate = 0.10; // 10% default rate
-    const estimatedTax = normalizedNet * defaultRate;
-    
+    // Fail closed: tax amounts are never estimated locally
+    const normalizedNet = normalizeAmount(netAmount) || 0;
+
     return {
-      taxAmount: Math.round(estimatedTax * 100) / 100,
+      taxAmount: 0,
       netAmount: normalizedNet,
-      grossAmount: Math.round((normalizedNet + estimatedTax) * 100) / 100,
-      taxRate: defaultRate * 100,
-      confidence: 0.50,  // Low confidence for fallback
-      source: 'FALLBACK_ESTIMATE',
+      grossAmount: normalizedNet,
+      taxRate: 0,
+      confidence: 0,
+      source: 'CALCULATION_FAILED',
+      errorCode: 'TAX_CALCULATION_FAILED',
       taxDetails: [],
       error: error.message
     };
@@ -1020,8 +996,8 @@ async function deriveVendorAndTax(params) {
   if (result.vendorValidation?.confidence < 0.80) {
     result.recommendations.push('Vendor validation confidence is low - manual review recommended');
   }
-  if (result.taxCode?.confidence < 0.85 && !poTaxCode) {
-    result.recommendations.push('Tax code derived with medium confidence - verify tax classification');
+  if (!result.taxCode?.taxCode) {
+    result.recommendations.push('Tax code could not be determined - manual tax determination required');
   }
   if (result.taxValidation && !result.taxValidation.isValid) {
     result.recommendations.push(
@@ -1112,7 +1088,7 @@ async function searchVendorByInvoiceData(params) {
  * This provides 100% confidence as it's the actual tax code used in the PO.
  * 
  * @param {string} poNumber - PO number
- * @param {string} [poItem] - PO item number (optional, returns first item if not specified)
+ * @param {string} [poItem] - PO item number (required when the PO has several items)
  * @returns {Promise<{taxCode: string, jurisdiction: string, confidence: number}>}
  */
 async function getTaxCodeFromPO(poNumber, poItem) {
@@ -1128,13 +1104,34 @@ async function getTaxCodeFromPO(poNumber, poItem) {
       return { taxCode: null, jurisdiction: null, confidence: 0, source: 'PO_NOT_FOUND' };
     }
     
-    // Find the specific item or use first
-    let item;
+    // Exact item match only; without an item number only a single-item PO is unambiguous
+    let item = null;
     if (poItem) {
-      item = poDetail.POITEM.find(i => i.PO_ITEM === poItem.padStart(5, '0'));
+      item = poDetail.POITEM.find(i => i.PO_ITEM === poItem.padStart(5, '0')) || null;
+    } else if (poDetail.POITEM.length === 1) {
+      item = poDetail.POITEM[0];
     }
-    item = item || poDetail.POITEM[0];
-    
+
+    if (!item) {
+      return {
+        taxCode: null,
+        jurisdiction: null,
+        confidence: 0,
+        source: poItem ? 'PO_LINE_NOT_FOUND' : 'PO_LINE_REQUIRED'
+      };
+    }
+
+    if (!item.TAX_CODE) {
+      return {
+        taxCode: null,
+        jurisdiction: null,
+        plant: item.PLANT,
+        materialGroup: item.MATL_GROUP,
+        confidence: 0,
+        source: 'PO_ITEM_NO_TAX_CODE'
+      };
+    }
+
     return {
       taxCode: item.TAX_CODE,
       jurisdiction: item.TAXJURCODE,
@@ -1158,7 +1155,6 @@ module.exports = {
   // Configuration
   VENDOR_MATCH_THRESHOLDS,
   VENDOR_FIELD_WEIGHTS,
-  COUNTRY_TAX_CODE_DEFAULTS,
   TAX_EXEMPT_EXPENSE_TYPES,
   
   // Utility functions
